@@ -10,6 +10,7 @@ import { requestMotionAccess } from '../../stage/motion'
 import { patchStage } from '../../stage/store'
 import { Aura, AuraTint } from '../Aura'
 import { releaseTextInput } from '../releaseTextInput'
+import { haptic } from '../../stage/haptics'
 import { KebabIcon, ShakeIcon } from '../icons'
 import { Button, Dot, seq } from '../ui'
 import type { PickerQuery } from '../../__generated__/PickerQuery.graphql'
@@ -54,6 +55,7 @@ export function Picker() {
     if (!ready) return
     // Before anything else: no focused field, no undo history to offer on shake.
     releaseTextInput()
+    haptic.press()
     // iOS only grants motion from inside the tap that asked for it.
     if (data.stage?.motion === 'prompt') patchStage({ motion: await requestMotionAccess() })
     void router.navigate({ to: '/shake', search: { a: selectionCell.read().join('.'), n: currentName() } })
@@ -104,7 +106,10 @@ export function Picker() {
             <button
               type="button"
               aria-pressed={attribute.selected ?? false}
-              onClick={() => toggleAttribute(attribute.key ?? '')}
+              onClick={() => {
+                haptic.select()
+                toggleAttribute(attribute.key ?? '')
+              }}
               className="chip press-soft"
               style={{ '--chip': attribute.color } as CSSProperties}
             >
@@ -118,7 +123,10 @@ export function Picker() {
               type="button"
               aria-label={`${attribute.label} 값 목록`}
               className="chip-kebab press"
-              onClick={() => void router.navigate({ to: '/', search: { values: attribute.key ?? undefined } })}
+              onClick={() => {
+                haptic.select()
+                void router.navigate({ to: '/', search: { values: attribute.key ?? undefined } })
+              }}
             >
               <KebabIcon width={16} height={16} />
             </button>

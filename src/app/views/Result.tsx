@@ -8,7 +8,7 @@ import { useSheetStackActions } from 'morphing-sheet/react'
 import { decodeRollKey, encodeRollKey } from '../../domain/roll'
 import { router } from '../../router'
 import { toggleSaved } from '../../state/saved'
-import { vibrate } from '../../stage/haptics'
+import { haptic } from '../../stage/haptics'
 import { ShareIcon, ShakeIcon, ShuffleIcon, StarIcon } from '../icons'
 import { Button, Dot, seq, Swatches } from '../ui'
 import { PoolSheet } from './PoolSheet'
@@ -67,7 +67,7 @@ export function Result() {
     const request = decodeRollKey(key)
     if (!request) return
     const nonces = { ...request.nonces, [attributeId]: (request.nonces?.[attributeId] ?? 0) + 1 }
-    vibrate([12])
+    haptic.reroll()
     void router.navigate({ to: '/result', search: { k: encodeRollKey({ ...request, nonces }) }, replace: true })
   }
 
@@ -93,7 +93,10 @@ export function Result() {
         </div>
         <button
           type="button"
-          onClick={() => toggleSaved(roll.key ?? key)}
+          onClick={() => {
+            if (!roll.saved) haptic.save()
+            toggleSaved(roll.key ?? key)
+          }}
           aria-pressed={roll.saved ?? false}
           aria-label={roll.saved ? '보관함에서 빼기' : '보관함에 담기'}
           className="press star grid size-10 shrink-0 place-items-center rounded-full text-muted hover:text-ink aria-pressed:text-star"

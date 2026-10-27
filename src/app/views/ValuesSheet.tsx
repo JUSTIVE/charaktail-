@@ -5,6 +5,7 @@ import { useLocalQuery } from '../../graph/useLocalQuery'
 
 import { addOption, removeOption, resetAttribute, setRange, toggleOption } from '../../state/edits'
 import { router } from '../../router'
+import { haptic } from '../../stage/haptics'
 import { BackIcon, PlusIcon, TrashIcon } from '../icons'
 import { Button, Dot, seq, Swatches } from '../ui'
 import type { ValuesSheetQuery } from '../../__generated__/ValuesSheetQuery.graphql'
@@ -134,7 +135,10 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
                     aria-label={`${option.label} ${option.enabled ? '끄기' : '켜기'}`}
                     title={last ? '최소 하나는 켜져 있어야 해요' : undefined}
                     disabled={last}
-                    onClick={() => toggleOption(attributeId, option.key ?? '')}
+                    onClick={() => {
+                      haptic.select()
+                      toggleOption(attributeId, option.key ?? '')
+                    }}
                     className="switch"
                     style={{ '--switch-on': attribute.color } as CSSProperties}
                   >

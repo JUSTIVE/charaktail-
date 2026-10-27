@@ -3,6 +3,7 @@ import { graphql } from 'relay-runtime'
 
 import { useLocalQuery } from '../graph/useLocalQuery'
 import { dismissOfflineReady, installUpdate } from '../state/app'
+import { haptic } from '../stage/haptics'
 import type { UpdateToastQuery } from '../__generated__/UpdateToastQuery.graphql'
 
 /**
@@ -44,6 +45,7 @@ export function UpdateToast() {
           onClick={() => {
             if (popping) return
             setPopping(true)
+            haptic.press()
             // Let the pop play, then swap versions (the page reloads).
             setTimeout(() => void installUpdate(), 420)
           }}

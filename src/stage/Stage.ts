@@ -14,7 +14,7 @@ import {
 } from 'three'
 
 import { inkOn } from '../domain/palette'
-import { vibrate } from './haptics'
+import { haptic } from './haptics'
 import { listenMotion } from './motion'
 import { World } from './physics'
 import { fragmentShader, vertexShader } from './shader'
@@ -89,6 +89,8 @@ export class Stage {
   private rearmed = false
   /** The meter reached full since the mode began. */
   private filled = false
+  /** Highest quarter of the meter already announced by a tick. */
+  private chargeQuarter = 0
   /** Latest gyroscope reading, deg/s in screen space; applied each frame. */
   private rotation = { x: 0, y: 0, z: 0 }
   private manualShake = false
@@ -189,6 +191,9 @@ export class Stage {
     // the last round would re-trigger at once.
     if (mode === 'armed' || mode === 'idle' || mode === 'revealed') this.charge = 0
     this.filled = false
+    this.chargeQuarter = 0
+    if (mode === 'mixing') haptic.mix()
+    if (mode === 'glowing') haptic.glow()
     // The hold button hides once the sequence starts, so its release never
     // arrives — the stage lets go itself, or it would keep shaking forever.
     if (mode !== 'armed') this.manualShake = false
@@ -231,6 +236,10 @@ export class Stage {
     if (this.mode !== 'armed' && !(this.mode === 'revealed' && !manual && this.rearmed)) return
     const over = magnitude - SHAKE_FLOOR
     if (over > 0) this.charge = Math.min(1, this.charge + (over / SHAKE_RATE) * dt * 4)
+    // A tick each time the meter crosses a quarter, firmer as it fills.
+    const quarter = Math.floor(this.charge * 4)
+    if (quarter > this.chargeQuarter && quarter < 4) haptic.charge(quarter)
+    this.chargeQuarter = Math.max(this.chargeQuarter, quarter)
     // "Full" is decided here, when a shake fills the meter. Checking
     // `charge >= 1` in the frame loop never fired for real motion: each
     // frame lets the charge decay a hair before the check, so a meter topped
@@ -494,7 +503,7 @@ export class Stage {
 
   private reveal(): void {
     this.looks.flash = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.35 : 1
-    vibrate([40, 50, 140])
+    haptic.reveal()
     this.setMode('revealed')
     this.onReveal()
   }
