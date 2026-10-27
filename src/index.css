@@ -364,7 +364,14 @@ body {
   overscroll-behavior: contain;
   margin-inline: -4px;
   padding: 6px 4px 10px;
-  /* Edges fade into the panel so a cut-off chip reads as "more here", not as clipped. */
+}
+
+/*
+ * Scrolling lists inside a sheet (attributes, an attribute's values) fade at
+ * their edges, so a cut-off row reads as "more here", not as clipped.
+ */
+.picker-list,
+.values-list {
   --fade-top: 18px;
   --fade-bottom: 22px;
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-top), #000 calc(100% - var(--fade-bottom)), transparent);
@@ -384,11 +391,12 @@ body {
   initial-value: 22px;
 }
 @supports (animation-timeline: scroll()) {
-  .picker-list {
-    animation: picker-fade linear both;
+  .picker-list,
+  .values-list {
+    animation: list-fade linear both;
     animation-timeline: scroll(self);
   }
-  @keyframes picker-fade {
+  @keyframes list-fade {
     0% { --fade-top: 0px; --fade-bottom: 22px; }
     8% { --fade-top: 18px; }
     92% { --fade-bottom: 22px; }
@@ -421,7 +429,7 @@ body {
   overflow-y: auto;
   overscroll-behavior: contain;
   margin-inline: -4px;
-  padding: 2px 4px;
+  padding: 6px 4px 10px;
 }
 .values-row {
   display: flex;
