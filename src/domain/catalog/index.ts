@@ -6,7 +6,6 @@ import eyeColor from './eyeColor'
 import gender from './gender'
 import hairColor from './hairColor'
 import height from './height'
-import name from './name'
 import occupation from './occupation'
 import personality from './personality'
 import secret from './secret'
@@ -20,7 +19,6 @@ import world from './world'
 export const catalog = defineCatalog([
   world,
   species,
-  name,
   gender,
   age,
   height,

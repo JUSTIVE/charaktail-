@@ -1,8 +1,9 @@
-import type { CSSProperties } from 'react'
+import { useSyncExternalStore, type CSSProperties } from 'react'
 import { useLazyLoadQuery } from 'react-relay'
 import { graphql } from 'relay-runtime'
 
 import { router } from '../../router'
+import { currentName, NAME_MAX, nameCell, setName } from '../../state/name'
 import { selectAll, selectionCell, toggleAttribute } from '../../state/selection'
 import { requestMotionAccess } from '../../stage/motion'
 import { patchStage, stageCell } from '../../stage/store'
@@ -35,11 +36,14 @@ export function Picker() {
   const attributes = data.attributes ?? []
   const count = attributes.filter((a) => a.selected).length
   const allOn = count === attributes.length
+  const name = useSyncExternalStore(nameCell.subscribe, nameCell.read)
+  const ready = count > 0 && name.trim() !== ''
 
   const confirm = async () => {
+    if (!ready) return
     // iOS only grants motion from inside the tap that asked for it.
     if (stageCell.read().motion === 'prompt') patchStage({ motion: await requestMotionAccess() })
-    void router.navigate({ to: '/shake', search: { a: selectionCell.read().join('.') } })
+    void router.navigate({ to: '/shake', search: { a: selectionCell.read().join('.'), n: currentName() } })
   }
 
   return (
@@ -54,7 +58,30 @@ export function Picker() {
         </Button>
       </div>
 
-      <ul className="ms-seq grid grid-cols-2 gap-2 sm:grid-cols-3" style={seq(1)}>
+      {/* The name is the one thing the player decides; everything else is rolled. */}
+      <form
+        className="ms-seq"
+        style={seq(1)}
+        onSubmit={(event) => {
+          event.preventDefault()
+          void confirm()
+        }}
+      >
+        <label className="name-field">
+          <span className="eyebrow shrink-0">이름</span>
+          <input
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            maxLength={NAME_MAX}
+            placeholder="캐릭터 이름을 지어 주세요"
+            autoComplete="off"
+            enterKeyHint="go"
+            className="min-w-0 flex-1 bg-transparent text-[16px] font-semibold outline-none placeholder:font-normal placeholder:text-faint"
+          />
+        </label>
+      </form>
+
+      <ul className="ms-seq picker-list grid grid-cols-2 gap-2 sm:grid-cols-3" style={seq(2)}>
         {attributes.map((attribute) => (
           <li key={attribute.key}>
             <button
@@ -77,11 +104,11 @@ export function Picker() {
         ))}
       </ul>
 
-      <div className="ms-seq flex items-center gap-3" style={seq(2)}>
+      <div className="ms-seq flex items-center gap-3" style={seq(3)}>
         <p className="text-[12.5px] text-muted">
-          위의 공을 끌어서 던져볼 수도 있어요.
+          {name.trim() === '' ? '이름을 지어야 흔들 수 있어요.' : '위의 공을 끌어서 던져볼 수도 있어요.'}
         </p>
-        <Button variant="primary" className="ml-auto px-5" disabled={count === 0} onClick={() => void confirm()}>
+        <Button variant="primary" className="ml-auto shrink-0 px-5" disabled={!ready} onClick={() => void confirm()}>
           <ShakeIcon width={17} height={17} />
           {count}개로 흔들기
         </Button>

@@ -55,11 +55,12 @@ export class Stage {
   private world = new World()
   private specs = new Map<string, BallSpec>()
   private signature = ''
+  private colors: Vector3[] = []
 
   private mode: StageMode = 'idle'
   private modeAt = 0
   private charge = 0
-  private looks = { text: 1, mix: 0, glow: 0, flash: 0 }
+  private looks = { text: 1, merge: 0, mix: 0, glow: 0, flash: 0 }
   private manualShake = false
   private manualTimer = 0
 
@@ -73,6 +74,8 @@ export class Stage {
 
   /** Called once the glow peaks; the app turns this into a seed and a route. */
   onReveal: () => void = () => {}
+  /** A hard shake over a finished result starts the next roll straight away. */
+  onReshake: () => void = () => {}
 
   constructor(private canvas: HTMLCanvasElement) {
     this.renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' })
@@ -132,7 +135,12 @@ export class Stage {
     const from = this.mode
     this.mode = mode
     this.modeAt = this.time
-    if (mode === 'armed' || mode === 'idle') this.charge = 0
+    // Every mode that can charge starts empty — a full meter left over from
+    // the last round would re-trigger at once.
+    if (mode === 'armed' || mode === 'idle' || mode === 'revealed') this.charge = 0
+    // The hold button hides once the sequence starts, so its release never
+    // arrives — the stage lets go itself, or it would keep shaking forever.
+    if (mode !== 'armed') this.manualShake = false
     if ((from === 'revealed' || from === 'glowing') && (mode === 'idle' || mode === 'armed')) {
       // Burst the orb back into balls.
       for (const body of this.world.bodies) {
@@ -160,9 +168,10 @@ export class Stage {
 
   // ── input ─────────────────────────────────────────────────────────────────
 
-  private shake(ax: number, ay: number, magnitude: number, dt: number): void {
+  private shake(ax: number, ay: number, magnitude: number, dt: number, manual = false): void {
     if (magnitude > 4) this.world.kick(ax, ay, 38)
-    if (this.mode !== 'armed') return
+    // Over a result only a real shake re-rolls; the button lives on the HUD.
+    if (this.mode !== 'armed' && !(this.mode === 'revealed' && !manual)) return
     const over = magnitude - SHAKE_FLOOR
     if (over > 0) this.charge = Math.min(1, this.charge + (over / SHAKE_RATE) * dt * 4)
   }
@@ -229,7 +238,7 @@ export class Stage {
       const rect = (el.closest('.ms-slot') ?? el).getBoundingClientRect()
       if (rect.height > 0 && rect.top > 0) top = Math.min(top, rect.top - 8)
     }
-    return Math.max(top, this.height * 0.3)
+    return Math.max(top, this.height * 0.22)
   }
 
   private radius(count: number): number {
@@ -272,20 +281,21 @@ export class Stage {
       if (this.manualTimer <= 0) {
         this.manualTimer = 0.07
         const a = Math.random() * Math.PI * 2
-        this.shake(Math.cos(a) * 26, Math.sin(a) * 26, 26, 0.07)
+        this.shake(Math.cos(a) * 26, Math.sin(a) * 26, 26, 0.07, true)
       }
-    } else if (this.mode === 'armed') {
+    } else if (this.mode === 'armed' || this.mode === 'revealed') {
       this.charge = Math.max(0, this.charge - dt * 0.12)
     }
 
     const live = world.bodies.filter((b) => !b.leaving).length
     let radius = this.radius(live)
-    const looks = { text: 1, mix: 0, glow: 0 }
+    const looks = { text: 1, merge: 0, mix: 0, glow: 0 }
 
     switch (this.mode) {
       case 'idle':
       case 'armed': {
-        Object.assign(t, { gravity: 900, collide: true, attract: 0, swirl: 0, damping: 0.6, restitution: 0.55 })
+        // Oil in water: heavy drag, little bounce.
+        Object.assign(t, { gravity: 750, collide: true, attract: 0, swirl: 0, damping: 0.4, restitution: 0.3 })
         if (this.mode === 'idle') {
           // Above the picker the balls float: weak gravity, a little lift.
           t.gravity = 260
@@ -300,6 +310,8 @@ export class Stage {
         Object.assign(t, { gravity: 200 * (1 - k), collide: false, attract: 6 + 30 * k, swirl: 1400 * (1 - k * 0.5), damping: 0.35 })
         radius *= 1 - 0.25 * k
         looks.text = 0
+        // Bodies give up their edges first, then the colours run.
+        looks.merge = Math.min(k * 2.5, 1)
         looks.mix = k
         if (k >= 1) this.setMode('glowing')
         break
@@ -309,17 +321,25 @@ export class Stage {
         Object.assign(t, { gravity: 0, collide: false, attract: 50, swirl: 500 * (1 - k), damping: 0.15 })
         radius *= 0.75 - 0.1 * k
         looks.text = 0
+        looks.merge = 1
         looks.mix = 1
         looks.glow = k * k
         if (k >= 1) this.reveal()
         break
       }
       case 'revealed': {
+        // The light has done its job: the drops are gone, the result is the
+        // character. Shaking here glows the screen back up toward a new roll.
         Object.assign(t, { gravity: 0, collide: false, attract: 18, swirl: 60, damping: 0.25 })
-        radius *= 0.62 * (1 + 0.04 * Math.sin(this.time * 2.2))
+        radius = 0
         looks.text = 0
+        looks.merge = 1
         looks.mix = 1
-        looks.glow = 0.24 + 0.05 * Math.sin(this.time * 2.2)
+        looks.glow = this.charge * 0.6
+        if (this.charge >= 1) {
+          this.setMode('mixing')
+          this.onReshake()
+        }
         break
       }
     }
@@ -331,8 +351,10 @@ export class Stage {
     world.step(dt / 2)
 
     this.looks.text = approach(this.looks.text, looks.text, this.mode === 'mixing' ? 9 : 5, dt)
+    this.looks.merge = approach(this.looks.merge, looks.merge, 7, dt)
     this.looks.mix = approach(this.looks.mix, looks.mix, 6, dt)
-    this.looks.glow = approach(this.looks.glow, looks.glow, 8, dt)
+    // Into the glow fast; out of it slowly, so the screen fades like an afterimage.
+    this.looks.glow = approach(this.looks.glow, looks.glow, looks.glow > this.looks.glow ? 8 : 1.6, dt)
     this.looks.flash = approach(this.looks.flash, 0, 2.6, dt)
     document.documentElement.style.setProperty('--charge', this.charge.toFixed(3))
   }
@@ -354,15 +376,24 @@ export class Stage {
 
     const u = this.mesh.material.uniforms
     const balls = u.uBalls!.value as Vector4[]
+    const deform = u.uDeform!.value as Vector4[]
     let sumR = 0
     bodies.forEach((body, i) => {
       balls[i]!.set(body.x * this.dpr, body.y * this.dpr, body.r * this.dpr, body.angle)
+      deform[i]!.set(body.axis.x, body.axis.y, body.squash, 0)
       sumR += body.r
     })
+    const area = this.world.area
+    u.uArea!.value.set(area.left * this.dpr, area.top * this.dpr, area.right * this.dpr, area.bottom * this.dpr)
     u.uRes!.value.set(this.width * this.dpr, this.height * this.dpr)
     u.uCenter!.value.set(this.world.tuning.center.x * this.dpr, this.world.tuning.center.y * this.dpr)
+    const avg = u.uAvg!.value as Vector3
+    avg.set(0, 0, 0)
+    for (const color of this.colors) avg.add(color)
+    if (this.colors.length) avg.multiplyScalar(1 / this.colors.length)
     u.uScale!.value = (bodies.length ? sumR / bodies.length : 1) * this.dpr
     u.uText!.value = this.looks.text
+    u.uMerge!.value = this.looks.merge
     u.uMix!.value = this.looks.mix
     u.uGlow!.value = this.looks.glow
     u.uFlash!.value = this.looks.flash
@@ -381,6 +412,7 @@ export class Stage {
     old.dispose()
     const colors = this.mesh.material.uniforms.uColors!.value as Vector3[]
     specs.forEach((spec, i) => colors[i]!.copy(rgb(spec.color)))
+    this.colors = specs.map((spec) => rgb(spec.color))
   }
 
   private material(count: number): ShaderMaterial {
@@ -392,12 +424,16 @@ export class Stage {
       depthWrite: false,
       uniforms: {
         uBalls: { value: Array.from({ length: n }, () => new Vector4()) },
+        uDeform: { value: Array.from({ length: n }, () => new Vector4(0, 1, 0, 0)) },
         uColors: { value: Array.from({ length: n }, () => new Vector3()) },
         uAtlas: { value: this.atlas },
         uRes: { value: new Vector2() },
+        uArea: { value: new Vector4() },
         uCenter: { value: new Vector2() },
+        uAvg: { value: new Vector3() },
         uScale: { value: 1 },
         uText: { value: 1 },
+        uMerge: { value: 0 },
         uMix: { value: 0 },
         uGlow: { value: 0 },
         uFlash: { value: 0 },

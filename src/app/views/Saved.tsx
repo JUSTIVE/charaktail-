@@ -15,6 +15,7 @@ export function Saved() {
           savedAt
           roll {
             key
+            name
             headline
             entries {
               attribute {
@@ -62,8 +63,10 @@ export function Saved() {
                   ))}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[14px] font-semibold">{entry.roll?.headline}</span>
-                  <span className="block text-[11.5px] text-faint">{entry.savedAt}</span>
+                  <span className="block truncate text-[14px] font-semibold">{entry.roll?.name ?? '이름 없는 캐릭터'}</span>
+                  <span className="block truncate text-[11.5px] text-faint">
+                    {entry.roll?.headline} · {entry.savedAt}
+                  </span>
                 </span>
               </Link>
             </li>

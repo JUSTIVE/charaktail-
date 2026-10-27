@@ -8,6 +8,7 @@ import { decodeRollKey, encodeRollKey } from '../../domain/roll'
 import { router } from '../../router'
 import { toggleSaved } from '../../state/saved'
 import { vibrate } from '../../stage/haptics'
+import { useStage } from '../../stage/store'
 import { ShareIcon, ShakeIcon, ShuffleIcon, StarIcon } from '../icons'
 import { Button, Dot, seq, Swatches } from '../ui'
 import { PoolSheet } from './PoolSheet'
@@ -22,11 +23,13 @@ export function Result() {
   const key = useRouterState({ select: (s) => (s.location.search as { k?: string }).k ?? '' })
   const dialogs = useSheetStackActions('dialogs')
   const [shared, setShared] = useState(false)
+  const { motion } = useStage()
   const data = useLazyLoadQuery<ResultQuery>(
     graphql`
       query ResultQuery($key: String!) {
         roll(key: $key) {
           key
+          name
           seed
           saved
           entries {
@@ -69,7 +72,8 @@ export function Result() {
 
   const share = async () => {
     const url = location.href
-    const text = (roll.entries ?? []).map((e) => `${e.attribute?.label}: ${e.value}`).join('\n')
+    const lines = (roll.entries ?? []).map((e) => `${e.attribute?.label}: ${e.value}`)
+    const text = [roll.name ?? '', ...lines].filter(Boolean).join('\n')
     if (navigator.share) {
       await navigator.share({ title: 'charaktail 캐릭터', text, url }).catch(() => {})
       return
@@ -82,11 +86,12 @@ export function Result() {
   const attributeIds = decodeRollKey(key)?.attributeIds ?? []
 
   return (
-    <div data-stage-floor className="space-y-3.5">
-      <div className="ms-seq flex items-end justify-between gap-3" style={seq(0)}>
-        <div>
+    <div data-stage-floor className="result-root">
+      <div className="ms-seq flex items-start justify-between gap-3" style={seq(0)}>
+        <div className="min-w-0">
           <p className="eyebrow">STEP 3 · 완성 · #{roll.seed}</p>
-          <h2 className="display mt-1">새 캐릭터가 태어났어요</h2>
+          <h2 className="display mt-1 truncate">{roll.name ?? '이름 없는 캐릭터'}</h2>
+          {motion === 'granted' ? <p className="mt-0.5 text-[11.5px] text-faint">한 번 더 세게 흔들면 새로 뽑아요</p> : null}
         </div>
         <button
           type="button"
@@ -99,50 +104,65 @@ export function Result() {
         </button>
       </div>
 
-      <ul className="result-list space-y-1.5">
+      {/* Only the cards scroll; the header and the actions always fit. */}
+      <ul className="result-list">
         {(roll.entries ?? []).map((entry, index) => {
           const attribute = entry.attribute
+          const value = entry.value ?? ''
+          const wide = value.length + (entry.swatches?.length ?? 0) * 2 > 10
           return (
-            <li key={attribute?.key} className="ms-seq result-row" style={{ ...seq(index + 1), '--row': attribute?.color } as CSSProperties}>
+            <li
+              key={attribute?.key}
+              data-wide={wide || undefined}
+              className="ms-seq result-card"
+              style={{ ...seq(index + 1), '--row': attribute?.color } as CSSProperties}
+            >
               <button
                 type="button"
-                className="press flex min-w-0 flex-1 items-center gap-3 text-left"
+                className="press min-w-0 flex-1 text-left"
                 onClick={(event) =>
                   void dialogs.push(
                     {
                       id: `pool-${attribute?.key}`,
                       title: `${attribute?.label}`,
                       width: '440px',
-                      content: <PoolSheet color={attribute?.color ?? '#888'} value={entry.value ?? ''} detail={entry.detail ?? null} possible={entry.possible ?? []} />,
+                      content: (
+                        <PoolSheet
+                          color={attribute?.color ?? '#888'}
+                          value={value}
+                          detail={entry.detail ?? null}
+                          possible={entry.possible ?? []}
+                        />
+                      ),
                     },
                     { from: event.currentTarget },
                   )
                 }
               >
-                <Dot color={attribute?.color ?? '#888'} />
-                <span className="w-[4.5rem] shrink-0 text-[12px] font-medium text-muted">{attribute?.label}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2">
-                    <span className="truncate text-[16px] font-bold tracking-[-0.01em]">{entry.value}</span>
-                    <Swatches colors={entry.swatches ?? []} />
-                  </span>
-                  {entry.detail ? <span className="block truncate text-[11.5px] text-faint">{entry.detail}</span> : null}
+                <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted">
+                  <Dot color={attribute?.color ?? '#888'} size={7} />
+                  {attribute?.label}
                 </span>
+                <span className="mt-0.5 flex items-center gap-1.5">
+                  <span className="line-clamp-2 text-[15px] leading-tight font-bold tracking-[-0.01em]">{value}</span>
+                  <Swatches colors={entry.swatches ?? []} />
+                </span>
+                {entry.detail ? <span className="mt-0.5 block truncate text-[11px] text-faint">{entry.detail}</span> : null}
               </button>
               <button
                 type="button"
                 aria-label={`${attribute?.label} 다시 뽑기`}
                 onClick={() => reroll(attribute?.key ?? '')}
-                className="press grid size-9 shrink-0 place-items-center rounded-full text-faint hover:bg-white/5 hover:text-ink"
+                className="press -mt-1 -mr-1 grid size-8 shrink-0 place-items-center rounded-full text-faint hover:bg-white/5 hover:text-ink"
               >
-                <ShuffleIcon width={16} height={16} />
+                <ShuffleIcon width={15} height={15} />
               </button>
             </li>
           )
         })}
       </ul>
 
-      <div className="ms-seq flex items-center gap-2 pt-1" style={seq((roll.entries?.length ?? 0) + 1)}>
+      <div className="ms-seq flex items-center gap-2" style={seq((roll.entries?.length ?? 0) + 1)}>
         <Button onClick={() => void share()}>
           <ShareIcon width={16} height={16} />
           {shared ? '복사됨' : '공유'}
@@ -150,7 +170,7 @@ export function Result() {
         <Button
           variant="primary"
           className="ml-auto px-5"
-          onClick={() => void router.navigate({ to: '/shake', search: { a: attributeIds.join('.') } })}
+          onClick={() => void router.navigate({ to: '/shake', search: { a: attributeIds.join('.'), n: roll.name ?? undefined } })}
         >
           <ShakeIcon width={17} height={17} />
           다시 흔들기

@@ -217,11 +217,50 @@ body {
   background: linear-gradient(90deg, color-mix(in oklab, var(--row, #fff) 14%, transparent), oklch(1 0 0 / 0.025) 55%);
   border: 1px solid oklch(1 0 0 / 0.06);
 }
+
+/*
+ * The result is a column bounded by the sheet's own ceiling: header and
+ * actions take what they need, the card grid takes the rest and scrolls.
+ * Nothing is ever pushed below the fold on a short phone.
+ */
+.result-root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* The slot's 1px border on each side is inside its ceiling too. */
+  max-height: calc(var(--ms-max-block) - var(--ms-pad-block) * 2 - 2px - env(safe-area-inset-bottom));
+}
+/* The result scrolls inside its card grid only — never the sheet around it,
+   which would otherwise show a second scrollbar while cards arrive. */
+.ms-view-body:has(.result-root) {
+  overflow-y: hidden;
+}
 .result-list {
-  max-height: calc(var(--ms-max-block) - 190px);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* A wide card never leaves a hole beside a short one. */
+  grid-auto-flow: row dense;
+  gap: 6px;
   margin-inline: -4px;
-  padding-inline: 4px;
+  padding: 2px 4px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: oklch(1 0 0 / 0.18) transparent;
+}
+.result-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 9px 8px 9px 11px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, color-mix(in oklab, var(--row, #fff) 16%, transparent), oklch(1 0 0 / 0.025) 70%);
+  border: 1px solid oklch(1 0 0 / 0.06);
+}
+.result-card[data-wide] {
+  grid-column: span 2;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -229,4 +268,30 @@ body {
   .charge > span {
     animation: none;
   }
+}
+
+/* Name field: the one input in the app, sized so iOS does not zoom on focus. */
+.name-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--color-line);
+  background: oklch(1 0 0 / 0.04);
+  transition: border-color 200ms var(--ease-out), background-color 200ms var(--ease-out);
+  -webkit-user-select: text;
+  user-select: text;
+}
+.name-field:focus-within {
+  border-color: oklch(1 0 0 / 0.3);
+  background: oklch(1 0 0 / 0.07);
+}
+
+/* The chips scroll inside the panel, so the balls keep a stage above it. */
+.picker-list {
+  max-height: 36svh;
+  overflow-y: auto;
+  margin-inline: -4px;
+  padding: 2px 4px;
 }

@@ -56,6 +56,8 @@ describe('roll', () => {
   test('roll keys round-trip', () => {
     const request = { seed: 'k3y', attributeIds: ['world', 'age'], nonces: { age: 2 } }
     expect(decodeRollKey(encodeRollKey(request))).toEqual(request)
+    const named = { ...request, name: '렌~제로' }
+    expect(decodeRollKey(encodeRollKey(named))).toEqual(named)
   })
 })
 

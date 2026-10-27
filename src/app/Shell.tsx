@@ -5,6 +5,7 @@ import { graphql } from 'relay-runtime'
 import { SheetStackProvider, useSheetStackActions, type SheetDescriptor } from 'morphing-sheet/react'
 
 import { decodeRollKey } from '../domain/roll'
+import { setName } from '../state/name'
 import { setSelection } from '../state/selection'
 import { useStage, type StageMode } from '../stage/store'
 import { ArchiveIcon } from './icons'
@@ -82,7 +83,7 @@ function SceneSync() {
   const panel = useSheetStackActions('panel')
   const dialogs = useSheetStackActions('dialogs')
   const scene = useScene()
-  const search = useRouterState({ select: (s) => s.location.search as { a?: string; k?: string } })
+  const search = useRouterState({ select: (s) => s.location.search as { a?: string; n?: string; k?: string } })
 
   useEffect(() => {
     void panel.replace(viewFor(scene))
@@ -93,11 +94,13 @@ function SceneSync() {
   // come from the selection, so the selection follows the URL there.
   useEffect(() => {
     if (scene === 'shake' && search.a) setSelection(search.a.split('.'))
+    if (scene === 'shake' && search.n) setName(search.n)
     if (scene === 'result' && search.k) {
       const request = decodeRollKey(search.k)
       if (request) setSelection(request.attributeIds)
+      if (request?.name) setName(request.name)
     }
-  }, [scene, search.a, search.k])
+  }, [scene, search.a, search.n, search.k])
 
   useEffect(() => {
     // Mid-sequence the stage outranks the route: /shake stays /shake while it

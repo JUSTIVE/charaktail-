@@ -30,6 +30,13 @@ export function key(roll: RollRecord): string {
 }
 
 /**
+ * @relayField Roll.name: String
+ */
+export function name(roll: RollRecord): string | null {
+  return roll.name ?? null
+}
+
+/**
  * @relayField Roll.seed: String
  */
 export function seed(roll: RollRecord): string {

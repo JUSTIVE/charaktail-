@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<ad899075d556a2182c39c759adb7f1b7>>
+ * @generated SignedSource<<e8e86cbea6c28ac56ac6345b31d074c5>>
  * @lightSyntaxTransform
  */
 
@@ -81,6 +81,12 @@ import { key as rollKeyResolverType } from "../graph/roll";
 (rollKeyResolverType satisfies (
   __relay_model_instance: Roll____relay_model_instance$data['__relay_model_instance'],
 ) => string | null | undefined);
+import { name as rollNameResolverType } from "../graph/roll";
+// Type assertion validating that `rollNameResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(rollNameResolverType satisfies (
+  __relay_model_instance: Roll____relay_model_instance$data['__relay_model_instance'],
+) => string | null | undefined);
 import { saved as rollSavedResolverType } from "../graph/roll";
 // Type assertion validating that `rollSavedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -111,6 +117,7 @@ export type ResultQuery$data = {
       readonly value: string | null | undefined;
     }> | null | undefined;
     readonly key: string | null | undefined;
+    readonly name: string | null | undefined;
     readonly saved: boolean | null | undefined;
     readonly seed: string | null | undefined;
   } | null | undefined;
@@ -127,6 +134,7 @@ import {label as attributeLabelResolver} from '../graph/attribute';
 import {Roll as rollRelayModelInstanceResolver} from '../graph/roll';
 import {entries as rollEntriesResolver} from '../graph/roll';
 import {key as rollKeyResolver} from '../graph/roll';
+import {name as rollNameResolver} from '../graph/roll';
 import {saved as rollSavedResolver} from '../graph/roll';
 import {seed as rollSeedResolver} from '../graph/roll';
 import {attribute as rollEntryAttributeResolver} from '../graph/rollEntry';
@@ -289,6 +297,15 @@ return {
               "name": "key",
               "resolverModule": resolverDataInjector(Roll____relay_model_instance_graphql, rollKeyResolver, '__relay_model_instance', true),
               "path": "roll.key"
+            },
+            {
+              "alias": null,
+              "args": null,
+              "fragment": (v2/*:: as any*/),
+              "kind": "RelayResolver",
+              "name": "name",
+              "resolverModule": resolverDataInjector(Roll____relay_model_instance_graphql, rollNameResolver, '__relay_model_instance', true),
+              "path": "roll.name"
             },
             {
               "alias": null,
@@ -483,6 +500,14 @@ return {
               "isOutputType": true
             },
             {
+              "name": "name",
+              "args": null,
+              "fragment": (v7/*:: as any*/),
+              "kind": "RelayResolver",
+              "storageKey": null,
+              "isOutputType": true
+            },
+            {
               "name": "seed",
               "args": null,
               "fragment": (v7/*:: as any*/),
@@ -617,6 +642,6 @@ return {
 };
 })();
 
-(node as any).hash = "240f8c51b0c60327641085860706be72";
+(node as any).hash = "dba0906943c9351de5a57cba89cfd756";
 
 export default node;

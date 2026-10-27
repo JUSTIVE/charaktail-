@@ -27,6 +27,18 @@ export function ShakeHud() {
   // Leaving mid-hold must not leave the stage shaking.
   useEffect(() => () => stageHandle.current?.setManualShake(false), [])
 
+  // A release can land anywhere — the button may already be hidden under the
+  // finger — so the window hears it, not the button.
+  useEffect(() => {
+    const release = () => stageHandle.current?.setManualShake(false)
+    window.addEventListener('pointerup', release)
+    window.addEventListener('pointercancel', release)
+    return () => {
+      window.removeEventListener('pointerup', release)
+      window.removeEventListener('pointercancel', release)
+    }
+  }, [])
+
   const hold = (on: boolean) => () => stageHandle.current?.setManualShake(on)
 
   return (
@@ -63,7 +75,6 @@ export function ShakeHud() {
           variant={motion === 'granted' ? 'secondary' : 'primary'}
           className="flex-1 select-none touch-none"
           onPointerDown={hold(true)}
-          onPointerUp={hold(false)}
           onPointerLeave={hold(false)}
           onPointerCancel={hold(false)}
           onContextMenu={(event) => event.preventDefault()}

@@ -5,6 +5,7 @@ import { graphql } from 'relay-runtime'
 import { freshSeed } from '../domain/rng'
 import { encodeRollKey } from '../domain/roll'
 import { router } from '../router'
+import { currentName } from '../state/name'
 import { selectionCell } from '../state/selection'
 import { Stage } from '../stage/Stage'
 import type { StageCanvasQuery } from '../__generated__/StageCanvasQuery.graphql'
@@ -35,8 +36,12 @@ export function StageCanvas() {
   useEffect(() => {
     const stage = new Stage(canvasRef.current!)
     stage.onReveal = () => {
-      const key = encodeRollKey({ seed: freshSeed(), attributeIds: selectionCell.read() })
+      const key = encodeRollKey({ seed: freshSeed(), attributeIds: selectionCell.read(), name: currentName() })
       void router.navigate({ to: '/result', search: { k: key }, replace: true })
+    }
+    stage.onReshake = () => {
+      // The stage is already mixing; the route catches up and the HUD shows it.
+      void router.navigate({ to: '/shake', search: { a: selectionCell.read().join('.'), n: currentName() }, replace: true })
     }
     stageHandle.current = stage
     return () => {

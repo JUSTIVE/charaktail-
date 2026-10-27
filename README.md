@@ -1,12 +1,24 @@
 # charaktail
 
-캐릭터 설정 뽑기 PWA. 속성을 고르고 → 기기를 세게 흔들면 → 속성 이름이 새겨진 메타볼들이
-글자를 잃고 섞이다가 빛나고, 진동과 함께 → 각 속성의 값이 랜덤으로 정해진다.
+캐릭터 설정 뽑기 PWA. 이름을 짓고 속성을 고르고 → 기기를 세게 흔들면 → 속성 이름이 새겨진
+오일방울들(경계가 분명한 개별 바디)이 글자를 잃고 하나의 메타볼로 녹아 섞이다가 화면 전체가 빛나고,
+진동과 함께 → 메타볼은 사라지고 각 속성의 값이 랜덤으로 정해진다. 결과 화면에서 다시 흔들면 다음 롤.
+
+이름은 뽑지 않는다 — 플레이어가 정하는 유일한 값이고, 롤 키의 마지막 칸(`seed~속성~nonce~이름`)에
+실려서 공유 링크와 보관함에서도 유지된다.
 
 - **TanStack Router**: URL이 흐름을 맡는다. 결과 URL(`/result?k=…`) 하나가 캐릭터 전체를 재현한다.
 - **Relay resolvers**: 서버 없음. 모든 필드는 카탈로그와 로컬 상태(cell) 위의 클라이언트 리졸버다.
 - **three.js**: 풀스크린 메타볼 셰이더 + 2D 물리 + 기기 기울기·흔들기.
 - **morphing-sheet**: `vendor/morphing-sheet`에 벤더링. 하단 `panel` 리전 하나가 단계마다 모프한다.
+
+## 오더 기록
+
+**이 프로젝트에 내려진 모든 지시는 [`order.md`](order.md)에 받은 순서대로 쌓는다.** 새 지시는 작업 전에
+원문 그대로 맨 아래에 추가하고, 작업이 끝나면 무엇을 했는지 채운다. 사람이든 에이전트든 이 저장소에서
+작업한다면 같은 규칙을 따른다.
+
+## 실행
 
 ```bash
 bun install
@@ -31,7 +43,7 @@ src/domain/           순수 도메인 — React·Relay 비의존
   catalog/*.ts        속성 하나 = 파일 하나
 src/graph/            Relay 리졸버 (Attribute, Roll, RollEntry, SavedEntry, Query)
 src/state/            Cell — 선택·보관함 (localStorage 영속)
-src/stage/            Stage(three.js) · physics · shader · motion · haptics
+src/stage/            Stage(three.js) · physics(스프링 접촉·젤리 흔들림) · shader(바디 ↔ 메타볼) · motion · haptics
 src/app/              Shell(시트 리전) · StageCanvas · views
 ```
 

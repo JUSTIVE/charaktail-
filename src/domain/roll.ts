@@ -11,6 +11,8 @@ export interface RollRequest {
   seed: string
   attributeIds: readonly string[]
   nonces?: Readonly<Record<string, number>>
+  /** Typed by the player, never rolled. Rides in the key so a link keeps it. */
+  name?: string
 }
 
 function generate<K extends AttributeKind>(attribute: AttributeOf<K>, ctx: RollContext): RolledValue {
@@ -56,23 +58,27 @@ export function explainRoll(catalog: Catalog, request: RollRequest): ExplainedVa
 
 /*
  * The roll key is the whole request in one string — it is the Relay record id
- * of a roll and the thing a URL carries. `seed~a.b.c~b:2`.
+ * of a roll and the thing a URL carries. `seed~a.b.c~b:2~이름`. The name goes
+ * last, so a `~` inside it cannot shift the other fields.
  */
-export function encodeRollKey({ seed, attributeIds, nonces = {} }: RollRequest): string {
+export function encodeRollKey({ seed, attributeIds, nonces = {}, name }: RollRequest): string {
   const bumps = Object.entries(nonces)
     .filter(([, n]) => n > 0)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([id, n]) => `${id}:${n}`)
-  return [seed, attributeIds.join('.'), bumps.join('.')].join('~')
+  const parts = [seed, attributeIds.join('.'), bumps.join('.')]
+  if (name) parts.push(name)
+  return parts.join('~')
 }
 
 export function decodeRollKey(key: string): RollRequest | null {
-  const [seed, ids, bumps = ''] = key.split('~')
+  const [seed, ids, bumps = '', ...rest] = key.split('~')
   if (!seed || ids === undefined) return null
+  const name = rest.join('~')
   const nonces: Record<string, number> = {}
   for (const bump of bumps.split('.').filter(Boolean)) {
     const [id, n] = bump.split(':')
     if (id && Number(n) > 0) nonces[id] = Number(n)
   }
-  return { seed, attributeIds: ids.split('.').filter(Boolean), nonces }
+  return { seed, attributeIds: ids.split('.').filter(Boolean), nonces, ...(name ? { name } : {}) }
 }

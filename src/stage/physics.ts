@@ -15,6 +15,10 @@ export interface Body {
   targetR: number
   angle: number
   spin: number
+  /** Jiggle: compression along `axis` (+ squashed, − stretched), as a spring. */
+  squash: number
+  squashVel: number
+  axis: { x: number; y: number }
   /** Set while a ball shrinks out; removed once it reaches zero. */
   leaving: boolean
 }
@@ -39,6 +43,10 @@ export interface WorldTuning {
   /** Tangential push around `center`, px/s². */
   swirl: number
   center: { x: number; y: number }
+  /** Pull back toward upright, rad/s² per rad — keeps the labels readable. */
+  upright: number
+  /** Fastest a ball may turn, rad/s. */
+  maxSpin: number
 }
 
 export class World {
@@ -56,6 +64,8 @@ export class World {
     attract: 0,
     swirl: 0,
     center: { x: 0, y: 0 },
+    upright: 26,
+    maxSpin: 2.4,
   }
 
   /** Pointer grab: the body follows (x, y) on a stiff spring. */
@@ -73,6 +83,9 @@ export class World {
       targetR,
       angle: (Math.random() - 0.5) * 0.6,
       spin: 0,
+      squash: 0,
+      squashVel: 0,
+      axis: { x: 0, y: 1 },
       leaving: false,
     }
     this.bodies.push(body)
@@ -90,7 +103,7 @@ export class World {
       const jitter = 0.7 + Math.random() * 0.6
       body.vx -= ax * scale * jitter
       body.vy -= ay * scale * jitter
-      body.spin += (Math.random() - 0.5) * 4 * scale
+      body.spin += (Math.random() - 0.5) * 0.8 * scale
     }
   }
 
@@ -130,6 +143,12 @@ export class World {
     const drag = Math.pow(t.damping, dt)
     for (const body of this.bodies) {
       body.r += ((body.leaving ? 0 : body.targetR) - body.r) * (1 - Math.exp(-dt * 7))
+      // A fast drop stretches along its path; impacts take over the axis.
+      const speed = Math.hypot(body.vx, body.vy)
+      if (Math.abs(body.squash) < 0.04 && speed > 250) body.axis = { x: body.vx / speed, y: body.vy / speed }
+      const stretch = -Math.min(Math.max(speed - 250, 0) / 6000, 0.12)
+      body.squashVel += (-SQUASH_STIFFNESS * (body.squash - stretch) - SQUASH_DAMPING * body.squashVel) * dt
+      body.squash = Math.max(-0.22, Math.min(0.3, body.squash + body.squashVel * dt))
 
       if (this.grab?.id === body.id) {
         // Critically damped follow, so a fling carries the pointer's speed.
@@ -158,16 +177,25 @@ export class World {
       body.vy *= drag
       body.x += body.vx * dt
       body.y += body.vy * dt
-      body.angle += body.spin * dt
-      body.spin *= Math.pow(0.5, dt)
+      // A damped spring toward upright: bumps tilt a label, it rocks back.
+      const tilt = Math.atan2(Math.sin(body.angle), Math.cos(body.angle))
+      body.spin += (-tilt * t.upright - body.spin * 7) * dt
+      body.spin = Math.max(-t.maxSpin, Math.min(t.maxSpin, body.spin))
+      body.angle = tilt + body.spin * dt
     }
 
-    if (t.collide) this.collide()
-    this.walls()
+    if (t.collide) this.collide(dt)
+    this.walls(dt)
     this.bodies = this.bodies.filter((b) => !(b.leaving && b.r < 0.5))
   }
 
-  private collide(): void {
+  /*
+   * Contacts are springs, not hard stops: two bodies sink into each other a
+   * little and push back, so the shader's flat contact face grows and shrinks
+   * with the squeeze. Past `HARD_LIMIT` the overlap is resolved outright, so
+   * a violent shake cannot pass one body through another.
+   */
+  private collide(dt: number): void {
     const bodies = this.bodies
     for (let i = 0; i < bodies.length; i++) {
       for (let j = i + 1; j < bodies.length; j++) {
@@ -175,58 +203,103 @@ export class World {
         const b = bodies[j]!
         const dx = b.x - a.x
         const dy = b.y - a.y
-        // Metaballs read as soft: let them sink into each other a little.
-        const min = (a.r + b.r) * 0.86
+        const rest = a.r + b.r
         const d2 = dx * dx + dy * dy
-        if (d2 >= min * min || d2 === 0) continue
+        if (d2 >= rest * rest || d2 === 0) continue
         const d = Math.sqrt(d2)
         const nx = dx / d
         const ny = dy / d
-        const push = (min - d) / 2
-        a.x -= nx * push
-        a.y -= ny * push
-        b.x += nx * push
-        b.y += ny * push
         const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny
-        if (rel < 0) {
-          const impulse = (-(1 + this.tuning.restitution) * rel) / 2
-          a.vx -= impulse * nx
-          a.vy -= impulse * ny
-          b.vx += impulse * nx
-          b.vy += impulse * ny
-          // Glancing contact turns the balls, so the labels roll.
-          const tangent = (b.vx - a.vx) * -ny + (b.vy - a.vy) * nx
-          a.spin += tangent / (a.r * 4)
-          b.spin -= tangent / (b.r * 4)
+
+        const push = ((CONTACT_STIFFNESS / (rest / 2)) * (rest - d) - CONTACT_DAMPING * rel) * dt * 0.5
+        if (push > 0) {
+          a.vx -= nx * push
+          a.vy -= ny * push
+          b.vx += nx * push
+          b.vy += ny * push
         }
+
+        const hard = rest * HARD_LIMIT
+        if (d < hard) {
+          const fix = (hard - d) / 2
+          a.x -= nx * fix
+          a.y -= ny * fix
+          b.x += nx * fix
+          b.y += ny * fix
+          if (rel < 0) {
+            const impulse = (-(1 + this.tuning.restitution) * rel) / 2
+            a.vx -= impulse * nx
+            a.vy -= impulse * ny
+            b.vx += impulse * nx
+            b.vy += impulse * ny
+          }
+        }
+
+        if (rel < -JIGGLE_THRESHOLD) {
+          jiggle(a, nx, ny, -rel)
+          jiggle(b, nx, ny, -rel)
+        }
+        // Glancing contact turns the bodies a little; the upright spring undoes it.
+        const tangent = (b.vx - a.vx) * -ny + (b.vy - a.vy) * nx
+        a.spin += (tangent / (a.r * 12)) * dt * 30
+        b.spin -= (tangent / (b.r * 12)) * dt * 30
       }
     }
   }
 
-  private walls(): void {
+  /** Walls are springs too: a body pressed into one flattens against it. */
+  private walls(dt: number): void {
     const { left, top, right, bottom } = this.area
     const e = this.tuning.restitution
     for (const body of this.bodies) {
       const r = body.r
-      if (body.x - r < left) {
-        body.x = left + r
-        if (body.vx < 0) body.vx = -body.vx * e
-        body.spin -= body.vy / (r * 2)
-      } else if (body.x + r > right) {
-        body.x = right - r
-        if (body.vx > 0) body.vx = -body.vx * e
-        body.spin += body.vy / (r * 2)
-      }
-      if (body.y - r < top) {
-        body.y = top + r
-        if (body.vy < 0) body.vy = -body.vy * e
-        body.spin += body.vx / (r * 2)
-      } else if (body.y + r > bottom) {
-        body.y = bottom - r
-        if (body.vy > 0) body.vy = -body.vy * e
-        // Rolling on the floor: spin follows ground speed.
-        body.spin += (body.vx / r - body.spin) * 0.2
+      const k = WALL_STIFFNESS / Math.max(r, 1)
+      const limit = r * (1 - WALL_LIMIT)
+      // [penetration, normal x, normal y, velocity into the wall]
+      const sides: [number, number, number, number][] = [
+        [left - (body.x - r), 1, 0, -body.vx],
+        [body.x + r - right, -1, 0, body.vx],
+        [top - (body.y - r), 0, 1, -body.vy],
+        [body.y + r - bottom, 0, -1, body.vy],
+      ]
+      for (const [pen, nx, ny, into] of sides) {
+        if (pen <= 0) continue
+        const accel = k * pen + (into > 0 ? CONTACT_DAMPING * into : 0)
+        body.vx += nx * accel * dt
+        body.vy += ny * accel * dt
+        if (into > JIGGLE_THRESHOLD) jiggle(body, nx, ny, into)
+        if (pen > r - limit) {
+          // Pressed past the limit: stop here and bounce.
+          body.x += nx * (pen - (r - limit))
+          body.y += ny * (pen - (r - limit))
+          const v = body.vx * nx + body.vy * ny
+          if (v < 0) {
+            body.vx -= (1 + e) * v * nx
+            body.vy -= (1 + e) * v * ny
+          }
+        }
+        // Rolling along a wall: spin follows the sliding speed.
+        const slide = body.vx * -ny + body.vy * nx
+        body.spin += (slide / (r * 8)) * dt * 6
       }
     }
   }
+}
+
+/** px/s² per px of overlap, scaled by 1/radius so every size squishes alike. */
+const CONTACT_STIFFNESS = 15000
+const WALL_STIFFNESS = 9000
+const CONTACT_DAMPING = 9
+/** Two bodies may sink to this fraction of their combined radii. */
+const HARD_LIMIT = 0.72
+/** A body may press this fraction of its radius past a wall. */
+const WALL_LIMIT = 0.3
+const SQUASH_STIFFNESS = 150
+const SQUASH_DAMPING = 5.5
+/** px/s of closing speed below which a contact is resting, not an impact. */
+const JIGGLE_THRESHOLD = 60
+
+function jiggle(body: Body, nx: number, ny: number, speed: number): void {
+  body.axis = { x: nx, y: ny }
+  body.squashVel += Math.min(speed, 2000) * 0.0014
 }

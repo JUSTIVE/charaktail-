@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<d3bc485a1556c30ceb9f874d0568a03b>>
+ * @generated SignedSource<<541a0c2a0d818ab05e99a1fac8950c2c>>
  * @lightSyntaxTransform
  */
 
@@ -51,6 +51,12 @@ import { key as rollKeyResolverType } from "../graph/roll";
 (rollKeyResolverType satisfies (
   __relay_model_instance: Roll____relay_model_instance$data['__relay_model_instance'],
 ) => string | null | undefined);
+import { name as rollNameResolverType } from "../graph/roll";
+// Type assertion validating that `rollNameResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(rollNameResolverType satisfies (
+  __relay_model_instance: Roll____relay_model_instance$data['__relay_model_instance'],
+) => string | null | undefined);
 import { roll as savedEntryRollResolverType } from "../graph/savedEntry";
 // Type assertion validating that `savedEntryRollResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -79,6 +85,7 @@ export type SavedQuery$data = {
       }> | null | undefined;
       readonly headline: string | null | undefined;
       readonly key: string | null | undefined;
+      readonly name: string | null | undefined;
     } | null | undefined;
     readonly savedAt: string | null | undefined;
   }> | null | undefined;
@@ -95,6 +102,7 @@ import {Roll as rollRelayModelInstanceResolver} from '../graph/roll';
 import {entries as rollEntriesResolver} from '../graph/roll';
 import {headline as rollHeadlineResolver} from '../graph/roll';
 import {key as rollKeyResolver} from '../graph/roll';
+import {name as rollNameResolver} from '../graph/roll';
 import {attribute as rollEntryAttributeResolver} from '../graph/rollEntry';
 import {saved as querySavedResolver} from '../graph/root';
 import {roll as savedEntryRollResolver} from '../graph/savedEntry';
@@ -283,6 +291,15 @@ return {
                     "args": null,
                     "fragment": (v1/*:: as any*/),
                     "kind": "RelayResolver",
+                    "name": "name",
+                    "resolverModule": resolverDataInjector(Roll____relay_model_instance_graphql, rollNameResolver, '__relay_model_instance', true),
+                    "path": "saved.roll.name"
+                  },
+                  {
+                    "alias": null,
+                    "args": null,
+                    "fragment": (v1/*:: as any*/),
+                    "kind": "RelayResolver",
                     "name": "headline",
                     "resolverModule": resolverDataInjector(Roll____relay_model_instance_graphql, rollHeadlineResolver, '__relay_model_instance', true),
                     "path": "saved.roll.headline"
@@ -451,6 +468,14 @@ return {
                     "isOutputType": true
                   },
                   {
+                    "name": "name",
+                    "args": null,
+                    "fragment": (v7/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": true
+                  },
+                  {
                     "name": "headline",
                     "args": null,
                     "fragment": (v7/*:: as any*/),
@@ -546,6 +571,6 @@ return {
 };
 })();
 
-(node as any).hash = "7a052072cf0b91b409d4dd32cc08c4a4";
+(node as any).hash = "6e87ea7fe186da2dfa85ef4452e8e3fd";
 
 export default node;
