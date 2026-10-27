@@ -8,6 +8,7 @@ import { currentName, NAME_MAX, setName } from '../../state/name'
 import { selectAll, selectionCell, toggleAttribute } from '../../state/selection'
 import { requestMotionAccess } from '../../stage/motion'
 import { patchStage } from '../../stage/store'
+import { Aura, AuraTint } from '../Aura'
 import { KebabIcon, ShakeIcon } from '../icons'
 import { Button, Dot, seq } from '../ui'
 import type { PickerQuery } from '../../__generated__/PickerQuery.graphql'
@@ -40,6 +41,7 @@ export function Picker() {
   )
   const attributes = data.attributes ?? []
   const count = attributes.filter((a) => a.selected).length
+  const auraColors = attributes.filter((a) => a.selected).map((a) => a.color ?? '#7c7a85')
   const allOn = count === attributes.length
   // The input owns its text while typing (a controlled value fed back from a
   // live field would fight Korean IME composition); the draft cell is written
@@ -123,10 +125,15 @@ export function Picker() {
 
       <div className="ms-seq space-y-2" style={seq(3)}>
         {name.trim() === '' ? <p className="text-center text-[12.5px] text-muted">이름을 지어야 흔들 수 있어요.</p> : null}
-        <Button variant="primary" className="w-full py-3 text-[15px]" disabled={!ready} onClick={() => void confirm()}>
-          <ShakeIcon width={18} height={18} />
-          {count}개로 흔들기
-        </Button>
+        <Aura colors={auraColors} dim={!ready}>
+          <Button variant="primary" className="relative w-full overflow-hidden py-3 text-[15px]" disabled={!ready} onClick={() => void confirm()}>
+            <AuraTint colors={auraColors} />
+            <span className="relative flex items-center gap-1.5">
+              <ShakeIcon width={18} height={18} />
+              {count}개로 흔들기
+            </span>
+          </Button>
+        </Aura>
       </div>
     </div>
   )

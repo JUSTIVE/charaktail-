@@ -536,3 +536,86 @@ body {
     filter: none;
   }
 }
+
+/*
+ * Aura on the shake button: the selected attributes' colours as soft blobs
+ * drifting on loops of different lengths (9–20s) — no two line up, so the
+ * motion never visibly repeats, like a noise field. A blurred halo sits
+ * behind the button; a faint tint of the same drift shows through it.
+ */
+.aura-wrap {
+  position: relative;
+  isolation: isolate;
+}
+.aura-halo {
+  position: absolute;
+  inset: -10px -6px;
+  z-index: -1;
+  filter: blur(16px);
+  opacity: 0.75;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+.aura-wrap[data-dim] .aura-halo {
+  opacity: 0.28;
+}
+.aura-tint {
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  filter: blur(10px);
+  pointer-events: none;
+}
+.aura-halo > span,
+.aura-tint > span {
+  position: absolute;
+  top: -40%;
+  width: 46%;
+  height: 180%;
+  border-radius: 999px;
+  background: radial-gradient(closest-side, var(--c), transparent);
+  will-change: transform;
+  animation: aura-drift-a calc(9s + var(--i) * 2.3s) ease-in-out calc(var(--i) * -3.7s) infinite alternate;
+}
+.aura-halo > span:nth-child(4n + 2),
+.aura-tint > span:nth-child(4n + 2) {
+  animation-name: aura-drift-b;
+}
+.aura-halo > span:nth-child(4n + 3),
+.aura-tint > span:nth-child(4n + 3) {
+  animation-name: aura-drift-c;
+}
+.aura-halo > span:nth-child(4n + 4),
+.aura-tint > span:nth-child(4n + 4) {
+  animation-name: aura-drift-d;
+}
+@keyframes aura-drift-a {
+  0% { transform: translate(-12%, -8%) scale(1); }
+  35% { transform: translate(28%, 14%) scale(1.25); }
+  70% { transform: translate(6%, 26%) scale(0.9); }
+  100% { transform: translate(-22%, 4%) scale(1.12); }
+}
+@keyframes aura-drift-b {
+  0% { transform: translate(18%, 10%) scale(1.1); }
+  40% { transform: translate(-26%, -6%) scale(0.92); }
+  75% { transform: translate(10%, -20%) scale(1.28); }
+  100% { transform: translate(-6%, 18%) scale(1); }
+}
+@keyframes aura-drift-c {
+  0% { transform: translate(-4%, 22%) scale(0.95); }
+  30% { transform: translate(-30%, -12%) scale(1.2); }
+  65% { transform: translate(24%, 6%) scale(1.05); }
+  100% { transform: translate(12%, -16%) scale(0.9); }
+}
+@keyframes aura-drift-d {
+  0% { transform: translate(22%, -14%) scale(1.15); }
+  45% { transform: translate(2%, 24%) scale(0.95); }
+  80% { transform: translate(-24%, 8%) scale(1.22); }
+  100% { transform: translate(14%, 12%) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aura-halo > span,
+  .aura-tint > span {
+    animation: none;
+  }
+}
