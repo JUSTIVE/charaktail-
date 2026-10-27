@@ -555,7 +555,7 @@ body {
   border-radius: 18px;
   overflow: hidden;
   filter: blur(8px);
-  opacity: 0.85;
+  opacity: 0.95;
   pointer-events: none;
   transition: opacity 240ms ease;
 }
@@ -565,7 +565,7 @@ body {
 .aura-tint {
   position: absolute;
   inset: 0;
-  opacity: 0.2;
+  opacity: 0.26;
   filter: blur(10px);
   pointer-events: none;
 }
