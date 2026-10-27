@@ -8,5 +8,5 @@
       "morphing-sheet/react": ["./vendor/morphing-sheet/react/index.ts"]
     }
   },
-  "include": ["src/**/*", "vendor/**/*", "vite.config.ts"]
+  "include": ["src/**/*", "vendor/**/*", "scripts/**/*", "vite.config.ts"]
 }

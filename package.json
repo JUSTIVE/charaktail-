@@ -4,13 +4,14 @@
   "type": "module",
   "description": "charaktail — 캐릭터 설정 뽑기 PWA. 흔들면 섞이고, 빛나면 정해진다.",
   "scripts": {
-    "relay": "bunx relay-compiler",
+    "relay": "bunx relay-compiler && bun scripts/print-schema.ts",
     "dev": "bun run relay && bun --bun vite --host",
     "build": "bun run relay && bun run typecheck:tsc && bun --bun vite build",
     "preview": "bun --bun vite preview --host",
     "typecheck": "bun run relay && bun run typecheck:tsc",
     "typecheck:tsc": "bunx tsc -p tsconfig.json --noEmit",
-    "test": "bun test src"
+    "test": "bun test src",
+    "schema": "bun scripts/print-schema.ts"
   },
   "dependencies": {
     "@tanstack/react-router": "^1.170.46",

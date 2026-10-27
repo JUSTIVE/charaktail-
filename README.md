@@ -49,6 +49,12 @@ src/stage/            Stage(three.js) · physics(스프링 접촉·젤리 흔들
 src/app/              Shell(시트 리전) · StageCanvas · views
 ```
 
+## 스키마 보기
+
+리졸버가 선언한 클라이언트 스키마 전체를 [`docs/schema.graphql`](docs/schema.graphql)에서 읽을 수 있다.
+`src/graph`의 `@relayType`·`@relayField` 독블록에서 `scripts/print-schema.ts`가 만든 **읽기용** 파일이고,
+`bun run relay`(dev·build에 포함)마다 다시 쓰인다. relay-compiler는 이 파일을 읽지 않는다 — 진실의 원천은 독블록.
+
 ## 확장하기
 
 ### 값 추가 — 배열에 한 줄
