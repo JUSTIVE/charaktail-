@@ -40,6 +40,13 @@ export type MotionAccess = z.infer<typeof MotionAccess>
 export const StageStatus = z.object({ mode: StageMode, motion: MotionAccess })
 export type StageStatus = z.infer<typeof StageStatus>
 
+/** The installed app's own state: a waiting update, offline readiness. */
+export const AppStatus = z.object({
+  updateReady: z.boolean(),
+  offlineReady: z.boolean(),
+})
+export type AppStatus = z.infer<typeof AppStatus>
+
 /** A reviver for `Cell`: the parsed value, or null to fall back to the default. */
 export function revive<T>(schema: z.ZodType<T>) {
   return (stored: unknown): T | null => {

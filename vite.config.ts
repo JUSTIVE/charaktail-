@@ -39,7 +39,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // A new version waits for the player to accept it (src/app/UpdateToast.tsx).
+      registerType: 'prompt',
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'charaktail — 캐릭터 설정 뽑기',

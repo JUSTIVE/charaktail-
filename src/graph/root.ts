@@ -28,6 +28,14 @@ export function draft(): Edge {
 }
 
 /**
+ * The installed app: waiting update, offline readiness.
+ * @relayField Query.app: App
+ */
+export function app(): Edge {
+  return { id: 'app' }
+}
+
+/**
  * The stage's mode and motion permission.
  * @relayField Query.stage: StageStatus
  */

@@ -10,6 +10,7 @@ import { setName } from '../state/name'
 import { setSelection } from '../state/selection'
 import type { StageMode } from '../stage/store'
 import { ArchiveIcon } from './icons'
+import { UpdateToast } from './UpdateToast'
 import { releaseTextInput } from './releaseTextInput'
 import { StageCanvas, stageHandle } from './StageCanvas'
 import { Picker } from './views/Picker'
@@ -32,6 +33,9 @@ export function Shell() {
         <StageCanvas />
       </Suspense>
       <TopBar />
+      <Suspense fallback={null}>
+        <UpdateToast />
+      </Suspense>
       <SheetStackProvider
         id="panel"
         tier="structure"

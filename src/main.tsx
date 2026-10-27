@@ -11,9 +11,17 @@ import { installOverlayScrollbars } from 'morphing-sheet'
 
 import { environment } from './relay'
 import { router } from './router'
+import { markOfflineReady, markUpdateReady, setUpdater } from './state/app'
 
 installOverlayScrollbars()
-registerSW({ immediate: true })
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh: markUpdateReady,
+  onOfflineReady: markOfflineReady,
+})
+setUpdater(() => updateSW(true))
+// Dev only: lets a test harness show the update prompt without a new build.
+if (import.meta.env.DEV) Object.assign(window, { __pwa: { markUpdateReady, markOfflineReady } })
 
 const container = document.getElementById('root')
 if (!container) throw new Error('#root is missing from index.html')
