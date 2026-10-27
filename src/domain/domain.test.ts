@@ -67,7 +67,8 @@ describe('explain', () => {
     for (let i = 0; i < 200; i++) {
       for (const value of explainRoll(catalog, { seed: `e${i}`, attributeIds: all })) {
         const attribute = catalog.byId.get(value.attributeId)!
-        if (attribute.kind === 'range' || (attribute.kind === 'pick' && attribute.count > 1)) continue
+        // Only list kinds name their values; generated kinds describe how they roll.
+        if (attribute.kind !== 'color' && !(attribute.kind === 'pick' && attribute.count === 1)) continue
         expect(value.possible).toContain(value.label)
       }
     }
@@ -126,5 +127,50 @@ describe('range edits', () => {
       },
     }
     expect(decodeRollKey(encodeRollKey(request))).toEqual(request)
+  })
+})
+
+describe('generated kinds', () => {
+  test('date is a real day with the right star sign', async () => {
+    const { dayOfYear, zodiacOf } = await import('./calendar')
+    expect(dayOfYear(0)).toEqual({ month: 1, day: 1 })
+    expect(dayOfYear(364)).toEqual({ month: 12, day: 31 })
+    expect(zodiacOf(3, 14).label).toBe('물고기자리')
+    expect(zodiacOf(1, 5).label).toBe('염소자리')
+    expect(zodiacOf(12, 25).label).toBe('염소자리')
+    for (let i = 0; i < 100; i++) {
+      const [v] = rollCharacter(catalog, { seed: `b${i}`, attributeIds: ['birthday'] })
+      expect(v!.label).toMatch(/^\d{1,2}월 \d{1,2}일$/)
+      expect(v!.detail).toEndWith('자리')
+    }
+  })
+
+  test('stats roll every stat within 1..max', () => {
+    for (let i = 0; i < 100; i++) {
+      const [v] = rollCharacter(catalog, { seed: `s${i}`, attributeIds: ['stats'] })
+      const numbers = v!.label.split(' · ').map((part) => Number(part.split(' ').pop()))
+      expect(numbers).toHaveLength(5)
+      for (const n of numbers) expect(n >= 1 && n <= 10).toBe(true)
+    }
+  })
+
+  test('traits can be none, one or several; conditions hold', () => {
+    const counts = new Set<number>()
+    for (let i = 0; i < 300; i++) {
+      const values = rollCharacter(catalog, { seed: `t${i}`, attributeIds: ['world', 'species', 'traits'] })
+      const traits = values.find((v) => v.attributeId === 'traits')!
+      const species = values.find((v) => v.attributeId === 'species')!.valueIds[0]
+      counts.add(traits.valueIds.length)
+      if (traits.valueIds.includes('기계 의수')) expect(species).toBe('cyborg')
+      if (traits.valueIds.length === 0) expect(traits.label).toBe('특이사항 없음')
+    }
+    expect(counts.has(0)).toBe(true)
+    expect([...counts].some((n) => n >= 2)).toBe(true)
+  })
+
+  test('compose joins one word per part', () => {
+    const [v] = rollCharacter(catalog, { seed: 'e1', attributeIds: ['epithet'] })
+    expect(v!.label.split(' ').length).toBeGreaterThanOrEqual(2)
+    expect(v!.valueIds).toHaveLength(2)
   })
 })

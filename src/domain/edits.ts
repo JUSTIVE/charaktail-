@@ -42,9 +42,9 @@ export function isEdited(edits: AttributeEdits | undefined): boolean {
   )
 }
 
-/** Whether this kind has a value list to edit — a numeric range has bounds instead. */
+/** Whether this kind has a value list to edit — a range has bounds instead, and the generated kinds have neither. */
 export function isEditable(attribute: Attribute): boolean {
-  return attribute.kind !== 'range'
+  return attribute.kind === 'pick' || attribute.kind === 'color'
 }
 
 const swatchesOf = (o: AddedOption): string[] => [o.hex, o.hex2].filter((h): h is string => !!h)
@@ -59,7 +59,7 @@ export interface ListedOption {
 
 /** Every value the player sees in the editor: built-ins left, then their own. */
 export function listOptions(attribute: Attribute, edits: AttributeEdits | undefined): ListedOption[] {
-  if (attribute.kind === 'range') return []
+  if (attribute.kind !== 'pick' && attribute.kind !== 'color') return []
   const removed = new Set(edits?.removed ?? [])
   const disabled = new Set(edits?.disabled ?? [])
   const shipped: { id: string; label: string; swatches: string[] }[] =
@@ -89,6 +89,7 @@ export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits 
     const cases = attribute.cases.map(({ min: _min, max: _max, ...rest }) => rest)
     return { ...attribute, min, max, cases }
   }
+  if (attribute.kind !== 'pick' && attribute.kind !== 'color') return attribute
   const drop = new Set([...edits!.disabled, ...edits!.removed])
   const added = edits!.added.filter((o) => !drop.has(o.id))
   if (attribute.kind === 'color') {

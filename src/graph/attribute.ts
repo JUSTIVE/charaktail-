@@ -69,6 +69,14 @@ function summaryOf(attribute: AttributeRecord): string {
         : `${attribute.options.length}가지 중 하나`
     case 'color':
       return `${attribute.options.length}가지 색`
+    case 'date':
+      return attribute.zodiac ? '365일 중 하루 · 별자리' : '365일 중 하루'
+    case 'stats':
+      return `${attribute.stats.map((s) => s.label).join('·')} · 1–${attribute.max}`
+    case 'traits':
+      return `${attribute.options.length}가지 특징 중 해당하는 것`
+    case 'compose':
+      return `${attribute.parts.map((part) => part.length).join('×')}가지 조합`
   }
 }
 
@@ -77,8 +85,19 @@ function summaryOf(attribute: AttributeRecord): string {
  * @relayField Attribute.preview: [String!]
  */
 export function preview(attribute: AttributeRecord): string[] {
-  if (attribute.kind === 'range') return []
-  return attribute.options.slice(0, 4).map((o) => o.label)
+  switch (attribute.kind) {
+    case 'pick':
+    case 'color':
+    case 'traits':
+      return attribute.options.slice(0, 4).map((o) => o.label)
+    case 'compose':
+      return attribute.parts.map((part) => part[0]?.label ?? '')
+    case 'stats':
+      return attribute.stats.map((s) => s.label)
+    case 'date':
+    case 'range':
+      return []
+  }
 }
 
 /**

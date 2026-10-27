@@ -20,12 +20,24 @@ export const hue = {
   crimson: '#e93d82',
   plum: '#ab4aba',
   bronze: '#a18072',
-  // In reserve for the next attributes.
   iris: '#5b5bd6',
   sky: '#7ce2fe',
   jade: '#29a383',
   orange: '#f76b15',
   gold: '#978365',
+  pink: '#d6409f',
+  ruby: '#e54666',
+  brown: '#ad7f58',
+  mint: '#86ead4',
+  yellow: '#ffe629',
+  purple: '#8e4ec6',
+  blue: '#0090ff',
+  green: '#30a46c',
+  red: '#e5484d',
+  // Step 11 — the light end of a scale, for when every step-9 hue is taken.
+  lavender: '#baa7ff',
+  coral: '#ff977d',
+  periwinkle: '#9eb1ff',
 } as const
 
 /** Mauve, dark — steps 1 (app background) to 12 (high-contrast text). */

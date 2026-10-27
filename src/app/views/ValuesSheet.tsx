@@ -16,6 +16,14 @@ import type { ValuesSheetQuery } from '../../__generated__/ValuesSheetQuery.grap
  */
 const back = () => void router.navigate({ to: '/', search: {} })
 
+/** What a generated kind does, in a line — they have no value list to edit. */
+const GENERATED_NOTE: Record<string, string> = {
+  date: '1년 365일 중 하루를 뽑고, 그날의 별자리를 함께 알려줘요.',
+  stats: '여러 능력치를 한 번에 뽑아요. 대부분은 중간쯤, 가끔 뛰어난 게 하나씩 나와요.',
+  traits: '특징마다 나올 확률이 따로 있어서, 하나도 없거나 여러 개가 함께 나올 수 있어요.',
+  compose: '두 마디를 하나씩 뽑아 이어 붙여요.',
+}
+
 export function ValuesSheet({ attributeId }: { attributeId: string }) {
   const [draft, setDraft] = useState('')
   const [hex, setHex] = useState('#6e56cf')
@@ -90,7 +98,14 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
         ) : null}
       </div>
 
-      {!attribute.editable ? (
+      {!attribute.editable && attribute.kind !== 'range' ? (
+        // Generated kinds (date, stats, traits, compose) have no list to edit.
+        <div className="ms-seq space-y-2" style={seq(1)}>
+          <p className="rounded-[14px] bg-white/[0.04] px-4 py-4 text-[13px] text-muted">
+            {GENERATED_NOTE[attribute.kind ?? ''] ?? '자동으로 만들어지는 속성이에요.'}
+          </p>
+        </div>
+      ) : !attribute.editable ? (
         <RangeEditor
           attributeId={attributeId}
           min={attribute.rangeMin ?? 0}

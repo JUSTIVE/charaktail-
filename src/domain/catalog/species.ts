@@ -23,5 +23,10 @@ export default defineAttribute({
     { id: 'mutant', label: '변이체', when: { world: ['apocalypse'] } },
     { id: 'yokai', label: '요괴', when: { world: ['wuxia', 'modern'] } },
     { id: 'immortal', label: '신선', weight: 0.5, when: { world: ['wuxia'] } },
+    { id: 'angel', label: '천사', weight: 0.5, when: { world: ['fantasy', 'darkFantasy', 'occult', 'fairytale'] } },
+    { id: 'demon', label: '악마', weight: 0.5, when: { world: ['darkFantasy', 'occult', 'modern'] } },
+    { id: 'mermaid', label: '인어', weight: 0.6, when: { world: ['fantasy', 'pirate', 'fairytale'] } },
+    { id: 'fairy', label: '요정', weight: 0.6, when: { world: ['fantasy', 'fairytale'] } },
+    { id: 'ghost', label: '유령', weight: 0.6, when: { world: ['occult', 'modern', 'academy'] } },
   ],
 })

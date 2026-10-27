@@ -92,6 +92,10 @@ export default defineAttribute({
 | `pick` | 목록에서 고르기 | `options`, `count`(여러 개 뽑기) |
 | `color` | 색 이름 + 스와치 | `options[].hex` (배열이면 오드아이처럼 여러 색) |
 | `range` | 수치 | `min` `max` `step` `unit` `distribution` `bands` `cases`(조건별 범위 덮어쓰기) |
+| `date` | 1년 중 하루 | `zodiac`(별자리를 설명에) |
+| `stats` | 여러 수치를 한 번에 | `stats[]`(id·label), `max`, `distribution` |
+| `traits` | 특징마다 따로 확률 | `options[].chance`(0–1), `none`(하나도 없을 때 문구) |
+| `compose` | 마디 조합 | `parts[][]`(마디별 후보 목록), `joiner` |
 
 ### kind 추가
 

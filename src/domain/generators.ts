@@ -1,4 +1,5 @@
 import { bell, weightedPick, weightedSample, type Rng } from './rng'
+import { dayOfYear, zodiacOf } from './calendar'
 import type { AttributeKind, AttributeOf, Condition, RolledValue } from './schema'
 
 /**
@@ -57,6 +58,55 @@ export const generators: { [K in AttributeKind]: Generator<K> } = {
     }
   },
 
+  date(attribute, ctx) {
+    const day = dayOfYear(Math.floor(ctx.rng() * 365))
+    const sign = zodiacOf(day.month, day.day)
+    return {
+      attributeId: attribute.id,
+      valueIds: [`m${day.month}`, ...(attribute.zodiac ? [sign.id] : [])],
+      label: `${day.month}월 ${day.day}일`,
+      detail: attribute.zodiac ? sign.label : undefined,
+      swatches: [],
+    }
+  },
+
+  stats(attribute, ctx) {
+    const rolled = attribute.stats.map((stat) => {
+      const t = attribute.distribution === 'normal' ? bell(ctx.rng) : ctx.rng()
+      return { stat, value: 1 + Math.min(Math.floor(t * attribute.max), attribute.max - 1) }
+    })
+    const best = rolled.reduce((a, b) => (b.value > a.value ? b : a))
+    return {
+      attributeId: attribute.id,
+      valueIds: [`best:${best.stat.id}`],
+      label: rolled.map((r) => `${r.stat.label} ${r.value}`).join(' · '),
+      detail: `총합 ${rolled.reduce((sum, r) => sum + r.value, 0)} / ${attribute.max * attribute.stats.length}`,
+      swatches: [],
+    }
+  },
+
+  traits(attribute, ctx) {
+    const hits = attribute.options.filter((option) => matches(option.when, ctx.rolled) && ctx.rng() < option.chance)
+    return {
+      attributeId: attribute.id,
+      valueIds: hits.map((h) => h.id),
+      label: hits.length > 0 ? hits.map((h) => h.label).join(' · ') : attribute.none,
+      detail: undefined,
+      swatches: [],
+    }
+  },
+
+  compose(attribute, ctx) {
+    const picked = attribute.parts.map((part) => weightedPick(ctx.rng, eligible(part, ctx)))
+    return {
+      attributeId: attribute.id,
+      valueIds: picked.map((p) => p.id),
+      label: picked.map((p) => p.label).join(attribute.joiner),
+      detail: undefined,
+      swatches: [],
+    }
+  },
+
   range(attribute, ctx) {
     const override = attribute.cases.find((c) => matches(c.when, ctx.rolled))
     const spec = { ...attribute, ...stripUndefined(override ?? {}) }
@@ -82,7 +132,21 @@ export const generators: { [K in AttributeKind]: Generator<K> } = {
  */
 export function possibilities(attribute: AttributeOf<AttributeKind>, rolled: ReadonlyMap<string, RolledValue>): string[] {
   const ctx = { rng: () => 0, rolled }
-  if (attribute.kind !== 'range') return eligible<{ when?: Condition | undefined; label: string }>(attribute.options, ctx).map((o) => o.label)
+  switch (attribute.kind) {
+    case 'pick':
+    case 'color':
+      return eligible<{ when?: Condition | undefined; label: string }>(attribute.options, ctx).map((o) => o.label)
+    case 'date':
+      return ['1월 1일 – 12월 31일', ...(attribute.zodiac ? ['별자리 12종'] : [])]
+    case 'stats':
+      return attribute.stats.map((s) => `${s.label} 1–${attribute.max}`)
+    case 'traits':
+      return attribute.options.filter((o) => matches(o.when, rolled)).map((o) => `${o.label} ${Math.round(o.chance * 100)}%`)
+    case 'compose':
+      return attribute.parts.map((part, i) => `${i + 1}번째 말: ${eligible(part, ctx).map((o) => o.label).join(', ')}`)
+    case 'range':
+      break
+  }
   const override = attribute.cases.find((c) => matches(c.when, rolled))
   const spec = { ...attribute, ...stripUndefined(override ?? {}) }
   return [`${spec.prefix ? `${spec.prefix} ` : ''}${spec.min}–${spec.max}${spec.unit}`, ...(spec.bands ?? []).map((b) => b.label)]

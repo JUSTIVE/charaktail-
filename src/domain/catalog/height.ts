@@ -20,5 +20,6 @@ export default defineAttribute({
     { when: { species: ['dwarf'] }, min: 110, max: 150, bands: [{ upTo: 125, label: '드워프치고 작은' }, { upTo: 999, label: '드워프치고 큰' }] },
     { when: { species: ['dragonkin', 'beastkin'] }, min: 160, max: 230 },
     { when: { species: ['alien'] }, min: 90, max: 260, distribution: 'uniform' },
+    { when: { species: ['fairy'] }, min: 15, max: 40, bands: [{ upTo: 25, label: '손바닥만 한' }, { upTo: 999, label: '요정치고 큰' }] },
   ],
 })

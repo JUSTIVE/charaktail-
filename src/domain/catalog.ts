@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
-import { Attribute, type AttributeInput } from './schema'
+import { ZODIAC_IDS } from './calendar'
+import { Attribute, type AttributeInput, type Condition } from './schema'
 
 export interface Catalog {
   /** Display order — the order catalogue files are listed in. */
@@ -15,8 +16,15 @@ export interface Catalog {
 /** Every attribute a condition anywhere in this attribute points at. */
 function conditionTargets(attribute: Attribute): Map<string, Set<string>> {
   const targets = new Map<string, Set<string>>()
-  const conditions =
-    attribute.kind === 'range' ? attribute.cases.map((c) => c.when) : attribute.options.flatMap((o) => (o.when ? [o.when] : []))
+  const withWhen = (items: readonly { when?: Condition | undefined }[]) => items.flatMap((o) => (o.when ? [o.when] : []))
+  const conditions: Condition[] =
+    attribute.kind === 'range'
+      ? attribute.cases.map((c) => c.when)
+      : attribute.kind === 'pick' || attribute.kind === 'color' || attribute.kind === 'traits'
+        ? withWhen(attribute.options)
+        : attribute.kind === 'compose'
+          ? attribute.parts.flatMap(withWhen)
+          : []
   for (const when of conditions) {
     for (const [attributeId, valueIds] of Object.entries(when)) {
       const set = targets.get(attributeId) ?? new Set()
@@ -27,11 +35,24 @@ function conditionTargets(attribute: Attribute): Map<string, Set<string>> {
   return targets
 }
 
-/** Value ids a condition may name: option ids, or band labels for a range. */
+/** Value ids a condition may name, per kind. */
 function knownValueIds(attribute: Attribute): Set<string> {
-  if (attribute.kind !== 'range') return new Set(attribute.options.map((o) => o.id))
-  const bands = [attribute.bands ?? [], ...attribute.cases.map((c) => c.bands ?? [])].flat()
-  return new Set(bands.map((b) => b.label))
+  switch (attribute.kind) {
+    case 'pick':
+    case 'color':
+    case 'traits':
+      return new Set(attribute.options.map((o) => o.id))
+    case 'compose':
+      return new Set(attribute.parts.flat().map((o) => o.id))
+    case 'stats':
+      return new Set(attribute.stats.map((s) => `best:${s.id}`))
+    case 'date':
+      return new Set([...Array.from({ length: 12 }, (_, i) => `m${i + 1}`), ...ZODIAC_IDS])
+    case 'range': {
+      const bands = [attribute.bands ?? [], ...attribute.cases.map((c) => c.bands ?? [])].flat()
+      return new Set(bands.map((b) => b.label))
+    }
+  }
 }
 
 /**

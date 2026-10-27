@@ -19,5 +19,10 @@ export default defineAttribute({
     { id: 'spaceOpera', label: '스페이스 오페라', hint: '은하 제국과 성간 항로' },
     { id: 'wuxia', label: '동양 무협', hint: '강호와 문파, 내공의 세계' },
     { id: 'academy', label: '학원물', hint: '비밀이 많은 기숙 학교', weight: 0.8 },
+    { id: 'occult', label: '오컬트 미스터리', hint: '도시 괴담과 봉인된 저택', weight: 0.8 },
+    { id: 'fairytale', label: '동화', hint: '말하는 동물과 마법의 숲', weight: 0.7 },
+    { id: 'pirate', label: '대항해 해적', hint: '보물 지도와 폭풍의 바다', weight: 0.7 },
+    { id: 'dystopia', label: '디스토피아', hint: '감시받는 회색 도시', weight: 0.7 },
+    { id: 'idol', label: '아이돌 업계', hint: '무대 뒤의 화려한 경쟁', weight: 0.6 },
   ],
 })

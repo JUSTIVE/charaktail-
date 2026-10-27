@@ -11,6 +11,10 @@ import { z } from 'zod'
  *   2. add an attribute → drop a file in catalog/ and list it in catalog/index.ts
  *   3. add a kind       → add a variant to `Attribute` below and a generator in
  *                         generators.ts; the compiler points at every place left
+ *
+ * Kinds today: pick (from a list) · color (named colours) · range (a number)
+ * · date (a day of the year) · stats (several numbers at once) · traits
+ * (each one rolled on its own odds) · compose (a phrase built from parts).
  */
 
 const Key = z.string().min(1)
@@ -111,8 +115,56 @@ const RangeAttribute = z.object({
   cases: z.array(z.object({ when: Condition, ...RangeSpec.partial().shape })).default([]),
 })
 
+/** A day of the year — 생일. With `zodiac`, the detail names its star sign. */
+const DateAttribute = z.object({
+  ...Base,
+  kind: z.literal('date'),
+  zodiac: z.boolean().default(true),
+})
+
+/** Several numbers rolled at once — 능력치 as `힘 7 · 지능 4`. */
+const StatsAttribute = z.object({
+  ...Base,
+  kind: z.literal('stats'),
+  stats: z.array(z.object({ id: Key, label: Key })).min(1),
+  max: z.number().int().positive().default(10),
+  /** 'normal' keeps most stats middling, a few standing out. */
+  distribution: z.enum(['uniform', 'normal']).default('normal'),
+})
+
+/**
+ * Each option rolled on its own odds — 외형 특징: glasses, freckles, a scar —
+ * so a character can have none, one or several.
+ */
+const TraitOption = z
+  .object({
+    id: Key.optional(),
+    label: Key,
+    /** Probability, 0–1. */
+    chance: z.number().min(0).max(1),
+    when: Condition.optional(),
+  })
+  .transform((input) => ({ ...input, id: input.id ?? input.label }))
+export type TraitOption = z.output<typeof TraitOption>
+
+const TraitsAttribute = z.object({
+  ...Base,
+  kind: z.literal('traits'),
+  options: z.array(TraitOption).min(1),
+  /** What to say when nothing hits. */
+  none: z.string().default('특이사항 없음'),
+})
+
+/** A phrase built one part at a time — 이명 as `은빛의` + `방랑자`. */
+const ComposeAttribute = z.object({
+  ...Base,
+  kind: z.literal('compose'),
+  parts: z.array(z.array(PickOption).min(1)).min(1),
+  joiner: z.string().default(' '),
+})
+
 export const Attribute = z
-  .discriminatedUnion('kind', [PickAttribute, ColorAttribute, RangeAttribute])
+  .discriminatedUnion('kind', [PickAttribute, ColorAttribute, RangeAttribute, DateAttribute, StatsAttribute, TraitsAttribute, ComposeAttribute])
   .superRefine((attribute, ctx) => {
     if (attribute.kind === 'range') {
       for (const spec of [attribute, ...attribute.cases]) {
@@ -122,7 +174,13 @@ export const Attribute = z
       }
       return
     }
-    const ids = attribute.options.map((option) => option.id)
+    if (attribute.kind === 'date') return
+    const ids =
+      attribute.kind === 'stats'
+        ? attribute.stats.map((s) => s.id)
+        : attribute.kind === 'compose'
+          ? attribute.parts.flatMap((part) => part.map((option) => option.id))
+          : attribute.options.map((option) => option.id)
     const duplicate = ids.find((id, index) => ids.indexOf(id) !== index)
     if (duplicate) ctx.addIssue({ code: 'custom', message: `${attribute.id}: 값 id "${duplicate}"가 중복됩니다` })
   })
