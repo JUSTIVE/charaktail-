@@ -14,7 +14,7 @@ import { Button, seq } from '../ui'
 const COPY: Record<StageMode, { title: string; body: string }> = {
   idle: { title: '준비 중', body: '' },
   armed: { title: '세게 흔들어 주세요', body: '게이지가 차면 속성들이 섞이기 시작해요.' },
-  mixing: { title: '섞이는 중…', body: '글자가 녹고 색이 하나로 번져요.' },
+  mixing: { title: '섞이는 중…', body: '' },
   glowing: { title: '빛이 차오른다', body: '거의 다 됐어요.' },
   revealed: { title: '완성!', body: '' },
 }
@@ -83,7 +83,7 @@ export function ShakeHud() {
         </span>
         <div className="min-w-0">
           <h2 className="headline">{copy.title}</h2>
-          <p className="mt-0.5 text-[12.5px] text-muted">{copy.body}</p>
+          {copy.body ? <p className="mt-0.5 text-[12.5px] text-muted">{copy.body}</p> : null}
         </div>
       </div>
 
