@@ -10,6 +10,7 @@ import { setName } from '../state/name'
 import { setSelection } from '../state/selection'
 import type { StageMode } from '../stage/store'
 import { ArchiveIcon } from './icons'
+import { releaseTextInput } from './releaseTextInput'
 import { StageCanvas, stageHandle } from './StageCanvas'
 import { Picker } from './views/Picker'
 import { Result } from './views/Result'
@@ -95,6 +96,9 @@ function SceneSync() {
   const values = scene === 'pick' ? search.values : undefined
 
   useEffect(() => {
+    // Screens that listen for shakes must not leave Safari an undo to offer —
+    // also when reached by a link or the back button, not only by the CTA.
+    if (scene === 'shake' || scene === 'result') releaseTextInput()
     void panel.replace(viewFor(scene, values))
     if (dialogs.getDepth() > 0) void dialogs.reset()
   }, [panel, dialogs, scene, values])
