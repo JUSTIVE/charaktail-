@@ -155,11 +155,16 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
                 <label className="color-pick press" style={{ background: hex }} aria-label={twoTone ? '첫 번째 색' : '색 고르기'}>
                   <input type="color" value={hex} onChange={(event) => setHex(event.target.value)} />
                 </label>
-                {twoTone ? (
-                  <label className="color-pick press" style={{ background: hex2 }} aria-label="두 번째 색">
-                    <input type="color" value={hex2} onChange={(event) => setHex2(event.target.value)} />
-                  </label>
-                ) : null}
+                {/* Always mounted, so it can animate out as well as in. */}
+                <label
+                  className="color-pick color-pick-second press"
+                  data-open={twoTone || undefined}
+                  aria-hidden={!twoTone}
+                  style={{ background: hex2 }}
+                  aria-label="두 번째 색"
+                >
+                  <input type="color" value={hex2} tabIndex={twoTone ? 0 : -1} onChange={(event) => setHex2(event.target.value)} />
+                </label>
               </span>
             ) : null}
             <input
