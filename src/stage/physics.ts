@@ -135,7 +135,7 @@ export class World {
       body.vy += (dx / d) * spin * dt
       if (push > 400) {
         body.axis = { x: ax / push, y: ay / push }
-        body.squashVel += push * dt * 0.0006
+        body.squashVel += push * dt * 0.0003
       }
     }
   }
@@ -179,10 +179,10 @@ export class World {
       // A fast drop stretches along its path; impacts take over the axis.
       const speed = Math.hypot(body.vx, body.vy)
       if (Math.abs(body.squash) < 0.04 && speed > 250) body.axis = { x: body.vx / speed, y: body.vy / speed }
-      const stretch = -Math.min(Math.max(speed - 250, 0) / 6000, 0.12)
+      const stretch = -Math.min(Math.max(speed - 250, 0) / 8000, 0.06)
       body.squashVel += (-SQUASH_STIFFNESS * (body.squash - stretch) - SQUASH_DAMPING * body.squashVel) * dt
       // Bounded squash: a drop flattens and stretches, it never folds to a point.
-      body.squash = Math.max(-0.2, Math.min(0.28, body.squash + body.squashVel * dt))
+      body.squash = Math.max(-0.12, Math.min(0.16, body.squash + body.squashVel * dt))
       // Ripples ebb toward a small resting level: a low-tension drop is never quite still.
       body.wobble = WOBBLE_REST + (body.wobble - WOBBLE_REST) * Math.pow(0.5, dt)
 
@@ -356,13 +356,13 @@ export class World {
  * every size squishes alike. Low values let drops sink into each other and
  * the walls; the hard limits keep a hard shake from passing one through another.
  */
-const CONTACT_STIFFNESS = 16000
+const CONTACT_STIFFNESS = 22000
 const WALL_STIFFNESS = 12000
 const CONTACT_DAMPING = 9
 /** Two bodies may sink to this fraction of their combined radii. */
-const HARD_LIMIT = 0.68
+const HARD_LIMIT = 0.8
 /** A body may press this fraction of its radius past a wall. */
-const WALL_LIMIT = 0.22
+const WALL_LIMIT = 0.15
 const SQUASH_STIFFNESS = 130
 const SQUASH_DAMPING = 5
 const WOBBLE_REST = 0.006
@@ -378,6 +378,6 @@ const JIGGLE_THRESHOLD = 60
 
 function jiggle(body: Body, nx: number, ny: number, speed: number): void {
   body.axis = { x: nx, y: ny }
-  body.squashVel += Math.min(speed, 2000) * 0.0018
+  body.squashVel += Math.min(speed, 2000) * 0.001
   body.wobble = Math.min(0.035, body.wobble + Math.min(speed, 2000) * 0.00002)
 }
