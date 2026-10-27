@@ -42,6 +42,8 @@ const MIN_DPR = 0.75
 /** px/s² of slosh per deg/s of gyro turn, and of swirl per deg/s of spin. */
 const SLOSH = 7
 const SWIRL = 3
+/** Share of the gyro's slosh felt before the shake button is pressed. */
+const IDLE_GYRO = 0.15
 const SHAKA_W = 1024
 const SHAKA_H = 300
 /** Share of the zone the bubbles cover; soft contacts take up the rest. */
@@ -403,8 +405,9 @@ export class Stage {
           // fill the whole area pressed against each other. (Without a pull,
           // every force only pushes apart and the gaps never close.)
           Object.assign(t, { gravity: 0, spread: 300, damping: 0.25, attract: 3.2 })
-          // With a real sensor, tilt still pools them a little to the low side.
-          if (this.hasTilt) t.gravity = 160
+          // Before the shake button, a real sensor's tilt pools them only a
+          // little to the low side (on the shake screen tilt is full gravity).
+          if (this.hasTilt) t.gravity = 40
         }
         looks.text = 1 - this.charge * 0.7
         looks.mix = this.charge * 0.3
@@ -453,10 +456,12 @@ export class Stage {
 
     for (const body of world.bodies) if (!body.leaving) body.targetR = radius
 
-    // 찰랑: the gyro sloshes the drops wherever they are still separate.
+    // 찰랑: the gyro sloshes the drops wherever they are still separate —
+    // only a whisper of it before the shake button is pressed.
     if (this.mode === 'idle' || this.mode === 'armed') {
       const r = this.rotation
-      this.world.slosh(r.x * SLOSH, r.y * SLOSH, r.z * SWIRL, dt)
+      const gain = this.mode === 'idle' ? IDLE_GYRO : 1
+      this.world.slosh(r.x * SLOSH * gain, r.y * SLOSH * gain, r.z * SWIRL * gain, dt)
       // Readings arrive ~60 Hz; let a stale one fade rather than push forever.
       this.rotation = { x: r.x * 0.8, y: r.y * 0.8, z: r.z * 0.8 }
     }
