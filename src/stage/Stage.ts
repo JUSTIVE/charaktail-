@@ -33,6 +33,12 @@ const SHAKE_FLOOR = 12
 /** m/s² above the floor that fill the charge in one second. */
 const SHAKE_RATE = 20
 const ATLAS_CELL = 256
+/** A result listens for a re-roll only after this long on screen… */
+const REARM_AFTER = 1.5
+/** …and this long without a hard shake. */
+const REARM_QUIET = 0.8
+/** The lowest pixel ratio adaptive resolution will drop to. */
+const MIN_DPR = 0.75
 /** px/s² of slosh per deg/s of gyro turn, and of swirl per deg/s of spin. */
 const SLOSH = 7
 const SWIRL = 3
@@ -75,6 +81,12 @@ export class Stage {
   private kick = 0
   /** A real tilt sensor is reporting — gravity then follows the phone. */
   private hasTilt = false
+  /** When the last shake above the floor arrived, wall-clock seconds. */
+  private lastStrongShake = -Infinity
+  /** A result accepts a re-roll only once the phone has been still after it. */
+  private rearmed = false
+  /** The meter reached full since the mode began. */
+  private filled = false
   /** Latest gyroscope reading, deg/s in screen space; applied each frame. */
   private rotation = { x: 0, y: 0, z: 0 }
   private manualShake = false
@@ -83,6 +95,11 @@ export class Stage {
   private width = 1
   private height = 1
   private dpr = 1
+  private maxDpr = 1
+  /** Share of the device pixel ratio actually rendered (adaptive). */
+  private resolution = 1
+  private frameAvg = 1 / 60
+  private adaptedAt = 0
   private time = 0
   private last = 0
   private frame = 0
@@ -120,7 +137,7 @@ export class Stage {
           this.hasTilt = true
           this.world.gravity = g
         },
-        onShake: ({ x, y, magnitude }) => this.shake(x, y, magnitude, 1 / 60),
+        onShake: ({ x, y, magnitude, dt }) => this.shake(x, y, magnitude, dt),
         onRotate: (r) => {
           this.rotation = r
         },
@@ -169,9 +186,11 @@ export class Stage {
     // Every mode that can charge starts empty — a full meter left over from
     // the last round would re-trigger at once.
     if (mode === 'armed' || mode === 'idle' || mode === 'revealed') this.charge = 0
+    this.filled = false
     // The hold button hides once the sequence starts, so its release never
     // arrives — the stage lets go itself, or it would keep shaking forever.
     if (mode !== 'armed') this.manualShake = false
+    if (mode === 'revealed') this.rearmed = false
     if ((from === 'revealed' || from === 'glowing') && (mode === 'idle' || mode === 'armed')) {
       // Burst the orb back into balls.
       for (const body of this.world.bodies) {
@@ -203,10 +222,18 @@ export class Stage {
   private shake(ax: number, ay: number, magnitude: number, dt: number, manual = false): void {
     if (magnitude > 4) this.world.kick(ax, ay, 38)
     this.kick = Math.max(this.kick, Math.min(magnitude / 30, 1))
-    // Over a result only a real shake re-rolls; the button lives on the HUD.
-    if (this.mode !== 'armed' && !(this.mode === 'revealed' && !manual)) return
+    if (magnitude > SHAKE_FLOOR) this.lastStrongShake = this.time
+    // Over a result only a real, *new* shake re-rolls: the shaking that just
+    // produced this result usually carries on past the reveal, and must not
+    // roll again by itself (see `rearmed`). The button lives on the HUD.
+    if (this.mode !== 'armed' && !(this.mode === 'revealed' && !manual && this.rearmed)) return
     const over = magnitude - SHAKE_FLOOR
     if (over > 0) this.charge = Math.min(1, this.charge + (over / SHAKE_RATE) * dt * 4)
+    // "Full" is decided here, when a shake fills the meter. Checking
+    // `charge >= 1` in the frame loop never fired for real motion: each
+    // frame lets the charge decay a hair before the check, so a meter topped
+    // up by device events always read 0.998 and the roll never started.
+    if (this.charge >= 1) this.filled = true
   }
 
   private bindPointer(): void {
@@ -254,9 +281,35 @@ export class Stage {
   private resize(): void {
     this.width = Math.max(1, this.canvas.clientWidth)
     this.height = Math.max(1, this.canvas.clientHeight)
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2)
+    this.maxDpr = Math.min(window.devicePixelRatio || 1, 2)
+    this.applyResolution()
+  }
+
+  private applyResolution(): void {
+    this.dpr = Math.max(MIN_DPR, this.maxDpr * this.resolution)
     this.renderer.setPixelRatio(this.dpr)
     this.renderer.setSize(this.width, this.height, false)
+  }
+
+  /**
+   * Adaptive resolution. The shader is per-pixel heavy; on a phone that
+   * can't hold the frame rate the drawing buffer steps down a quarter at a
+   * time (to MIN_DPR at worst), and steps back up after a few smooth seconds.
+   */
+  private adapt(real: number): void {
+    this.frameAvg += (real - this.frameAvg) * 0.06
+    if (this.time - this.adaptedAt < 1) return
+    const slow = this.frameAvg > 1 / 40
+    const smooth = this.frameAvg < 1 / 54
+    if (slow && this.maxDpr * this.resolution > MIN_DPR) {
+      this.resolution = Math.max(MIN_DPR / this.maxDpr, this.resolution - 0.25)
+      this.adaptedAt = this.time
+      this.applyResolution()
+    } else if (smooth && this.resolution < 1 && this.time - this.adaptedAt > 4) {
+      this.resolution = Math.min(1, this.resolution + 0.25)
+      this.adaptedAt = this.time
+      this.applyResolution()
+    }
   }
 
   /**
@@ -293,17 +346,22 @@ export class Stage {
     cancelAnimationFrame(this.frame)
     this.last = performance.now()
     const tick = (now: number) => {
-      const dt = Math.min((now - this.last) / 1000, 1 / 30)
+      // Wall-clock seconds drive the choreography, so a slow phone still
+      // mixes, glows and reveals on schedule; the physics step stays capped
+      // so a long frame can't fling a drop through a wall.
+      const real = Math.min((now - this.last) / 1000, 0.25)
+      const dt = Math.min(real, 1 / 30)
       this.last = now
-      this.update(dt)
+      this.update(dt, real)
+      this.adapt(real)
       this.render()
       this.frame = requestAnimationFrame(tick)
     }
     this.frame = requestAnimationFrame(tick)
   }
 
-  private update(dt: number): void {
-    this.time += dt
+  private update(dt: number, real: number): void {
+    this.time += real
     const elapsed = this.time - this.modeAt
     const world = this.world
     const t = world.tuning
@@ -317,14 +375,17 @@ export class Stage {
     t.center = { x: (zone.left + zone.right) / 2, y: (zone.top + zone.bottom) / 2 }
 
     if (this.manualShake) {
-      this.manualTimer -= dt
+      this.manualTimer -= real
       if (this.manualTimer <= 0) {
         this.manualTimer = 0.07
         const a = Math.random() * Math.PI * 2
         this.shake(Math.cos(a) * 26, Math.sin(a) * 26, 26, 0.07, true)
       }
     } else if (this.mode === 'armed' || this.mode === 'revealed') {
-      this.charge = Math.max(0, this.charge - dt * 0.12)
+      this.charge = Math.max(0, this.charge - real * 0.12)
+    }
+    if (this.mode === 'revealed' && !this.rearmed && this.time - this.modeAt > REARM_AFTER && this.time - this.lastStrongShake > REARM_QUIET) {
+      this.rearmed = true
     }
 
     const live = world.bodies.filter((b) => !b.leaving).length
@@ -347,7 +408,7 @@ export class Stage {
         }
         looks.text = 1 - this.charge * 0.7
         looks.mix = this.charge * 0.3
-        if (this.mode === 'armed' && this.charge >= 1) this.setMode('mixing')
+        if (this.mode === 'armed' && this.filled) this.setMode('mixing')
         break
       }
       case 'mixing': {
@@ -382,7 +443,7 @@ export class Stage {
         looks.merge = 1
         looks.mix = 1
         looks.glow = this.charge * 0.6
-        if (this.charge >= 1) {
+        if (this.filled) {
           this.setMode('mixing')
           this.onReshake()
         }
@@ -404,17 +465,17 @@ export class Stage {
     world.step(dt / 2)
     world.step(dt / 2)
 
-    this.looks.text = approach(this.looks.text, looks.text, this.mode === 'mixing' ? 9 : 5, dt)
-    this.looks.merge = approach(this.looks.merge, looks.merge, 7, dt)
-    this.looks.mix = approach(this.looks.mix, looks.mix, 6, dt)
+    this.looks.text = approach(this.looks.text, looks.text, this.mode === 'mixing' ? 9 : 5, real)
+    this.looks.merge = approach(this.looks.merge, looks.merge, 7, real)
+    this.looks.mix = approach(this.looks.mix, looks.mix, 6, real)
     // Into the glow fast; out of it slowly, so the screen fades like an afterimage.
-    this.looks.glow = approach(this.looks.glow, looks.glow, looks.glow > this.looks.glow ? 8 : 1.6, dt)
-    this.looks.flash = approach(this.looks.flash, 0, 2.6, dt)
+    this.looks.glow = approach(this.looks.glow, looks.glow, looks.glow > this.looks.glow ? 8 : 1.6, real)
+    this.looks.flash = approach(this.looks.flash, 0, 2.6, real)
     // The chant snaps in and leaves as the glow takes over.
-    this.looks.shaka = approach(this.looks.shaka, looks.shaka, looks.shaka > this.looks.shaka ? 12 : 7, dt)
+    this.looks.shaka = approach(this.looks.shaka, looks.shaka, looks.shaka > this.looks.shaka ? 12 : 7, real)
     // While mixing the chant keeps its own beat even without a hand on the phone.
     if (this.mode === 'mixing') this.kick = Math.max(this.kick, 0.25)
-    this.kick *= Math.pow(0.12, dt)
+    this.kick *= Math.pow(0.12, real)
     const shown = this.mode === 'mixing' || this.mode === 'glowing' ? 1 : this.charge
     if (Math.abs(shown - this.shownCharge) > 0.002) {
       this.shownCharge = shown

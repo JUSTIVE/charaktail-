@@ -49,8 +49,8 @@ function toScreen(x: number, y: number): { x: number; y: number } {
 export interface MotionHandlers {
   /** Gravity in screen space, each axis in [-1, 1]. */
   onTilt: (g: { x: number; y: number }) => void
-  /** Linear acceleration in screen space, m/s². */
-  onShake: (a: { x: number; y: number; magnitude: number }) => void
+  /** Linear acceleration in screen space, m/s², and the seconds it covers. */
+  onShake: (a: { x: number; y: number; magnitude: number; dt: number }) => void
   /**
    * Gyroscope, deg/s: `x`/`y` are the turn that sloshes contents across the
    * screen's width/height, `z` the in-plane spin.
@@ -75,6 +75,11 @@ export function listenMotion(handlers: MotionHandlers): () => void {
     handlers.onTilt(toScreen(Math.sin(event.gamma * rad), Math.sin(event.beta * rad)))
   }
 
+  // Gravity estimate for devices that report no linear acceleration (no
+  // sensor fusion): a slow low-pass of acceleration-including-gravity, so
+  // what's left after subtracting it is the shake.
+  let gravity: { x: number; y: number; z: number } | null = null
+
   const onMotion = (event: DeviceMotionEvent) => {
     const rate = event.rotationRate
     if (rate && rate.beta !== null && rate.gamma !== null) {
@@ -84,13 +89,25 @@ export function listenMotion(handlers: MotionHandlers): () => void {
       const s = toScreen(rate.gamma, rate.beta)
       handlers.onRotate({ x: s.x, y: s.y, z: rate.alpha ?? 0 })
     }
-    const a = event.acceleration
-    if (!a || a.x === null || a.y === null) return
+    let a: { x: number | null; y: number | null; z: number | null } | null = event.acceleration
+    if (!a || a.x === null || a.y === null) {
+      const g = event.accelerationIncludingGravity
+      if (!g || g.x === null || g.y === null) return
+      const raw = { x: g.x, y: g.y, z: g.z ?? 0 }
+      gravity = gravity
+        ? { x: gravity.x + (raw.x - gravity.x) * 0.1, y: gravity.y + (raw.y - gravity.y) * 0.1, z: gravity.z + (raw.z - gravity.z) * 0.1 }
+        : raw
+      a = { x: raw.x - gravity.x, y: raw.y - gravity.y, z: raw.z - gravity.z }
+    }
+    if (a.x === null || a.y === null) return
     markAlive()
     const z = a.z ?? 0
     // Screen-space y grows downward; device y grows upward.
     const s = toScreen(a.x, -a.y)
-    handlers.onShake({ x: s.x, y: s.y, magnitude: Math.hypot(a.x, a.y, z) })
+    // Event rates differ by device (≈60 Hz iOS, up to 200 Hz Android), and
+    // `interval` is in ms on most engines but seconds on older Safari.
+    const interval = event.interval > 1 ? event.interval / 1000 : event.interval || 1 / 60
+    handlers.onShake({ x: s.x, y: s.y, magnitude: Math.hypot(a.x, a.y, z), dt: Math.min(Math.max(interval, 1 / 240), 0.1) })
   }
 
   window.addEventListener('deviceorientation', onOrientation)

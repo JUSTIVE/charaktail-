@@ -45,6 +45,8 @@ export function StageCanvas() {
       void router.navigate({ to: '/shake', search: { a: selectionCell.read().join('.'), n: currentName() }, replace: true })
     }
     stageHandle.current = stage
+    // Dev only: lets a test harness inspect the stage.
+    if (import.meta.env.DEV) Object.assign(window, { __stage: stage })
     return () => {
       stage.dispose()
       if (stageHandle.current === stage) stageHandle.current = null
