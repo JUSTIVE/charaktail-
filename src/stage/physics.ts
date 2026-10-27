@@ -117,6 +117,29 @@ export class World {
     }
   }
 
+  /**
+   * Gyro slosh: the contents lag behind the phone's turn, so every drop takes
+   * the turn as an acceleration across the screen, and an in-plane spin as a
+   * swirl round the centre. Drops jiggle along the push, like liquid.
+   */
+  slosh(ax: number, ay: number, spin: number, dt: number): void {
+    const c = this.tuning.center
+    const push = Math.hypot(ax, ay)
+    for (const body of this.bodies) {
+      body.vx += ax * dt
+      body.vy += ay * dt
+      const dx = body.x - c.x
+      const dy = body.y - c.y
+      const d = Math.hypot(dx, dy) || 1
+      body.vx += (-dy / d) * spin * dt
+      body.vy += (dx / d) * spin * dt
+      if (push > 400) {
+        body.axis = { x: ax / push, y: ay / push }
+        body.squashVel += push * dt * 0.0006
+      }
+    }
+  }
+
   pick(x: number, y: number): Body | null {
     let best: Body | null = null
     let bestD = Infinity

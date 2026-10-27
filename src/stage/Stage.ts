@@ -33,6 +33,9 @@ const SHAKE_FLOOR = 12
 /** m/s² above the floor that fill the charge in one second. */
 const SHAKE_RATE = 20
 const ATLAS_CELL = 256
+/** px/s² of slosh per deg/s of gyro turn, and of swirl per deg/s of spin. */
+const SLOSH = 7
+const SWIRL = 3
 const SHAKA_W = 1024
 const SHAKA_H = 300
 /** Share of the zone the bubbles cover; soft contacts take up the rest. */
@@ -72,6 +75,8 @@ export class Stage {
   private kick = 0
   /** A real tilt sensor is reporting — gravity then follows the phone. */
   private hasTilt = false
+  /** Latest gyroscope reading, deg/s in screen space; applied each frame. */
+  private rotation = { x: 0, y: 0, z: 0 }
   private manualShake = false
   private manualTimer = 0
 
@@ -116,6 +121,9 @@ export class Stage {
           this.world.gravity = g
         },
         onShake: ({ x, y, magnitude }) => this.shake(x, y, magnitude, 1 / 60),
+        onRotate: (r) => {
+          this.rotation = r
+        },
       }),
     )
     this.bindPointer()
@@ -334,6 +342,8 @@ export class Stage {
           // fill the whole area pressed against each other. (Without a pull,
           // every force only pushes apart and the gaps never close.)
           Object.assign(t, { gravity: 0, spread: 300, damping: 0.25, attract: 3.2 })
+          // With a real sensor, tilt still pools them a little to the low side.
+          if (this.hasTilt) t.gravity = 160
         }
         looks.text = 1 - this.charge * 0.7
         looks.mix = this.charge * 0.3
@@ -381,6 +391,14 @@ export class Stage {
     }
 
     for (const body of world.bodies) if (!body.leaving) body.targetR = radius
+
+    // 찰랑: the gyro sloshes the drops wherever they are still separate.
+    if (this.mode === 'idle' || this.mode === 'armed') {
+      const r = this.rotation
+      this.world.slosh(r.x * SLOSH, r.y * SLOSH, r.z * SWIRL, dt)
+      // Readings arrive ~60 Hz; let a stale one fade rather than push forever.
+      this.rotation = { x: r.x * 0.8, y: r.y * 0.8, z: r.z * 0.8 }
+    }
 
     // Two substeps keep fast shakes from tunnelling through the walls.
     world.step(dt / 2)

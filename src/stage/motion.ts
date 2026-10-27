@@ -51,6 +51,11 @@ export interface MotionHandlers {
   onTilt: (g: { x: number; y: number }) => void
   /** Linear acceleration in screen space, m/s². */
   onShake: (a: { x: number; y: number; magnitude: number }) => void
+  /**
+   * Gyroscope, deg/s: `x`/`y` are the turn that sloshes contents across the
+   * screen's width/height, `z` the in-plane spin.
+   */
+  onRotate: (r: { x: number; y: number; z: number }) => void
   /** First real sensor reading — this device has motion. */
   onAlive: () => void
 }
@@ -71,6 +76,14 @@ export function listenMotion(handlers: MotionHandlers): () => void {
   }
 
   const onMotion = (event: DeviceMotionEvent) => {
+    const rate = event.rotationRate
+    if (rate && rate.beta !== null && rate.gamma !== null) {
+      markAlive()
+      // Turning about the device's y axis (gamma) sloshes contents sideways,
+      // about its x axis (beta) up and down; alpha spins them in the plane.
+      const s = toScreen(rate.gamma, rate.beta)
+      handlers.onRotate({ x: s.x, y: s.y, z: rate.alpha ?? 0 })
+    }
     const a = event.acceleration
     if (!a || a.x === null || a.y === null) return
     markAlive()
