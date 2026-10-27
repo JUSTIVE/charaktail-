@@ -25,6 +25,8 @@
  *   uGlow  — lit glossy surface (0) → emissive core, halo, rays, and the
  *            whole screen flooding with the drops' mixed colour (1)
  *   uFlash — white-out at the moment of the reveal
+ *   uFlow  — the selected colours drifting through the stage's background as
+ *            Perlin-style noise (0 off → 1)
  *   uShaka — the "샤카 샤카" chant over the mix (0 → 1); uKick jolts it with
  *            every shake
  */
@@ -58,6 +60,7 @@ export function fragmentShader(count: number): string {
   uniform float uMix;
   uniform float uGlow;
   uniform float uFlash;
+  uniform float uFlow;
   uniform sampler2D uShakaTex; // "샤카" twice, one word per half
   uniform float uShakaAspect;  // texture width / height
   uniform float uShaka;
@@ -66,6 +69,43 @@ export function fragmentShader(count: number): string {
   varying vec2 vUv;
 
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+  /* Gradient (Perlin-style) noise and a three-octave fbm, roughly −0.6…0.6. */
+  vec2 grad2(vec2 p) {
+    p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+    return -1.0 + 2.0 * fract(sin(p) * 43758.5453);
+  }
+  float gnoise(vec2 p) {
+    vec2 i = floor(p), f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(dot(grad2(i), f), dot(grad2(i + vec2(1.0, 0.0)), f - vec2(1.0, 0.0)), u.x),
+               mix(dot(grad2(i + vec2(0.0, 1.0)), f - vec2(0.0, 1.0)), dot(grad2(i + vec2(1.0, 1.0)), f - vec2(1.0, 1.0)), u.x), u.y);
+  }
+  float fbm(vec2 p) {
+    float sum = 0.0, amp = 0.5;
+    for (int k = 0; k < 3; k++) { sum += amp * gnoise(p); p *= 2.03; amp *= 0.5; }
+    return sum;
+  }
+
+  /*
+   * The selected colours drifting through the bubble area: one noise field
+   * says which colour (neighbours blend), another how much — a faint
+   * light, strongest mid-area, feathered out at the zone's edges.
+   */
+  vec3 flowAt(vec2 p) {
+    if (uFlow < 0.001) return vec3(0.0);
+    float scale = 1.0 / (uRes.y * 0.32);
+    float which = fbm(p * scale + vec2(uTime * 0.045, -uTime * 0.03)) * 0.9 + 0.5;
+    float much = fbm(p * scale * 1.3 + vec2(-uTime * 0.035, uTime * 0.05) + 7.3) * 0.9 + 0.5;
+    float idx = fract(which * 1.6) * float(N);
+    int i0 = int(floor(idx));
+    int i1 = i0 + 1 >= N ? 0 : i0 + 1;
+    vec3 col = mix(uColors[i0], uColors[i1], smoothstep(0.0, 1.0, fract(idx)));
+    float feather = uRes.y * 0.06;
+    float zone = smoothstep(0.0, feather, p.x - uArea.x) * smoothstep(0.0, feather, uArea.z - p.x)
+               * smoothstep(0.0, feather, p.y - uArea.y) * smoothstep(0.0, feather, uArea.w - p.y);
+    return col * (0.05 + 0.13 * smoothstep(0.25, 0.85, much)) * zone * uFlow;
+  }
 
   /* Night sky with a faint dot grid — also what a drop refracts. */
   vec3 backdrop(vec2 p) {
@@ -159,6 +199,8 @@ export function fragmentShader(count: number): string {
     vec3 sharpCol = sharpW > 0.0 ? sharp / sharpW : vec3(0.0);
     vec3 softCol = softW > 0.0 ? soft / softW : vec3(0.0);
 
+    vec3 flow = flowAt(p);
+
     // ── bodies: oil drops ───────────────────────────────────────────────
     float bodyIn = 0.0;
     vec3 bodyCol = vec3(0.0);
@@ -219,7 +261,7 @@ export function fragmentShader(count: number): string {
       // steepest, and each wavelength bends a little less than the last —
       // so the backdrop is sampled once per channel (chromatic aberration).
       vec2 bend = n.xy * ownerR * (0.35 + 1.1 * fres);
-      vec3 seen = vec3(backdrop(p + bend * 1.12).r, backdrop(p + bend * 0.86).g, backdrop(p + bend * 0.6).b);
+      vec3 seen = vec3(backdrop(p + bend * 1.12).r, backdrop(p + bend * 0.86).g, backdrop(p + bend * 0.6).b) + flow * 0.8;
       // Translucent oil at full saturation: the hue itself is untouched, only
       // how much of it covers what lies behind. Thin at the rim (mostly the
       // bent backdrop), never more than DROP_OPACITY at the thickest point.
@@ -294,7 +336,7 @@ export function fragmentShader(count: number): string {
     surface += base * uGlow * (0.9 + 0.8 * h) * pulse;
     surface = mix(surface, vec3(1.0), uGlow * smoothstep(1.6, 6.0, field) * 0.75);
 
-    vec3 bg = backdrop(p) + softCol * min(field, 1.0) * 0.12;
+    vec3 bg = backdrop(p) + flow + softCol * min(field, 1.0) * 0.12;
 
     vec2 fromCenter = p - uCenter;
     float ang = atan(fromCenter.y, fromCenter.x);

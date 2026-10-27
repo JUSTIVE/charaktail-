@@ -77,7 +77,7 @@ export class Stage {
   private mode: StageMode = 'idle'
   private modeAt = 0
   private charge = 0
-  private looks = { text: 1, merge: 0, mix: 0, glow: 0, flash: 0, shaka: 0 }
+  private looks = { text: 1, merge: 0, mix: 0, glow: 0, flash: 0, shaka: 0, flow: 0 }
   private shakaTex: CanvasTexture | null = null
   /** Recent shake strength, 0–1; jolts the 샤카 text. */
   private kick = 0
@@ -476,6 +476,10 @@ export class Stage {
     // Into the glow fast; out of it slowly, so the screen fades like an afterimage.
     this.looks.glow = approach(this.looks.glow, looks.glow, looks.glow > this.looks.glow ? 8 : 1.6, real)
     this.looks.flash = approach(this.looks.flash, 0, 2.6, real)
+    // The colour flow behind the drops: on while there are drops, easing out
+    // as they merge, gone once the result clears them.
+    const flowTarget = live > 0 && (this.mode === 'idle' || this.mode === 'armed') ? 1 : this.mode === 'mixing' ? 0.6 : 0
+    this.looks.flow = approach(this.looks.flow, flowTarget, 1.5, real)
     // The chant snaps in and leaves as the glow takes over.
     this.looks.shaka = approach(this.looks.shaka, looks.shaka, looks.shaka > this.looks.shaka ? 12 : 7, real)
     // While mixing the chant keeps its own beat even without a hand on the phone.
@@ -523,6 +527,7 @@ export class Stage {
     u.uScale.value = (bodies.length ? sumR / bodies.length : 1) * this.dpr
     u.uText.value = this.looks.text
     u.uMerge.value = this.looks.merge
+    u.uFlow.value = this.looks.flow
     u.uShaka.value = this.shakaTex ? this.looks.shaka : 0
     u.uKick.value = this.kick
     u.uShakaTex.value = this.shakaTex
@@ -574,6 +579,7 @@ function createUniforms(n: number, atlas: CanvasTexture | null, shakaTex: Canvas
     uScale: { value: 1 },
     uText: { value: 1 },
     uMerge: { value: 0 },
+    uFlow: { value: 0 },
     uShaka: { value: 0 },
     uKick: { value: 0 },
     uShakaTex: { value: shakaTex },
