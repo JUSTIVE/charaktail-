@@ -549,10 +549,13 @@ body {
 }
 .aura-halo {
   position: absolute;
-  inset: -10px -6px;
+  /* Hugs the button: a rim of light, not a cloud around it. */
+  inset: -4px -2px;
   z-index: -1;
-  filter: blur(16px);
-  opacity: 0.75;
+  border-radius: 18px;
+  overflow: hidden;
+  filter: blur(8px);
+  opacity: 0.85;
   pointer-events: none;
   transition: opacity 240ms ease;
 }
@@ -569,9 +572,9 @@ body {
 .aura-halo > span,
 .aura-tint > span {
   position: absolute;
-  top: -40%;
-  width: 46%;
-  height: 180%;
+  top: -10%;
+  width: 40%;
+  height: 120%;
   border-radius: 999px;
   background: radial-gradient(closest-side, var(--c), transparent);
   will-change: transform;
@@ -590,28 +593,28 @@ body {
   animation-name: aura-drift-d;
 }
 @keyframes aura-drift-a {
-  0% { transform: translate(-12%, -8%) scale(1); }
-  35% { transform: translate(28%, 14%) scale(1.25); }
-  70% { transform: translate(6%, 26%) scale(0.9); }
-  100% { transform: translate(-22%, 4%) scale(1.12); }
+  0% { transform: translate(-6%, -3%) scale(1); }
+  35% { transform: translate(14%, 6%) scale(1.25); }
+  70% { transform: translate(3%, 10%) scale(0.9); }
+  100% { transform: translate(-11%, 2%) scale(1.12); }
 }
 @keyframes aura-drift-b {
-  0% { transform: translate(18%, 10%) scale(1.1); }
-  40% { transform: translate(-26%, -6%) scale(0.92); }
-  75% { transform: translate(10%, -20%) scale(1.28); }
-  100% { transform: translate(-6%, 18%) scale(1); }
+  0% { transform: translate(9%, 4%) scale(1.1); }
+  40% { transform: translate(-13%, -2%) scale(0.92); }
+  75% { transform: translate(5%, -8%) scale(1.28); }
+  100% { transform: translate(-3%, 7%) scale(1); }
 }
 @keyframes aura-drift-c {
-  0% { transform: translate(-4%, 22%) scale(0.95); }
-  30% { transform: translate(-30%, -12%) scale(1.2); }
-  65% { transform: translate(24%, 6%) scale(1.05); }
-  100% { transform: translate(12%, -16%) scale(0.9); }
+  0% { transform: translate(-2%, 9%) scale(0.95); }
+  30% { transform: translate(-15%, -5%) scale(1.2); }
+  65% { transform: translate(12%, 2%) scale(1.05); }
+  100% { transform: translate(6%, -6%) scale(0.9); }
 }
 @keyframes aura-drift-d {
-  0% { transform: translate(22%, -14%) scale(1.15); }
-  45% { transform: translate(2%, 24%) scale(0.95); }
-  80% { transform: translate(-24%, 8%) scale(1.22); }
-  100% { transform: translate(14%, 12%) scale(1); }
+  0% { transform: translate(11%, -6%) scale(1.15); }
+  45% { transform: translate(1%, 10%) scale(0.95); }
+  80% { transform: translate(-12%, 3%) scale(1.22); }
+  100% { transform: translate(7%, 5%) scale(1); }
 }
 @media (prefers-reduced-motion: reduce) {
   .aura-halo > span,
