@@ -61,11 +61,11 @@ export function Picker() {
 
   return (
     <div data-stage-floor className="space-y-4">
-      <div className="ms-seq flex items-end justify-between gap-3" style={seq(0)}>
-        <div>
-          <h1 className="display">어떤 캐릭터를 뽑을까요?</h1>
-        </div>
-        <Button variant="ghost" className="shrink-0 px-2.5 py-1.5 text-[12.5px]" onClick={() => selectAll(!allOn)}>
+      <div className="ms-seq flex items-center justify-between gap-3" style={seq(0)}>
+        <h1 className="display">어떤 캐릭터를 뽑을까요?</h1>
+        {/* Negative block margin: the button's tap area must not make the row
+            taller than the title, or the title sits low with empty space above. */}
+        <Button variant="ghost" className="-my-2 shrink-0 px-2.5 py-1.5 text-[12.5px]" onClick={() => selectAll(!allOn)}>
           {allOn ? '모두 해제' : '모두 선택'}
         </Button>
       </div>
