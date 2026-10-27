@@ -84,6 +84,21 @@ body {
   }
 }
 
+/*
+ * A viewport is a grid with one auto column, and an auto column grows to its
+ * content's min-content width — one wide control (an <input> has an
+ * intrinsic ~20ch width) and the column outgrows the phone, so the sheet
+ * renders wider than the screen and off to one side. The column is pinned to
+ * the viewport instead; content has to fit the sheet, not the other way round.
+ */
+.ms-viewport {
+  grid-template-columns: minmax(0, 1fr);
+}
+.ms-slot,
+.ms-slot * {
+  min-width: 0;
+}
+
 /* Sheets take the glass: blur what the stage paints under them. */
 .ms-slot {
   -webkit-backdrop-filter: blur(22px) saturate(1.4);

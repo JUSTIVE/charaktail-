@@ -224,10 +224,12 @@ function RangeEditor({
   const apply = () => setError(setRange(attributeId, Number(low), Number(high)))
 
   const field = (label: string, value: string, set: (v: string) => void) => (
-    <label className="name-field flex-1">
+    <label className="name-field min-w-0 flex-1 gap-2 px-3">
       <span className="eyebrow shrink-0">{label}</span>
       <input
         value={value}
+        // No intrinsic width: the field takes what the row gives it.
+        size={1}
         inputMode="numeric"
         enterKeyHint="done"
         onChange={(event) => {
