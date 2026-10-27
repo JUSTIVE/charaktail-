@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["vite/client", "vite-plugin-pwa/client", "bun"],
+    "paths": {
+      "morphing-sheet": ["./vendor/morphing-sheet/index.ts"],
+      "morphing-sheet/react": ["./vendor/morphing-sheet/react/index.ts"]
+    }
+  },
+  "include": ["src/**/*", "vendor/**/*", "vite.config.ts"]
+}

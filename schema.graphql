@@ -1,0 +1,8 @@
+# charaktail has no server. This file exists only so the compiler has a root
+# to hang the client schema on: every type below the root is declared by a
+# @relayType / @relayField docblock in src/domain/resolvers and resolved from
+# the attribute catalogue plus local state.
+type Query {
+  """Never selected — the whole graph is client-side."""
+  _root: Boolean
+}

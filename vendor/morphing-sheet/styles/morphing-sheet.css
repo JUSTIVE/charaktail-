@@ -1,0 +1,1483 @@
+/*
+ * morphing-sheet
+ * ---------------------------------------------------------------------------
+ * A stack of sheet layers with a depth cap. Under the cap, a push adds a layer
+ * and it fades in. At the cap, the layer count freezes and the top sheet morphs
+ * into the new view instead — the *area* changes shape while the content it was
+ * showing steps out of the way and the next one steps in.
+ *
+ * The view-transition-name lives on the slot frame, never on a view. That is
+ * what makes the region morph rather than the contents cross-fade.
+ *
+ * Everything is inside @layer morphing-sheet.* so app CSS (Tailwind utilities
+ * included) always wins without !important.
+ *
+ * Full model: docs/spec.md
+ */
+@layer morphing-sheet.tokens, morphing-sheet.base, morphing-sheet.placement,
+  morphing-sheet.inline, morphing-sheet.stack, morphing-sheet.content,
+  morphing-sheet.transition, morphing-sheet.inspector;
+
+/*
+ * The two cascade indices are *registered* (#91), and that is load-bearing.
+ *
+ * An unregistered custom property is substituted as tokens, so a
+ * `sibling-index()` inside one is re-resolved on whatever element reads it —
+ * a cell reading its row's index would get its own column position instead.
+ * Registering makes the value compute on the element that declares it, so a
+ * row resolves its number once and its cells inherit that number.
+ */
+@property --ms-item-index {
+  syntax: '<integer>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --ms-cell-index {
+  syntax: '<integer>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@layer morphing-sheet.tokens {
+  :where(:root) {
+    /*
+     * Motion. Three curves, because entering, moving and leaving are not the
+     * same gesture: a strong ease-out for arrivals, an iOS-drawer curve for the
+     * frame's travel, and a quick curve for departures. Exits are always
+     * shorter than entrances — the system responding should outrun the user
+     * deciding.
+     */
+    /* A hair past the target before it settles — the frame reads as a soft
+       body rather than a rigid box. Kept under 2% on purpose. */
+    --ms-ease-morph: cubic-bezier(0.32, 0.86, 0.24, 1.012);
+    --ms-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ms-ease-exit: cubic-bezier(0.4, 0, 0.9, 0.6);
+
+    --ms-duration: 320ms;
+    --ms-content-out: 110ms;
+    --ms-content-in: 190ms;
+    --ms-layer-enter: 260ms;
+    --ms-layer-exit: 180ms;
+
+    /* Blur bridges the two layouts so the swap reads as one surface changing
+       rather than two panels trading places. Strength (7px) per #64; the
+       timings stay short — #65 confined longer durations to the env reveal. */
+    --ms-content-blur: 7px;
+    --ms-content-shift: 10px;
+
+    /* Squash-and-stretch during the morph. 0.6% — you feel it, you do not
+       see it. Past about 1.5% it starts reading as a wobble. */
+    --ms-jelly: 0.006; /* @param jelly — the one compile-time parameter (MS_JELLY) */
+
+    /* Arrival follows the morph grammar: the frame fades in with a subtle
+       fly-in from below, then the content settles onto it a beat later. */
+    --ms-layer-fly: 10px;
+
+    /* Cells arrive along the other axis (#88): a row lands from below, its
+       cells settle in from the start edge. The travel has to clear the row's
+       own 8px — a horizontal slide reads only if it is the thing you notice,
+       and the row's fade is running underneath it. The sign flips under RTL. */
+    --ms-cell-travel: -10px;
+
+    /* Layers behind the top one get pushed back and dimmed. */
+    --ms-slot-shift: 14px;
+    --ms-slot-scale-step: 0.04;
+    /* A parent layer has to stop competing for the eye: it fades toward the
+       scrim and takes a veil, so its text reads as depth rather than as a
+       second dialog asking to be read. */
+    --ms-slot-fade: 0.42;
+    --ms-slot-dim: 0.55;
+
+    /* Surface. Radius defaults to square (#70): rounding is an app-level
+       curation — the lab opts in, no ativ stays sharp. */
+    --ms-radius: 0px;
+    --ms-pad-inline: 22px;
+    --ms-pad-block: 20px;
+    --ms-z: 100;
+    --ms-inset: 16px;
+    --ms-max-inline: 560px;
+    --ms-max-block: 84svh;
+
+    --ms-surface: light-dark(#fff, oklch(0.21 0.006 265));
+    --ms-surface-border: light-dark(oklch(0.9 0.003 265), oklch(0.32 0.008 265));
+    --ms-edge-highlight: light-dark(transparent, rgb(255 255 255 / 0.06));
+    --ms-text: light-dark(oklch(0.24 0.01 265), oklch(0.97 0.003 265));
+
+    --ms-scrim-color: light-dark(oklch(0.32 0.02 265 / 0.34), oklch(0.06 0.01 265 / 0.46));
+    --ms-scrim-blur: 2px;
+
+    /* Layered rather than a single soft blob: a contact shadow, a mid lift and
+       a wide ambient pool read as one object at one height. */
+    --ms-shadow:
+      0 1px 2px light-dark(rgb(15 18 30 / 0.06), rgb(0 0 0 / 0.3)),
+      0 12px 28px -10px light-dark(rgb(15 18 30 / 0.16), rgb(0 0 0 / 0.45)),
+      0 40px 72px -32px light-dark(rgb(15 18 30 / 0.28), rgb(0 0 0 / 0.6));
+
+    /* Corners flatten where two sheets sit against each other, and each
+       touching edge carries half the minimum gap between them. */
+    --ms-radius-adjacent: 0px;
+    --ms-adjacent-gap: 2px;
+
+    /* Stacking bands: element above structure above base, always. A floating
+       (non-inline) base sheet still sits under every task surface. */
+    --ms-z-base: 50;
+    --ms-z-structure: 100;
+    --ms-z-element: 200;
+  }
+
+  /* "Left to right" is really "from the start edge". */
+  :where([dir='rtl']) {
+    --ms-cell-travel: 10px;
+  }
+
+  /*
+   * The three tiers. Mass decides response: the base is the heaviest surface
+   * and moves slowest, an element is the lightest and snaps. Non-inherited
+   * chrome (z, radius, padding, shadow) scopes to the region; anything the
+   * view-transition pseudo-elements read must also be mirrored on :root, since
+   * those originate at the document root, not inside the viewport.
+   */
+  .ms-viewport[data-tier='base'] {
+    --ms-z: var(--ms-z-base);
+    --ms-duration: 380ms;
+    --ms-content-out: 120ms;
+    --ms-content-in: 210ms;
+    --ms-layer-enter: 300ms;
+  }
+
+  .ms-viewport[data-tier='structure'] {
+    --ms-z: var(--ms-z-structure);
+  }
+
+  .ms-viewport[data-tier='element'] {
+    --ms-z: var(--ms-z-element);
+    --ms-duration: 240ms;
+    --ms-content-out: 90ms;
+    --ms-content-in: 150ms;
+    --ms-layer-enter: 200ms;
+    --ms-layer-exit: 140ms;
+    --ms-pad-inline: 8px;
+    --ms-pad-block: 8px;
+    --ms-max-block: 60svh;
+    /* Lighter material: a small floating surface casts a thinner shadow. */
+    --ms-shadow:
+      0 1px 2px light-dark(rgb(15 18 30 / 0.05), rgb(0 0 0 / 0.28)),
+      0 8px 20px -6px light-dark(rgb(15 18 30 / 0.12), rgb(0 0 0 / 0.4)),
+      0 24px 48px -20px light-dark(rgb(15 18 30 / 0.2), rgb(0 0 0 / 0.5));
+  }
+
+  :root[data-ms-tier='base'] {
+    --ms-duration: 380ms;
+  }
+
+  :root[data-ms-tier='element'] {
+    --ms-duration: 240ms;
+    /* A small surface has less give — the jelly shrinks with the mass. */
+    --ms-jelly: 0.004; /* @param jelly-element — derived: MS_JELLY × 2/3 */
+  }
+}
+
+@layer morphing-sheet.base {
+  .ms-viewport {
+    position: fixed;
+    inset: 0;
+    z-index: var(--ms-z);
+    display: grid;
+    pointer-events: none;
+    color: var(--ms-text);
+    color-scheme: light dark;
+  }
+
+  .ms-scrim {
+    position: absolute;
+    inset: 0;
+    background: var(--ms-scrim-color);
+    backdrop-filter: blur(var(--ms-scrim-blur));
+    pointer-events: auto;
+    animation: ms-fade-in var(--ms-layer-enter) var(--ms-ease-out) both;
+  }
+
+  .ms-slot {
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background: var(--ms-surface);
+    border: 1px solid var(--ms-surface-border);
+    border-radius: var(--ms-radius);
+    box-shadow: var(--ms-shadow);
+    pointer-events: auto;
+    overflow: clip;
+    outline: none;
+    /* Keeps the captured frame from painting outside its own radius. */
+    contain: paint;
+    isolation: isolate;
+  }
+
+  /*
+   * Adjacency: only the touching side loses its curve, so a pair of flush
+   * sheets reads as one grouped surface with rounded outer corners.
+   */
+  .ms-viewport[data-adjacent~='start'] > .ms-slot {
+    border-start-start-radius: var(--ms-radius-adjacent);
+    border-end-start-radius: var(--ms-radius-adjacent);
+  }
+  .ms-viewport[data-adjacent~='end'] > .ms-slot {
+    border-start-end-radius: var(--ms-radius-adjacent);
+    border-end-end-radius: var(--ms-radius-adjacent);
+  }
+  .ms-viewport[data-adjacent~='top'] > .ms-slot {
+    border-start-start-radius: var(--ms-radius-adjacent);
+    border-start-end-radius: var(--ms-radius-adjacent);
+  }
+  .ms-viewport[data-adjacent~='bottom'] > .ms-slot {
+    border-end-start-radius: var(--ms-radius-adjacent);
+    border-end-end-radius: var(--ms-radius-adjacent);
+  }
+
+  /* A single bright edge along the top: the surface reads as a real slab
+     catching light rather than a flat rectangle. */
+  .ms-slot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--ms-edge-highlight), transparent 42%);
+  }
+
+  .ms-slot-content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-block-size: 0;
+  }
+
+  .ms-view {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-block-size: 0;
+  }
+
+  /* Covered views stay mounted — that is the whole point — so the `hidden`
+     attribute has to beat the flex display above. */
+  .ms-view[hidden] {
+    display: none;
+  }
+
+  .ms-view-header {
+    flex: none;
+    padding: var(--ms-pad-block) var(--ms-pad-inline) 0;
+    font-size: 15px;
+    font-weight: 600;
+    /* Tracking tightens as type grows; a title set at body spacing reads loose. */
+    letter-spacing: -0.012em;
+    line-height: 1.3;
+  }
+
+  .ms-view-body {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    padding: 14px var(--ms-pad-inline) var(--ms-pad-block);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  /*
+   * Overlay scrollbars (#56): the rail costs zero width — the native bar is
+   * hidden and a floating handle (drawn by installOverlayScrollbars) rides
+   * over the content, visible only while scrolling or hovering.
+   */
+  .ms-scroll {
+    scrollbar-width: none;
+  }
+
+  .ms-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ms-scrollbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    block-size: 0;
+  }
+
+  .ms-scrollbar-thumb {
+    position: absolute;
+    inset-inline-end: var(--ms-scrollbar-inset, 3px);
+    top: 0;
+    inline-size: 4px;
+    border-radius: var(--ms-scrollbar-radius, 0px);
+    background: light-dark(rgb(20 22 30 / 0.28), rgb(255 255 255 / 0.3));
+    opacity: 0;
+    transition: opacity 200ms ease, inline-size 120ms ease;
+    pointer-events: auto;
+    touch-action: none;
+  }
+
+  .ms-scrollbar-thumb[data-visible='true'] {
+    opacity: 1;
+  }
+
+  .ms-scrollbar-thumb:hover,
+  .ms-scrollbar-thumb:active {
+    inline-size: 6px;
+  }
+
+  .ms-view-fit {
+    display: flow-root;
+  }
+
+  /*
+   * Items (#42): list elements share the sheet material and the element
+   * tier's arrival grammar without being regions — a row is a surface, not a
+   * stack. Stagger by setting --ms-item-index per item.
+   */
+  .ms-item {
+    background: var(--ms-surface);
+    border: 1px solid var(--ms-surface-border);
+    border-radius: var(--ms-radius-item, 0px);
+  }
+
+  /* .ms-seq (#52) joins the same arrival sequence without the material —
+     for blocks inside dialog views, palette rows, chips. */
+  .ms-item,
+  .ms-seq {
+    /*
+     * Arrival is a transition from @starting-style, not an animation: it can
+     * only ever play once per mount, so the entering-beat cascade (#49) can
+     * come and go without a replay flash. Per-property lists keep the stagger
+     * on arrival while hover recolors stay instant.
+     */
+    transition-property: opacity, translate, border-color, background-color;
+    transition-duration: 220ms, 220ms, 140ms, 140ms;
+    transition-timing-function: var(--ms-ease-out), var(--ms-ease-out), ease, ease;
+    transition-delay:
+      calc(min(var(--ms-item-index, 0), 10) * 30ms),
+      calc(min(var(--ms-item-index, 0), 10) * 30ms),
+      0s,
+      0s;
+  }
+
+  /*
+   * Cells (#88) — the horizontal axis of the same arrival. A row arrives from
+   * below, then its cells settle onto it from the start edge, 20ms apart.
+   * The delay carries the row's own delay, so a table fills in as one diagonal
+   * wavefront from the top-left rather than as two unrelated sequences.
+   */
+  .ms-cell {
+    /*
+     * 40ms a step, not the row's 30ms. A column has far fewer stops than a
+     * list has rows, so the same step would spend its whole spread inside one
+     * cell's fade and read as no order at all. The wave still crosses a row
+     * faster than it crosses the rows — lighter surface, quicker wave.
+     *
+     * Both caps matter: 10 rows down the vertical stagger stops growing, 6
+     * cells across the horizontal one does — a wide row must never outrun the
+     * row below it. --ms-item-index inherits from the row — and is registered,
+     * so the row's sibling-index() resolves before the cell inherits it (#91).
+     */
+    --ms-cell-delay: calc(
+      min(var(--ms-item-index, 0), 10) * 30ms + min(var(--ms-cell-index, 0), 6) * 40ms
+    );
+    transition-property: opacity, translate;
+    transition-duration: 190ms;
+    transition-timing-function: var(--ms-ease-out);
+    transition-delay: var(--ms-cell-delay);
+  }
+
+  /*
+   * Both indices are automatic (#91): dropping `ms-item` on a list's rows and
+   * `ms-cell` on a row's children is the whole integration. An inline
+   * --ms-item-index / --ms-cell-index still wins — for an element that is not
+   * its container's direct child, or a deliberate order (a tree's depth).
+   */
+  @supports (transition-delay: calc(sibling-index() * 1ms)) {
+    .ms-item,
+    .ms-seq {
+      --ms-item-index: calc(sibling-index() - 1);
+    }
+
+    .ms-cell {
+      --ms-cell-index: calc(sibling-index() - 1);
+    }
+  }
+
+  /* Without sibling-index(), a short ladder covers the positions that matter
+     and an app-set index covers the rest. */
+  @supports not (transition-delay: calc(sibling-index() * 1ms)) {
+    .ms-cell:nth-child(1) { --ms-cell-index: 0; }
+    .ms-cell:nth-child(2) { --ms-cell-index: 1; }
+    .ms-cell:nth-child(3) { --ms-cell-index: 2; }
+    .ms-cell:nth-child(4) { --ms-cell-index: 3; }
+    .ms-cell:nth-child(5) { --ms-cell-index: 4; }
+    .ms-cell:nth-child(6) { --ms-cell-index: 5; }
+    .ms-cell:nth-child(7) { --ms-cell-index: 6; }
+  }
+
+  /*
+   * Arrival plays for the first 96 rows of a list (#80, widened by #91).
+   *
+   * The cap is a cost ceiling, not a design one: it exists so a five-thousand
+   * row ledger does not animate five thousand rows. 24 was low enough to land
+   * *inside* a tall viewport, and that showed as a seam — the rows above it
+   * faded in, the ones below were simply already there. 96 clears any
+   * realistic fold, and the cost tracks the animated count rather than the
+   * list: 96 rows measure the same as 24 against a 5,000-row list, while
+   * removing the cap entirely does not (p95 9ms → 75ms, 384ms worst frame).
+   */
+  @starting-style {
+    .ms-item:nth-child(-n + 96),
+    .ms-seq {
+      opacity: 0;
+      translate: 0 8px;
+    }
+
+    /* Cells ride their row's cap: past it neither the row nor its cells
+       animate, so the ceiling holds on both axes. */
+    .ms-item:nth-child(-n + 96) .ms-cell,
+    .ms-seq .ms-cell {
+      opacity: 0;
+      translate: var(--ms-cell-travel) 0;
+    }
+  }
+
+  /* Untitled views own their whole top edge. */
+  .ms-view-body:first-child {
+    padding-block-start: var(--ms-pad-block);
+  }
+}
+
+@layer morphing-sheet.placement {
+  .ms-viewport[data-placement='bottom'] { align-items: end; justify-items: center; }
+  .ms-viewport[data-placement='top'] { align-items: start; justify-items: center; }
+  .ms-viewport[data-placement='center'] { place-items: center; }
+  .ms-viewport[data-placement='left'] { align-items: stretch; justify-items: start; }
+  .ms-viewport[data-placement='right'] { align-items: stretch; justify-items: end; }
+
+  /* Every slot occupies the same grid cell; depth decides what sits on top. */
+  .ms-viewport > .ms-slot {
+    grid-area: 1 / 1;
+    margin: var(--ms-inset);
+    inline-size: min(100% - var(--ms-inset) * 2, var(--ms-slot-inline, var(--ms-max-inline)));
+    max-block-size: var(--ms-max-block);
+  }
+
+  .ms-viewport[data-placement='left'] > .ms-slot,
+  .ms-viewport[data-placement='right'] > .ms-slot {
+    inline-size: min(100% - var(--ms-inset) * 2, var(--ms-slot-inline, 420px));
+    max-block-size: none;
+  }
+
+  /* A top-anchored element (a palette) hangs below the edge, not glued to it. */
+  .ms-viewport[data-tier='element'][data-placement='top'] > .ms-slot {
+    margin-block-start: clamp(48px, 12vh, 140px);
+  }
+
+  /*
+   * Anchored slots (#96). A point resolved at push time cannot follow a
+   * scroll — the sheet stayed where the screen was while its trigger moved
+   * out from under it. Where CSS anchor positioning exists the browser holds
+   * the two together instead: it re-solves on scroll and resize, and flips
+   * the sheet near an edge rather than letting it hang off one.
+   *
+   * The per-slot half (the name, `fixed`, the gap) arrives inline, because it
+   * has to beat the region's own placement — a top-placed element region
+   * pushes its slot down by a good 48px, which is right for a palette and
+   * wrong for something pinned to a chip.
+   */
+  @supports (position-area: block-end) {
+    .ms-slot[data-anchored='css'] {
+      position-area: block-end span-inline-end;
+      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+      position-visibility: anchors-visible;
+      inset: auto;
+    }
+  }
+}
+
+@layer morphing-sheet.inline {
+  /*
+   * A persistent region — a sidebar, an inspector — is the same sheet, just not
+   * an overlay: it sits in the layout, fills its column, and skips the scrim.
+   */
+  .ms-viewport[data-inline='true'] {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    block-size: 100%;
+    pointer-events: auto;
+    /* Whatever the placement says, an inline slot fills its column — and the
+       track must be pinned to the viewport, or an auto row grows to content
+       height and the slot's overflow clip eats the scrolling (#58). */
+    place-items: stretch;
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    /* The slots' intra-region z-indexes must never leak into the page's
+       stacking context — an inline canvas would otherwise paint over every
+       floating sheet in a lower band. */
+    isolation: isolate;
+  }
+
+  /* The floor always matches the viewport (#59, #60), whatever wraps it. */
+  .ms-viewport[data-tier='base'][data-inline='true'] {
+    inline-size: 100svw;
+    block-size: 100svh;
+  }
+
+  /* Stretched, not 100%-wide: the grid subtracts the adjacency margins, so a
+     1px gap contribution never overflows the region's own column. */
+  .ms-viewport[data-inline='true'] > .ms-slot {
+    margin: 0;
+    inline-size: auto;
+    block-size: auto;
+    max-inline-size: none;
+    max-block-size: none;
+  }
+
+  /* An inline region sits in the page, so the material loses its lift; a
+     non-modal overlay (an element popover) still floats and keeps it. */
+  .ms-viewport[data-inline='true'] > .ms-slot {
+    box-shadow: none;
+  }
+
+  /* Each adjacent edge pays half the gap, so two mutually-declared sheets sit
+     exactly --ms-adjacent-gap apart. Declared after the inline margin reset. */
+  .ms-viewport[data-adjacent~='start'] > .ms-slot {
+    margin-inline-start: calc(var(--ms-adjacent-gap) / 2);
+  }
+  .ms-viewport[data-adjacent~='end'] > .ms-slot {
+    margin-inline-end: calc(var(--ms-adjacent-gap) / 2);
+  }
+  .ms-viewport[data-adjacent~='top'] > .ms-slot {
+    margin-block-start: calc(var(--ms-adjacent-gap) / 2);
+  }
+  .ms-viewport[data-adjacent~='bottom'] > .ms-slot {
+    margin-block-end: calc(var(--ms-adjacent-gap) / 2);
+  }
+}
+
+@layer morphing-sheet.stack {
+  /*
+   * `--ms-depth` counts up from the top layer, so the arithmetic below reads as
+   * "the further back you are, the smaller and dimmer you get".
+   */
+  .ms-slot {
+    --ms-depth: 0;
+    z-index: calc(100 - var(--ms-depth));
+    /* Edge-anchored stacks slide back along their own axis; a centred stack
+       scales only, so the layers stay concentric. */
+    transform: translate(
+        calc(var(--ms-depth) * var(--ms-slot-shift-x, 0px)),
+        calc(var(--ms-depth) * var(--ms-slot-shift-y, 0px))
+      )
+      scale(calc(1 - var(--ms-depth) * var(--ms-slot-scale-step)));
+    transition:
+      transform var(--ms-layer-enter) var(--ms-ease-morph),
+      opacity var(--ms-layer-enter) var(--ms-ease-out),
+      /* Content-driven resizes glide (#36). auto↔px does not interpolate, so
+         the first measured set and every morph handoff stay instant. */
+      block-size 260ms var(--ms-ease-morph);
+  }
+
+  .ms-viewport[data-placement='bottom'] .ms-slot { --ms-slot-shift-y: calc(var(--ms-slot-shift) * -1); }
+  .ms-viewport[data-placement='top'] .ms-slot { --ms-slot-shift-y: var(--ms-slot-shift); }
+  .ms-viewport[data-placement='left'] .ms-slot { --ms-slot-shift-x: var(--ms-slot-shift); }
+  .ms-viewport[data-placement='right'] .ms-slot { --ms-slot-shift-x: calc(var(--ms-slot-shift) * -1); }
+
+  .ms-slot:not([data-depth='0']) {
+    opacity: calc(1 - var(--ms-depth) * var(--ms-slot-fade));
+  }
+
+  .ms-slot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: var(--ms-scrim-color);
+    opacity: calc(var(--ms-depth) * var(--ms-slot-dim));
+    transition: opacity var(--ms-layer-enter) var(--ms-ease-out);
+  }
+
+  /* Only a slot that just joined the stack animates in. A slot that becomes
+     the top one because the layer above it left is already on screen. */
+  .ms-slot[data-entering='true'] {
+    animation: ms-layer-enter var(--ms-layer-enter) var(--ms-ease-out) both;
+  }
+
+  /* The frame arrives first; its content fades in and refocuses a beat later —
+     the same entering beat a morph uses, so arrival and morph read as one
+     grammar. */
+  .ms-slot[data-entering='true'] > .ms-slot-content {
+    animation: ms-content-in var(--ms-content-in) var(--ms-ease-out) both;
+    animation-delay: calc(var(--ms-layer-enter) * 0.22);
+  }
+
+  .ms-slot[data-exiting='true'] {
+    animation: ms-layer-exit var(--ms-layer-exit) var(--ms-ease-exit) both;
+    pointer-events: none;
+  }
+
+  /* The scrim only leaves when nothing is left behind it — one layer closing
+     out of several must not take the dimming with it. */
+  .ms-viewport[data-clearing='true'] > .ms-scrim {
+    animation: ms-fade-out var(--ms-layer-exit) var(--ms-ease-exit) both;
+  }
+
+  @keyframes ms-layer-enter {
+    from { opacity: 0; transform: translateY(var(--ms-layer-fly)); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes ms-layer-exit {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+}
+
+@layer morphing-sheet.content {
+  /*
+   * The three beats of a morph. `exiting` and `entering` are real animations so
+   * the orchestrator can await them; `hidden` is a static state held for the
+   * duration of the view transition.
+   */
+  .ms-slot-content[data-content-state='exiting'] {
+    animation: ms-content-out var(--ms-content-out) var(--ms-ease-exit) both;
+  }
+
+  .ms-slot-content[data-content-state='hidden'] {
+    opacity: 0;
+  }
+
+  .ms-slot-content[data-content-state='entering'] {
+    animation: ms-content-in var(--ms-content-in) var(--ms-ease-out) both;
+  }
+
+  @keyframes ms-content-out {
+    from { opacity: 1; transform: none; filter: blur(0); }
+    to {
+      opacity: 0;
+      transform: translateY(calc(var(--ms-content-shift) * -1));
+      filter: blur(var(--ms-content-blur));
+    }
+  }
+
+  @keyframes ms-content-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--ms-content-shift));
+      filter: blur(var(--ms-content-blur));
+    }
+    to { opacity: 1; transform: none; filter: blur(0); }
+  }
+
+  /*
+   * #49 — after a morph settles (and on a layer's arrival beat), the items in
+   * the incoming view re-enter top-down: 30ms per step, capped so long lists
+   * don't stretch the choreography. The orchestrator's entering wait watches
+   * these animations, so the beat holds until the cascade lands.
+   */
+  .ms-slot-content[data-content-state='entering'] .ms-item:nth-child(-n + 96),
+  .ms-slot-content[data-content-state='entering'] .ms-seq,
+  .ms-slot[data-entering='true'] > .ms-slot-content .ms-item:nth-child(-n + 96),
+  .ms-slot[data-entering='true'] > .ms-slot-content .ms-seq {
+    animation: ms-item-cascade 220ms var(--ms-ease-out) both;
+    animation-delay: calc(min(var(--ms-item-index, 0), 10) * 30ms);
+  }
+
+  @keyframes ms-item-cascade {
+    from { opacity: 0; translate: 0 8px; }
+    to { opacity: 1; translate: 0 0; }
+  }
+
+  /*
+   * #88 — the same beat, one level down and one axis over. Cells only join
+   * inside a container that is itself cascading (a row within the 24 cap, or
+   * a .ms-seq block), which is what keeps a huge list from trading its row
+   * animations for thousands of cell ones.
+   */
+  .ms-slot-content[data-content-state='entering'] .ms-item:nth-child(-n + 96) .ms-cell,
+  .ms-slot-content[data-content-state='entering'] .ms-seq .ms-cell,
+  .ms-slot[data-entering='true'] > .ms-slot-content .ms-item:nth-child(-n + 96) .ms-cell,
+  .ms-slot[data-entering='true'] > .ms-slot-content .ms-seq .ms-cell {
+    animation: ms-cell-cascade 190ms var(--ms-ease-out) both;
+    animation-delay: var(--ms-cell-delay);
+  }
+
+  @keyframes ms-cell-cascade {
+    from { opacity: 0; translate: var(--ms-cell-travel) 0; }
+    to { opacity: 1; translate: 0 0; }
+  }
+
+  @keyframes ms-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes ms-fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+}
+
+@layer morphing-sheet.transition {
+  /*
+   * Slot names are namespaced per region (`ms-<stackId>-slot-<n>`), so the
+   * grouping happens through `view-transition-class` rather than a hand-written
+   * list of names. A browser without it still morphs — it just falls back to
+   * the default cross-fade timing.
+   */
+  :root[data-ms-phase='morphing']::view-transition-group(*.ms-slot) {
+    animation-duration: var(--ms-duration);
+    animation-timing-function: var(--ms-ease-morph);
+  }
+  /*
+   * The content is already invisible by the time these snapshots are taken, so
+   * they are essentially two rounded rectangles. A short cross-fade at full
+   * group size hides the corner-radius distortion that scaling a snapshot
+   * would otherwise show.
+   */
+  :root[data-ms-phase='morphing']::view-transition-old(*.ms-slot),
+  :root[data-ms-phase='morphing']::view-transition-new(*.ms-slot) {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    object-position: top center;
+    overflow: clip;
+  }
+
+  :root[data-ms-morph='swap']::view-transition-old(*.ms-slot) {
+    animation: ms-fade-out calc(var(--ms-duration) * 0.35) linear both;
+  }
+  /*
+   * The jelly. The group animation carries the box between two sizes; this adds
+   * a sub-percent counter-scale on the way, so the surface reads as something
+   * with a little give rather than a rectangle being resized. Deliberately
+   * below the threshold where you would call it a bounce.
+   */
+  :root[data-ms-morph='swap']::view-transition-new(*.ms-slot) {
+    animation:
+      ms-fade-in calc(var(--ms-duration) * 0.6) linear both,
+      ms-jelly var(--ms-duration) var(--ms-ease-morph) both;
+  }
+
+  /*
+   * Trigger morphs (#29, tuned by #32). A painted snapshot must never stretch:
+   * scaling a button label to sheet size is what reads as "awkward". The
+   * painted side keeps its natural size and dissolves with a touch of blur;
+   * only the frame travels.
+   *
+   * arrive — old is the painted trigger, new is a blank surface.
+   * depart — old is the blank surface (content already stepped out), new is
+   * the painted trigger, condensing back to natural size at the end.
+   */
+  :root[data-ms-morph='arrive']::view-transition-old(*.ms-slot) {
+    inline-size: auto;
+    block-size: auto;
+    /* Gone almost immediately (#33): the button yields the stage to the frame. */
+    animation: ms-dissolve-out calc(var(--ms-duration) * 0.16) var(--ms-ease-exit) both;
+  }
+  :root[data-ms-morph='arrive']::view-transition-new(*.ms-slot) {
+    animation:
+      ms-fade-in calc(var(--ms-duration) * 0.5) linear both,
+      ms-jelly var(--ms-duration) var(--ms-ease-morph) both;
+  }
+
+  :root[data-ms-morph='depart']::view-transition-old(*.ms-slot) {
+    animation: ms-fade-out calc(var(--ms-duration) * 0.45) linear both;
+  }
+  :root[data-ms-morph='depart']::view-transition-new(*.ms-slot) {
+    inline-size: auto;
+    block-size: auto;
+    animation: ms-dissolve-in calc(var(--ms-duration) * 0.5) var(--ms-ease-out) both;
+    animation-delay: calc(var(--ms-duration) * 0.42);
+  }
+
+  @keyframes ms-dissolve-out {
+    from { opacity: 1; filter: blur(0); }
+    to { opacity: 0; filter: blur(7px); }
+  }
+
+  @keyframes ms-dissolve-in {
+    from { opacity: 0; filter: blur(7px); }
+    to { opacity: 1; filter: blur(0); }
+  }
+
+  @keyframes ms-jelly {
+    0% { transform: scale(1, 1); }
+    42% {
+      transform: scale(calc(1 + var(--ms-jelly)), calc(1 - var(--ms-jelly)));
+    }
+    72% {
+      transform: scale(calc(1 - var(--ms-jelly) * 0.45), calc(1 + var(--ms-jelly) * 0.45));
+    }
+    100% { transform: scale(1, 1); }
+  }
+
+  /*
+   * Everything that is not the morphing slot — the page, parent and sibling
+   * sheets, the scrim — carries no view-transition-name, so it all lives in
+   * the root snapshot. Swapping that snapshot in one frame keeps every
+   * non-participant perfectly still while the one named slot morphs.
+   */
+  :root[data-ms-phase='morphing']::view-transition-old(root),
+  :root[data-ms-phase='morphing']::view-transition-new(root) {
+    animation-duration: 1ms;
+  }
+
+  /*
+   * Reduced motion is not "no feedback" — the surface still changes, it just
+   * stops travelling. Opacity survives because it is what explains the change.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    :where(:root) {
+      --ms-duration: 1ms;
+      --ms-content-out: 80ms;
+      --ms-content-in: 120ms;
+      --ms-layer-enter: 140ms;
+      --ms-layer-exit: 120ms;
+      --ms-content-shift: 0px;
+      --ms-content-blur: 0px;
+      --ms-jelly: 0;
+      --ms-layer-fly: 0px;
+      --ms-cell-travel: 0px;
+      --ms-slot-shift: 0px;
+      --ms-slot-scale-step: 0;
+    }
+
+    .ms-slot {
+      transition-duration: 1ms;
+    }
+
+    .ms-item,
+    .ms-seq,
+    .ms-cell {
+      animation-duration: 1ms !important;
+      transition-duration: 1ms !important;
+      transition-delay: 0s !important;
+      animation-delay: 0s !important;
+    }
+
+    :root[data-ms-phase]::view-transition-group(*),
+    :root[data-ms-phase]::view-transition-old(*),
+    :root[data-ms-phase]::view-transition-new(*) {
+      animation-duration: 1ms !important;
+    }
+  }
+
+  /* Translucency is a preference, not a given. */
+  @media (prefers-reduced-transparency: reduce) {
+    :where(:root) {
+      --ms-scrim-blur: 0px;
+      --ms-scrim-color: light-dark(oklch(0.45 0.02 265 / 0.6), oklch(0.08 0.01 265 / 0.82));
+    }
+
+    .ms-scrim {
+      backdrop-filter: none;
+    }
+  }
+
+  @media (prefers-contrast: more) {
+    :where(:root) {
+      --ms-surface-border: light-dark(oklch(0.4 0.01 265), oklch(0.72 0.01 265));
+      --ms-edge-highlight: transparent;
+    }
+
+    .ms-slot {
+      border-width: 2px;
+    }
+  }
+}
+
+@layer morphing-sheet.inspector {
+  /*
+   * Sheet inspector (#26 → library #74). Deliberately outside the system:
+   * plain fixed overlays, self-contained neutral styling, z above every tier
+   * band (annotations 300, fab 400, modal 410, exploded controls 420). They
+   * mount beside <body>, not in it: exploding transforms the body.
+   */
+  .ms-inspector-fab {
+    position: fixed;
+    z-index: 400;
+    display: grid;
+    place-items: center;
+    inline-size: 40px;
+    block-size: 40px;
+    border: 1px solid light-dark(rgb(0 0 0 / 0.14), rgb(255 255 255 / 0.16));
+    border-radius: 999px;
+    background: light-dark(#fff, #202024);
+    color: light-dark(#55555e, #b6b6c2);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.18), 0 8px 24px -8px rgb(0 0 0 / 0.4);
+  }
+
+  .ms-inspector-fab:active {
+    cursor: grabbing;
+  }
+
+  .ms-inspector-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 410;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgb(0 0 0 / 0.38);
+    animation: ms-inspector-fade 140ms ease-out both;
+  }
+
+  .ms-inspector-panel {
+    inline-size: 400px;
+    max-inline-size: 100%;
+    max-block-size: 84svh;
+    overflow: auto;
+    border: 1px solid light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.14));
+    border-radius: 12px;
+    background: light-dark(#fff, #1b1b1f);
+    color: light-dark(#1a1a1f, #f0f0f4);
+    padding: 20px;
+    font-size: 13px;
+    line-height: 1.5;
+    box-shadow: 0 24px 64px -16px rgb(0 0 0 / 0.45);
+    animation: ms-inspector-pop 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .ms-inspector-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .ms-inspector-head h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .ms-inspector-head p {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: light-dark(#84848f, #8b8b98);
+  }
+
+  .ms-inspector-x {
+    display: grid;
+    place-items: center;
+    inline-size: 28px;
+    block-size: 28px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: light-dark(#84848f, #8b8b98);
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .ms-inspector-x:hover {
+    background: light-dark(rgb(0 0 0 / 0.06), rgb(255 255 255 / 0.08));
+  }
+
+  .ms-inspector-toggle {
+    margin-block-start: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1px solid light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.1));
+    border-radius: 10px;
+    background: light-dark(#f6f6f8, #232328);
+    padding: 10px 12px;
+  }
+
+  .ms-inspector-toggle strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 550;
+  }
+
+  .ms-inspector-toggle small {
+    display: block;
+    font-size: 12px;
+    color: light-dark(#84848f, #8b8b98);
+  }
+
+  .ms-inspector-switch {
+    position: relative;
+    inline-size: 36px;
+    block-size: 20px;
+    flex: none;
+    border: 0;
+    border-radius: 999px;
+    background: light-dark(#d5d5dc, #3a3a42);
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+
+  .ms-inspector-switch[aria-checked='true'] {
+    background: #6366f1;
+  }
+
+  .ms-inspector-switch span {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    inline-size: 16px;
+    block-size: 16px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+    transition: translate 150ms ease;
+  }
+
+  .ms-inspector-switch[aria-checked='true'] span {
+    translate: 16px 0;
+  }
+
+  .ms-inspector-eyebrow {
+    margin: 16px 0 6px;
+    font-size: 11px;
+    font-weight: 550;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: light-dark(#9a9aa5, #77777f);
+  }
+
+  .ms-inspector-empty {
+    margin: 0;
+    border: 1px dashed light-dark(rgb(0 0 0 / 0.16), rgb(255 255 255 / 0.18));
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    font-size: 12px;
+    color: light-dark(#84848f, #8b8b98);
+  }
+
+  .ms-inspector-tree {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 4px;
+  }
+
+  .ms-inspector-tree > li {
+    border: 1px solid light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.1));
+    border-radius: 10px;
+    padding: 8px 12px;
+  }
+
+  .ms-inspector-tree > li > p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ms-inspector-tree strong {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12.5px;
+    font-weight: 550;
+  }
+
+  .ms-inspector-tree em {
+    font-style: normal;
+    color: light-dark(#84848f, #8b8b98);
+  }
+
+  .ms-inspector-meta {
+    margin-inline-start: auto;
+    font-size: 11px;
+    color: light-dark(#9a9aa5, #77777f);
+  }
+
+  .ms-inspector-tree > li > ul {
+    margin: 4px 0 0;
+    padding-inline-start: 16px;
+    list-style: none;
+    font-size: 12px;
+    font-family: ui-monospace, Menlo, monospace;
+    color: light-dark(#6d6d78, #a2a2ae);
+  }
+
+  .ms-inspector-dot {
+    inline-size: 8px;
+    block-size: 8px;
+    border-radius: 3px;
+    flex: none;
+  }
+
+  .ms-inspector-foot {
+    margin: 10px 0 0;
+    font-size: 11px;
+    color: light-dark(#9a9aa5, #77777f);
+  }
+
+  .ms-inspector-annotations {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    pointer-events: none;
+  }
+
+  .ms-inspector-outline {
+    position: absolute;
+    outline-offset: -1px;
+    border-radius: 10px;
+  }
+
+  .ms-inspector-chip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    translate: 8px -50%;
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    color: #fff;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+  }
+
+  .ms-inspector-action {
+    flex: none;
+    border: 1px solid light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.14));
+    border-radius: 8px;
+    background: light-dark(#fff, #2c2c33);
+    color: inherit;
+    padding: 4px 10px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 550;
+    cursor: pointer;
+  }
+
+  .ms-inspector-action:hover:not(:disabled) {
+    background: light-dark(#f0f0f4, #34343c);
+  }
+
+  .ms-inspector-action[aria-pressed='true'] {
+    border-color: #6366f1;
+    color: #6366f1;
+  }
+
+  .ms-inspector-action:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /*
+   * Exploded modal queue (#100–#102): the real page becomes the scene. The
+   * body carries the world transform, so it is the floor; a modal region keeps
+   * the 3D context open down to its views, which stand at their own depths.
+   *
+   * No `perspective` anywhere up the chain — that is what makes it
+   * orthographic. Every flattening property on that chain (overflow, contain,
+   * isolation, backdrop-filter…) is overridden with !important: a layered
+   * important beats app CSS and the scroll lock's inline `overflow`.
+   */
+  .ms-inspector-root {
+    display: contents;
+  }
+
+  :root[data-ms-exploded] {
+    overflow: hidden !important;
+    background:
+      radial-gradient(circle at 50% 40%, light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.04)), transparent 70%),
+      light-dark(#e3e3ea, #0f0f13) !important;
+  }
+
+  :root[data-ms-exploded] body {
+    overflow: visible !important;
+    transform: var(--ms-xray-world) !important;
+    transform-origin: 50vw 50vh !important;
+    transform-style: preserve-3d !important;
+    /* An outline, not a soft shadow: a 120px blur on a page-sized 3D plane
+       is the most expensive thing a software compositor can be asked for. */
+    outline: 2px solid light-dark(rgb(0 0 0 / 0.2), rgb(255 255 255 / 0.18));
+    /* The scene refits as the stack grows or drains; it glides there. An
+       orbit drag must track the pointer, so it turns the glide off. */
+    transition: transform var(--ms-xray-glide) var(--ms-ease-out);
+  }
+
+  :root[data-ms-exploded] {
+    --ms-xray-glide: 380ms;
+  }
+
+  :root[data-ms-exploded][data-ms-xray-dragging] body {
+    transition: none;
+  }
+
+  :root[data-ms-exploded] :is(.ms-viewport[data-modal='true'], .ms-viewport[data-modal='true'] > .ms-slot, .ms-viewport[data-modal='true'] > .ms-slot > .ms-slot-content) {
+    transform-style: preserve-3d !important;
+    overflow: visible !important;
+    contain: none !important;
+    isolation: auto !important;
+    filter: none !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    /* Overriding an animated filter or opacity is not enough: Chrome still
+       flattens an element while such an animation runs on it, and a drill's
+       back-to-back morphs keep the content animating almost all the time —
+       every covered plane collapsed into the slot. So the chain does not
+       animate while exploded; it glides on transform instead (below). */
+    animation: none !important;
+  }
+
+  /* Layers glide to their new depth when one is added or removed. Transform
+     only — it is the one thing on this chain that never flattens it. */
+  :root[data-ms-exploded] :is(
+      .ms-viewport[data-modal='true'] > .ms-scrim,
+      .ms-viewport[data-modal='true'] > .ms-slot,
+      .ms-viewport[data-modal='true'] > .ms-slot > .ms-slot-content > .ms-view,
+      .ms-queued
+    ) {
+    transition:
+      transform var(--ms-xray-glide) var(--ms-ease-out),
+      block-size 260ms var(--ms-ease-morph) !important;
+  }
+
+  /* A covered view stays still. The library's arrival cascade keys off the
+     slot content's state (`[data-content-state='entering'] .ms-seq`), which
+     reaches every view in the slot — harmless while covered views are
+     display:none, a replay of every covered plane on each morph once they
+     are laid out. */
+  :root[data-ms-exploded] .ms-viewport[data-modal='true'] > .ms-slot > .ms-slot-content > .ms-view[data-active='false'] * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* An arriving view drops in from a gap above instead of popping into place;
+     a queued ghost arrives from two gaps above the one it will take. */
+  @starting-style {
+    :root[data-ms-exploded] .ms-viewport[data-modal='true'] > .ms-slot > .ms-slot-content > .ms-view[data-active='true'] {
+      transform: translateZ(var(--ms-xray-gap));
+    }
+
+    :root[data-ms-exploded] .ms-viewport[data-modal='true'] > .ms-slot {
+      transform: translateZ(calc(var(--ms-xray-gap) * (var(--ms-xray-count, 1) + 1))) !important;
+    }
+
+    :root[data-ms-exploded] .ms-queued {
+      transform: translateZ(
+        calc(var(--ms-xray-gap) * (var(--ms-xray-count, 0) + 3 + var(--ms-queue-index, 0)))
+      );
+    }
+  }
+
+  :root[data-ms-exploded] .ms-viewport[data-modal='true'] > .ms-scrim {
+    transform: translateZ(calc(var(--ms-xray-gap) * 0.5));
+    backdrop-filter: none !important;
+    outline: 1px dashed light-dark(rgb(0 0 0 / 0.25), rgb(255 255 255 / 0.25));
+  }
+
+  /* The slot, and the view in flow inside it, ride on top. */
+  :root[data-ms-exploded] .ms-viewport[data-modal='true'] > .ms-slot {
+    transform: translateZ(calc(var(--ms-xray-gap) * var(--ms-xray-count, 1))) !important;
+    outline: 2px solid #6366f1;
+    outline-offset: 3px;
+  }
+
+  /* Covered views come out of hiding (the inspector overrides their
+     `display` inline, only while its Covered toggle is on) onto planes below
+     the slot. They borrow
+     the sheet material, since the frame that normally dresses them is the
+     slot's and only one can wear it. */
+  :root[data-ms-exploded] .ms-viewport[data-modal='true'] > .ms-slot > .ms-slot-content > .ms-view[data-active='false'] {
+    /* Pinned to the size it had on top (recorded by the inspector) and to
+       the slot's centre, where it was — the newcomer's geometry is not its
+       own. Before any record exists it falls back to the slot's width. */
+    position: absolute;
+    inset: 50% auto auto 50%;
+    translate: -50% -50%;
+    inline-size: var(--ms-xray-w, 100%);
+    block-size: var(--ms-xray-h, auto);
+    /* Capped, and the body scrolls inside as it always does; the view itself
+       must not clip, or its label goes with the overflow. */
+    max-block-size: 86vh;
+    box-sizing: border-box;
+    background: var(--ms-surface);
+    border: 1px solid var(--ms-surface-border);
+    border-radius: var(--ms-radius);
+    /* No shadow on stacked planes: a blur per plane is what makes a deep
+       stack crawl under a software compositor (3fps at 21 planes). */
+    outline: 1.5px dashed #6366f1aa;
+    outline-offset: 3px;
+    transform: translateZ(calc(var(--ms-xray-gap) * var(--ms-xray-depth, 0) * -1));
+  }
+
+  :root[data-ms-exploded] .ms-view[data-ms-xray] {
+    position: relative;
+  }
+
+  /* Chrome loses the hit test on a transformed element inside a plane of a 3D
+     world: a button that scales on :active takes the press but hands the
+     release to its parent, so the click never lands — on the floor page as
+     much as in a modal. Only the press chain goes untransformed — resting
+     transforms (a radio dot at scale 0) keep drawing the page as it is. The
+     chain runs through the sheet structure itself (every ancestor of a
+     pressed button is :active too), and those planes must keep their depth. */
+  :root[data-ms-exploded] body :active:not(.ms-viewport, .ms-scrim, .ms-slot, .ms-slot-content, .ms-view, .ms-queue, .ms-queued) {
+    transform: none !important;
+    scale: none !important;
+    translate: none !important;
+    rotate: none !important;
+  }
+
+  :root[data-ms-exploded] .ms-view[data-ms-xray]::after {
+    content: attr(data-ms-xray);
+    position: absolute;
+    inset: -14px auto auto 0;
+    translate: 0 -100%;
+    z-index: 1;
+    border-radius: 999px;
+    padding: 2px 10px;
+    background: #6366f1;
+    color: #fff;
+    font: 500 12px/1.5 ui-monospace, Menlo, monospace;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  :root[data-ms-exploded] .ms-view[data-ms-xray][data-active='false']::after {
+    background: #6366f1cc;
+  }
+
+  /* Queued ghosts (#105): views still waiting in the region's op queue,
+     stacked above the slot in queue order — the next one first. Dashed
+     while waiting, solid once at the head of the queue. */
+  :root[data-ms-exploded] .ms-viewport > .ms-queue {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    transform-style: preserve-3d;
+    pointer-events: none;
+  }
+
+  :root[data-ms-exploded] .ms-queued {
+    grid-area: 1 / 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    inline-size: min(100% - 32px, var(--ms-slot-inline, 420px));
+    max-block-size: 70vh;
+    background: var(--ms-surface);
+    color: var(--ms-text);
+    border: 1.5px dashed #f59e0b;
+    border-radius: var(--ms-radius);
+    transform: translateZ(
+      calc(var(--ms-xray-gap) * (var(--ms-xray-count, 0) + 1 + var(--ms-queue-index, 0)))
+    );
+  }
+
+  :root[data-ms-exploded] .ms-queued[data-running='true'] {
+    border-style: solid;
+  }
+
+  :root[data-ms-exploded] .ms-queued > .ms-view-body {
+    overflow: hidden;
+  }
+
+  :root[data-ms-exploded] .ms-queued::after {
+    content: attr(data-ms-queued-label);
+    position: absolute;
+    inset: -14px auto auto 0;
+    translate: 0 -100%;
+    border-radius: 999px;
+    padding: 2px 10px;
+    background: #f59e0b;
+    color: #fff;
+    font: 500 12px/1.5 ui-monospace, Menlo, monospace;
+    white-space: nowrap;
+  }
+
+  .ms-inspector-xray-bar {
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    z-index: 420;
+    translate: -50% 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-inline-size: calc(100% - 28px);
+    padding: 6px 6px 6px 14px;
+    white-space: nowrap;
+    overflow-x: auto;
+    border: 1px solid light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.14));
+    border-radius: 12px;
+    background: light-dark(rgb(255 255 255 / 0.92), rgb(27 27 31 / 0.92));
+    color: light-dark(#1a1a1f, #f0f0f4);
+    font-size: 13px;
+    line-height: 1.5;
+    box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.4);
+    animation: ms-inspector-fade 160ms ease-out both;
+  }
+
+  .ms-inspector-xray-bar .ms-inspector-meta {
+    margin: 0;
+  }
+
+  .ms-inspector-xray-segment {
+    display: flex;
+    border-radius: 8px;
+    background: light-dark(#ececf0, #26262c);
+    padding: 2px;
+  }
+
+  .ms-inspector-xray-segment button {
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: light-dark(#6d6d78, #a2a2ae);
+    padding: 3px 10px;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .ms-inspector-xray-segment button[aria-checked='true'] {
+    background: light-dark(#fff, #3a3a42);
+    color: inherit;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  }
+
+  .ms-inspector-xray-range {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: light-dark(#84848f, #8b8b98);
+  }
+
+  .ms-inspector-xray-range input {
+    inline-size: 96px;
+    accent-color: #6366f1;
+  }
+
+  .ms-inspector-xray-hint {
+    padding-inline-end: 8px;
+    font-size: 11px;
+    color: light-dark(#84848f, #8b8b98);
+  }
+
+  @keyframes ms-inspector-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes ms-inspector-pop {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: none; }
+  }
+}

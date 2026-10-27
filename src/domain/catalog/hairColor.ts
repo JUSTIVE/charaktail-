@@ -1,0 +1,19 @@
+import { defineAttribute } from '../schema'
+
+export default defineAttribute({
+  id: 'hairColor',
+  label: '머리 색',
+  color: '#ff6b3d',
+  kind: 'color',
+  options: [
+    { label: '흑발', hex: '#1b1a1f', weight: 3 },
+    { label: '갈색', hex: '#5a3a24', weight: 2 },
+    { label: '금발', hex: '#e2c06b' },
+    { label: '적발', hex: '#a8432a' },
+    { label: '은발', hex: '#d6d9df' },
+    { label: '백발', hex: '#f4f1ea', weight: 0.6 },
+    { label: '청록', hex: '#2ab3a6', weight: 0.6, when: { world: ['cyberpunk', 'fantasy', 'academy', 'spaceOpera'] } },
+    { label: '네온 핑크', hex: '#ff4fb8', weight: 0.6, when: { world: ['cyberpunk', 'spaceOpera', 'academy'] } },
+    { label: '투톤', hex: ['#1b1a1f', '#e2c06b'], weight: 0.5 },
+  ],
+})
