@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <radialGradient id="g" cx="0.38" cy="0.32" r="0.75">
-      <stop offset="0" stop-color="#fff6d6"/>
-      <stop offset="0.22" stop-color="#ffb020"/>
-      <stop offset="0.55" stop-color="#ff5fa2"/>
-      <stop offset="1" stop-color="#7c5cff"/>
+      <stop offset="0" stop-color="#ffe7b3"/>
+      <stop offset="0.22" stop-color="#ffc53d"/>
+      <stop offset="0.55" stop-color="#e93d82"/>
+      <stop offset="1" stop-color="#6e56cf"/>
     </radialGradient>
     <radialGradient id="h" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0.6" stop-color="#7c5cff" stop-opacity="0.45"/>
-      <stop offset="1" stop-color="#7c5cff" stop-opacity="0"/>
+      <stop offset="0.6" stop-color="#6e56cf" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#6e56cf" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="512" height="512" fill="#0b0914"/>
+  <rect width="512" height="512" fill="#121113"/>
   <circle cx="256" cy="256" r="230" fill="url(#h)"/>
   <circle cx="226" cy="236" r="128" fill="url(#g)"/>
-  <circle cx="330" cy="318" r="74" fill="#2ec5e6"/>
+  <circle cx="330" cy="318" r="74" fill="#00a2c7"/>
   <circle cx="300" cy="290" r="60" fill="url(#g)"/>
 </svg>

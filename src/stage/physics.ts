@@ -19,6 +19,8 @@ export interface Body {
   squash: number
   squashVel: number
   axis: { x: number; y: number }
+  /** Amplitude of the finer surface ripples (modes 3, 5, 7) — rises on impact, ebbs slowly. */
+  wobble: number
   /** Set while a ball shrinks out; removed once it reaches zero. */
   leaving: boolean
 }
@@ -42,6 +44,12 @@ export interface WorldTuning {
   attract: number
   /** Tangential push around `center`, px/s². */
   swirl: number
+  /**
+   * Mutual repulsion inside a halo around each body, px/s² at full overlap
+   * of the halos. With little gravity it spreads the bodies evenly over the
+   * whole area instead of letting them pile on the floor.
+   */
+  spread: number
   center: { x: number; y: number }
   /** Pull back toward upright, rad/s² per rad — keeps the labels readable. */
   upright: number
@@ -63,6 +71,7 @@ export class World {
     collide: true,
     attract: 0,
     swirl: 0,
+    spread: 0,
     center: { x: 0, y: 0 },
     upright: 26,
     maxSpin: 2.4,
@@ -86,6 +95,7 @@ export class World {
       squash: 0,
       squashVel: 0,
       axis: { x: 0, y: 1 },
+      wobble: 0.04,
       leaving: false,
     }
     this.bodies.push(body)
@@ -148,7 +158,10 @@ export class World {
       if (Math.abs(body.squash) < 0.04 && speed > 250) body.axis = { x: body.vx / speed, y: body.vy / speed }
       const stretch = -Math.min(Math.max(speed - 250, 0) / 6000, 0.12)
       body.squashVel += (-SQUASH_STIFFNESS * (body.squash - stretch) - SQUASH_DAMPING * body.squashVel) * dt
-      body.squash = Math.max(-0.22, Math.min(0.3, body.squash + body.squashVel * dt))
+      // Bounded squash: a drop flattens and stretches, it never folds to a point.
+      body.squash = Math.max(-0.2, Math.min(0.28, body.squash + body.squashVel * dt))
+      // Ripples ebb toward a small resting level: a low-tension drop is never quite still.
+      body.wobble = WOBBLE_REST + (body.wobble - WOBBLE_REST) * Math.pow(0.5, dt)
 
       if (this.grab?.id === body.id) {
         // Critically damped follow, so a fling carries the pointer's speed.
@@ -184,6 +197,7 @@ export class World {
       body.angle = tilt + body.spin * dt
     }
 
+    if (t.spread > 0) this.repel(dt)
     if (t.collide) this.collide(dt)
     this.walls(dt)
     this.bodies = this.bodies.filter((b) => !(b.leaving && b.r < 0.5))
@@ -247,6 +261,34 @@ export class World {
     }
   }
 
+  /** Even spacing: every pair pushes apart while their halos overlap, and the
+   *  walls push back too, so the bodies settle into an even spread. */
+  private repel(dt: number): void {
+    const bodies = this.bodies
+    const strength = this.tuning.spread * dt
+    for (let i = 0; i < bodies.length; i++) {
+      const a = bodies[i]!
+      for (let j = i + 1; j < bodies.length; j++) {
+        const b = bodies[j]!
+        const dx = b.x - a.x
+        const dy = b.y - a.y
+        const reach = (a.r + b.r) * SPREAD_HALO
+        const d = Math.hypot(dx, dy)
+        if (d >= reach || d === 0) continue
+        const push = ((reach - d) / reach) * strength
+        a.vx -= (dx / d) * push
+        a.vy -= (dy / d) * push
+        b.vx += (dx / d) * push
+        b.vy += (dy / d) * push
+      }
+      const { left, top, right, bottom } = this.area
+      const halo = a.r * WALL_HALO
+      const near = (gap: number) => Math.max(0, 1 - Math.max(gap, 0) / Math.max(halo, 1))
+      a.vx += (near(a.x - a.r - left) - near(right - a.x - a.r)) * strength * 0.6
+      a.vy += (near(a.y - a.r - top) - near(bottom - a.y - a.r)) * strength * 0.6
+    }
+  }
+
   /** Walls are springs too: a body pressed into one flattens against it. */
   private walls(dt: number): void {
     const { left, top, right, bottom } = this.area
@@ -286,20 +328,33 @@ export class World {
   }
 }
 
-/** px/s² per px of overlap, scaled by 1/radius so every size squishes alike. */
-const CONTACT_STIFFNESS = 15000
-const WALL_STIFFNESS = 9000
+/**
+ * Surface tension, in effect: px/s² per px of overlap, scaled by 1/radius so
+ * every size squishes alike. Low values let drops sink into each other and
+ * the walls; the hard limits keep a hard shake from passing one through another.
+ */
+const CONTACT_STIFFNESS = 16000
+const WALL_STIFFNESS = 12000
 const CONTACT_DAMPING = 9
 /** Two bodies may sink to this fraction of their combined radii. */
-const HARD_LIMIT = 0.72
+const HARD_LIMIT = 0.68
 /** A body may press this fraction of its radius past a wall. */
-const WALL_LIMIT = 0.3
-const SQUASH_STIFFNESS = 150
-const SQUASH_DAMPING = 5.5
+const WALL_LIMIT = 0.22
+const SQUASH_STIFFNESS = 130
+const SQUASH_DAMPING = 5
+const WOBBLE_REST = 0.006
+/**
+ * Repulsion reach, as a multiple of the combined radii. Under 1: drops only
+ * push once they already press into each other, so they rest touching.
+ */
+const SPREAD_HALO = 0.97
+/** How far from a wall (× radius) the spread starts pushing a drop back in. */
+const WALL_HALO = 0.25
 /** px/s of closing speed below which a contact is resting, not an impact. */
 const JIGGLE_THRESHOLD = 60
 
 function jiggle(body: Body, nx: number, ny: number, speed: number): void {
   body.axis = { x: nx, y: ny }
-  body.squashVel += Math.min(speed, 2000) * 0.0014
+  body.squashVel += Math.min(speed, 2000) * 0.0018
+  body.wobble = Math.min(0.035, body.wobble + Math.min(speed, 2000) * 0.00002)
 }

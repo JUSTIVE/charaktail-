@@ -7,7 +7,9 @@
  * magnitude does not, and magnitude is what a shake is.
  */
 
-export type MotionAccess = 'unknown' | 'prompt' | 'granted' | 'denied' | 'unsupported'
+import type { MotionAccess } from '../state/schema'
+
+export type { MotionAccess }
 
 type PermissionCapable = { requestPermission?: () => Promise<'granted' | 'denied'> }
 

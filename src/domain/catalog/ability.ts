@@ -1,9 +1,10 @@
+import { hue } from '../palette'
 import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'ability',
   label: '특기',
-  color: '#ef4444',
+  color: hue.lime,
   kind: 'pick',
   options: [
     '요리',

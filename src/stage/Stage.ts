@@ -13,6 +13,7 @@ import {
   WebGLRenderer,
 } from 'three'
 
+import { inkOn } from '../domain/palette'
 import { vibrate } from './haptics'
 import { listenMotion } from './motion'
 import { World } from './physics'
@@ -32,6 +33,10 @@ const SHAKE_FLOOR = 12
 /** m/s² above the floor that fill the charge in one second. */
 const SHAKE_RATE = 20
 const ATLAS_CELL = 256
+const SHAKA_W = 1024
+const SHAKA_H = 300
+/** Share of the zone the bubbles cover; soft contacts take up the rest. */
+const FILL = 0.86
 
 function rgb(hex: string): Vector3 {
   const n = Number.parseInt(hex.slice(1), 16)
@@ -52,6 +57,7 @@ export class Stage {
   private camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1)
   private mesh: Mesh<PlaneGeometry, ShaderMaterial>
   private atlas: CanvasTexture | null = null
+  private u!: StageUniforms
   private world = new World()
   private specs = new Map<string, BallSpec>()
   private signature = ''
@@ -60,7 +66,12 @@ export class Stage {
   private mode: StageMode = 'idle'
   private modeAt = 0
   private charge = 0
-  private looks = { text: 1, merge: 0, mix: 0, glow: 0, flash: 0 }
+  private looks = { text: 1, merge: 0, mix: 0, glow: 0, flash: 0, shaka: 0 }
+  private shakaTex: CanvasTexture | null = null
+  /** Recent shake strength, 0–1; jolts the 샤카 text. */
+  private kick = 0
+  /** A real tilt sensor is reporting — gravity then follows the phone. */
+  private hasTilt = false
   private manualShake = false
   private manualTimer = 0
 
@@ -71,6 +82,13 @@ export class Stage {
   private last = 0
   private frame = 0
   private disposers: (() => void)[] = []
+
+  /**
+   * Meters showing the charge. The stage writes their transform directly:
+   * a custom property on :root would restyle the whole document every frame.
+   */
+  readonly meters = new Set<HTMLElement>()
+  private shownCharge = -1
 
   /** Called once the glow peaks; the app turns this into a seed and a route. */
   onReveal: () => void = () => {}
@@ -94,12 +112,17 @@ export class Stage {
           if (stageCell.read().motion === 'unknown') patchStage({ motion: 'granted' })
         },
         onTilt: (g) => {
+          this.hasTilt = true
           this.world.gravity = g
         },
         onShake: ({ x, y, magnitude }) => this.shake(x, y, magnitude, 1 / 60),
       }),
     )
     this.bindPointer()
+    // The chant is drawn once the web font is in, so it never falls back.
+    void document.fonts.ready.then(() => {
+      this.shakaTex = drawShaka()
+    })
 
     const onVisibility = () => {
       if (document.hidden) cancelAnimationFrame(this.frame)
@@ -161,6 +184,7 @@ export class Stage {
     cancelAnimationFrame(this.frame)
     for (const dispose of this.disposers) dispose()
     this.atlas?.dispose()
+    this.shakaTex?.dispose()
     this.mesh.material.dispose()
     this.mesh.geometry.dispose()
     this.renderer.dispose()
@@ -170,6 +194,7 @@ export class Stage {
 
   private shake(ax: number, ay: number, magnitude: number, dt: number, manual = false): void {
     if (magnitude > 4) this.world.kick(ax, ay, 38)
+    this.kick = Math.max(this.kick, Math.min(magnitude / 30, 1))
     // Over a result only a real shake re-rolls; the button lives on the HUD.
     if (this.mode !== 'armed' && !(this.mode === 'revealed' && !manual)) return
     const over = magnitude - SHAKE_FLOOR
@@ -241,11 +266,17 @@ export class Stage {
     return Math.max(top, this.height * 0.22)
   }
 
+  /**
+   * Bubbles fill their zone: radius from a target coverage near what soft
+   * bodies can pack (they squash into the gaps), capped so one bubble alone
+   * still fits between the walls.
+   */
   private radius(count: number): number {
     const a = this.world.targetArea
-    const area = Math.max((a.right - a.left) * (a.bottom - a.top), 1)
-    const fit = Math.sqrt((0.24 * area) / (Math.max(count, 1) * Math.PI))
-    return Math.max(24, Math.min(fit, Math.min(this.width, this.height) * 0.19))
+    const w = Math.max(a.right - a.left, 1)
+    const h = Math.max(a.bottom - a.top, 1)
+    const fit = Math.sqrt((FILL * w * h) / (Math.max(count, 1) * Math.PI))
+    return Math.max(22, Math.min(fit, Math.min(w, h) * 0.48))
   }
 
   // ── frame ─────────────────────────────────────────────────────────────────
@@ -269,8 +300,9 @@ export class Stage {
     const world = this.world
     const t = world.tuning
     const inset = 10
-    // Clear the top bar (logo, 보관함) and the notch.
-    const top = Math.max(inset, (window.visualViewport?.offsetTop ?? 0) + 64)
+    // Start under the top bar — its padding already carries the notch inset.
+    const bar = document.querySelector('.topbar')?.getBoundingClientRect().bottom ?? 52
+    const top = Math.max(inset, bar + 10)
     world.targetArea = { left: inset, top, right: this.width - inset, bottom: this.floor() }
     if (world.area.right === 0) world.area = { ...world.targetArea }
     const zone = world.targetArea
@@ -289,16 +321,19 @@ export class Stage {
 
     const live = world.bodies.filter((b) => !b.leaving).length
     let radius = this.radius(live)
-    const looks = { text: 1, merge: 0, mix: 0, glow: 0 }
+    const looks = { text: 1, merge: 0, mix: 0, glow: 0, shaka: 0 }
 
     switch (this.mode) {
       case 'idle':
       case 'armed': {
         // Oil in water: heavy drag, little bounce.
-        Object.assign(t, { gravity: 750, collide: true, attract: 0, swirl: 0, damping: 0.4, restitution: 0.3 })
-        if (this.mode === 'idle') {
-          // Above the picker the balls float: weak gravity, a little lift.
-          t.gravity = 260
+        Object.assign(t, { gravity: 750, collide: true, attract: 0, swirl: 0, damping: 0.4, restitution: 0.3, spread: 60 })
+        if (this.mode === 'idle' || !this.hasTilt) {
+          // Nothing tilting them: a gentle pull toward the middle of the area
+          // packs the drops together — contacts and walls push back, so they
+          // fill the whole area pressed against each other. (Without a pull,
+          // every force only pushes apart and the gaps never close.)
+          Object.assign(t, { gravity: 0, spread: 300, damping: 0.25, attract: 3.2 })
         }
         looks.text = 1 - this.charge * 0.7
         looks.mix = this.charge * 0.3
@@ -307,18 +342,19 @@ export class Stage {
       }
       case 'mixing': {
         const k = Math.min(elapsed / MIX_SECONDS, 1)
-        Object.assign(t, { gravity: 200 * (1 - k), collide: false, attract: 6 + 30 * k, swirl: 1400 * (1 - k * 0.5), damping: 0.35 })
+        Object.assign(t, { gravity: 200 * (1 - k), collide: false, attract: 6 + 30 * k, swirl: 1400 * (1 - k * 0.5), damping: 0.35, spread: 0 })
         radius *= 1 - 0.25 * k
         looks.text = 0
         // Bodies give up their edges first, then the colours run.
         looks.merge = Math.min(k * 2.5, 1)
         looks.mix = k
+        looks.shaka = 1
         if (k >= 1) this.setMode('glowing')
         break
       }
       case 'glowing': {
         const k = Math.min(elapsed / GLOW_SECONDS, 1)
-        Object.assign(t, { gravity: 0, collide: false, attract: 50, swirl: 500 * (1 - k), damping: 0.15 })
+        Object.assign(t, { gravity: 0, collide: false, attract: 50, swirl: 500 * (1 - k), damping: 0.15, spread: 0 })
         radius *= 0.75 - 0.1 * k
         looks.text = 0
         looks.merge = 1
@@ -330,7 +366,7 @@ export class Stage {
       case 'revealed': {
         // The light has done its job: the drops are gone, the result is the
         // character. Shaking here glows the screen back up toward a new roll.
-        Object.assign(t, { gravity: 0, collide: false, attract: 18, swirl: 60, damping: 0.25 })
+        Object.assign(t, { gravity: 0, collide: false, attract: 18, swirl: 60, damping: 0.25, spread: 0 })
         radius = 0
         looks.text = 0
         looks.merge = 1
@@ -356,7 +392,16 @@ export class Stage {
     // Into the glow fast; out of it slowly, so the screen fades like an afterimage.
     this.looks.glow = approach(this.looks.glow, looks.glow, looks.glow > this.looks.glow ? 8 : 1.6, dt)
     this.looks.flash = approach(this.looks.flash, 0, 2.6, dt)
-    document.documentElement.style.setProperty('--charge', this.charge.toFixed(3))
+    // The chant snaps in and leaves as the glow takes over.
+    this.looks.shaka = approach(this.looks.shaka, looks.shaka, looks.shaka > this.looks.shaka ? 12 : 7, dt)
+    // While mixing the chant keeps its own beat even without a hand on the phone.
+    if (this.mode === 'mixing') this.kick = Math.max(this.kick, 0.25)
+    this.kick *= Math.pow(0.12, dt)
+    const shown = this.mode === 'mixing' || this.mode === 'glowing' ? 1 : this.charge
+    if (Math.abs(shown - this.shownCharge) > 0.002) {
+      this.shownCharge = shown
+      for (const meter of this.meters) meter.style.transform = `scaleX(${shown.toFixed(3)})`
+    }
   }
 
   private reveal(): void {
@@ -374,30 +419,33 @@ export class Stage {
       this.rebuild()
     }
 
-    const u = this.mesh.material.uniforms
-    const balls = u.uBalls!.value as Vector4[]
-    const deform = u.uDeform!.value as Vector4[]
+    const u = this.u
+    const balls = u.uBalls.value
+    const deform = u.uDeform.value
     let sumR = 0
     bodies.forEach((body, i) => {
       balls[i]!.set(body.x * this.dpr, body.y * this.dpr, body.r * this.dpr, body.angle)
-      deform[i]!.set(body.axis.x, body.axis.y, body.squash, 0)
+      deform[i]!.set(body.axis.x, body.axis.y, body.squash, body.wobble)
       sumR += body.r
     })
     const area = this.world.area
-    u.uArea!.value.set(area.left * this.dpr, area.top * this.dpr, area.right * this.dpr, area.bottom * this.dpr)
-    u.uRes!.value.set(this.width * this.dpr, this.height * this.dpr)
-    u.uCenter!.value.set(this.world.tuning.center.x * this.dpr, this.world.tuning.center.y * this.dpr)
-    const avg = u.uAvg!.value as Vector3
+    u.uArea.value.set(area.left * this.dpr, area.top * this.dpr, area.right * this.dpr, area.bottom * this.dpr)
+    u.uRes.value.set(this.width * this.dpr, this.height * this.dpr)
+    u.uCenter.value.set(this.world.tuning.center.x * this.dpr, this.world.tuning.center.y * this.dpr)
+    const avg = u.uAvg.value
     avg.set(0, 0, 0)
     for (const color of this.colors) avg.add(color)
     if (this.colors.length) avg.multiplyScalar(1 / this.colors.length)
-    u.uScale!.value = (bodies.length ? sumR / bodies.length : 1) * this.dpr
-    u.uText!.value = this.looks.text
-    u.uMerge!.value = this.looks.merge
-    u.uMix!.value = this.looks.mix
-    u.uGlow!.value = this.looks.glow
-    u.uFlash!.value = this.looks.flash
-    u.uTime!.value = this.time
+    u.uScale.value = (bodies.length ? sumR / bodies.length : 1) * this.dpr
+    u.uText.value = this.looks.text
+    u.uMerge.value = this.looks.merge
+    u.uShaka.value = this.shakaTex ? this.looks.shaka : 0
+    u.uKick.value = this.kick
+    u.uShakaTex.value = this.shakaTex
+    u.uMix.value = this.looks.mix
+    u.uGlow.value = this.looks.glow
+    u.uFlash.value = this.looks.flash
+    u.uTime.value = this.time
     this.renderer.render(this.scene, this.camera)
   }
 
@@ -406,45 +454,57 @@ export class Stage {
     const bodies = this.world.bodies
     const specs = bodies.map((b) => this.specs.get(b.id)!)
     this.atlas?.dispose()
-    this.atlas = drawAtlas(specs.map((s) => s.label))
+    this.atlas = drawAtlas(specs)
     const old = this.mesh.material
     this.mesh.material = this.material(specs.length)
     old.dispose()
-    const colors = this.mesh.material.uniforms.uColors!.value as Vector3[]
+    const colors = this.u.uColors.value
     specs.forEach((spec, i) => colors[i]!.copy(rgb(spec.color)))
     this.colors = specs.map((spec) => rgb(spec.color))
   }
 
+  /** A material compiled for `count` balls, holding `this.u` by reference. */
   private material(count: number): ShaderMaterial {
-    const n = Math.max(count, 1)
+    this.u = createUniforms(Math.max(count, 1), this.atlas, this.shakaTex)
     return new ShaderMaterial({
       vertexShader,
-      fragmentShader: fragmentShader(n),
+      fragmentShader: fragmentShader(count),
       depthTest: false,
       depthWrite: false,
-      uniforms: {
-        uBalls: { value: Array.from({ length: n }, () => new Vector4()) },
-        uDeform: { value: Array.from({ length: n }, () => new Vector4(0, 1, 0, 0)) },
-        uColors: { value: Array.from({ length: n }, () => new Vector3()) },
-        uAtlas: { value: this.atlas },
-        uRes: { value: new Vector2() },
-        uArea: { value: new Vector4() },
-        uCenter: { value: new Vector2() },
-        uAvg: { value: new Vector3() },
-        uScale: { value: 1 },
-        uText: { value: 1 },
-        uMerge: { value: 0 },
-        uMix: { value: 0 },
-        uGlow: { value: 0 },
-        uFlash: { value: 0 },
-        uTime: { value: 0 },
-      },
+      uniforms: this.u,
     })
   }
 }
 
-/** One row per label, white type with a soft shadow so it reads on any colour. */
-function drawAtlas(labels: readonly string[]): CanvasTexture {
+/** Every uniform the shader reads, typed — three's own map is a loose index. */
+function createUniforms(n: number, atlas: CanvasTexture | null, shakaTex: CanvasTexture | null) {
+  return {
+    uBalls: { value: Array.from({ length: n }, () => new Vector4()) },
+    uDeform: { value: Array.from({ length: n }, () => new Vector4(0, 1, 0, 0)) },
+    uColors: { value: Array.from({ length: n }, () => new Vector3()) },
+    uAtlas: { value: atlas },
+    uRes: { value: new Vector2() },
+    uArea: { value: new Vector4() },
+    uCenter: { value: new Vector2() },
+    uAvg: { value: new Vector3() },
+    uScale: { value: 1 },
+    uText: { value: 1 },
+    uMerge: { value: 0 },
+    uShaka: { value: 0 },
+    uKick: { value: 0 },
+    uShakaTex: { value: shakaTex },
+    uShakaAspect: { value: SHAKA_W / SHAKA_H },
+    uMix: { value: 0 },
+    uGlow: { value: 0 },
+    uFlash: { value: 0 },
+    uTime: { value: 0 },
+  }
+}
+type StageUniforms = ReturnType<typeof createUniforms>
+
+/** One row per label; the ink follows the fill, so amber and lime get dark type. */
+function drawAtlas(specs: readonly BallSpec[]): CanvasTexture {
+  const labels = specs.map((s) => s.label)
   const canvas = document.createElement('canvas')
   const rows = Math.max(labels.length, 1)
   canvas.width = ATLAS_CELL
@@ -460,13 +520,39 @@ function drawAtlas(labels: readonly string[]): CanvasTexture {
     if (width > 188) size = Math.max(30, Math.floor((size * 188) / width))
     ctx.font = font(size)
     const cy = i * ATLAS_CELL + ATLAS_CELL / 2
-    ctx.shadowColor = 'rgba(10, 6, 30, 0.55)'
-    ctx.shadowBlur = 10
-    ctx.shadowOffsetY = 3
-    ctx.fillStyle = '#ffffff'
+    const ink = inkOn(specs[i]!.color)
+    const dark = ink !== '#ffffff'
+    ctx.shadowColor = dark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(18, 17, 19, 0.55)'
+    ctx.shadowBlur = dark ? 6 : 10
+    ctx.shadowOffsetY = dark ? 1 : 3
+    ctx.fillStyle = ink
     ctx.fillText(label, ATLAS_CELL / 2, cy)
   })
   const texture = new CanvasTexture(canvas)
+  texture.colorSpace = NoColorSpace
+  texture.generateMipmaps = false
+  texture.minFilter = LinearFilter
+  texture.magFilter = LinearFilter
+  return texture
+}
+
+/** "샤카 샤카": one word per half, so the shader can make them hop in turn. */
+function drawShaka(): CanvasTexture {
+  const canvas = document.createElement('canvas')
+  canvas.width = SHAKA_W
+  canvas.height = SHAKA_H
+  const ctx = canvas.getContext('2d')!
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.font = `900 190px "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif`
+  ctx.fillStyle = '#ffffff'
+  // Words close together: one chant, not two labels.
+  ctx.fillText('샤카', SHAKA_W * 0.3, SHAKA_H / 2)
+  ctx.fillText('샤카', SHAKA_W * 0.7, SHAKA_H / 2)
+  const texture = new CanvasTexture(canvas)
+  // The shader samples this in screen order (v grows downward), unlike the
+  // label atlas, which keeps three's default bottom-up flip.
+  texture.flipY = false
   texture.colorSpace = NoColorSpace
   texture.generateMipmaps = false
   texture.minFilter = LinearFilter

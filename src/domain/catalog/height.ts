@@ -1,9 +1,10 @@
+import { hue } from '../palette'
 import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'height',
   label: '키',
-  color: '#2ec5e6',
+  color: hue.cyan,
   defaultSelected: true,
   kind: 'range',
   min: 145,

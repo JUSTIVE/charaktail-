@@ -1,14 +1,14 @@
 import { useState, type CSSProperties } from 'react'
 import { useRouterState } from '@tanstack/react-router'
-import { useLazyLoadQuery } from 'react-relay'
 import { graphql } from 'relay-runtime'
+
+import { useLocalQuery } from '../../graph/useLocalQuery'
 import { useSheetStackActions } from 'morphing-sheet/react'
 
 import { decodeRollKey, encodeRollKey } from '../../domain/roll'
 import { router } from '../../router'
 import { toggleSaved } from '../../state/saved'
 import { vibrate } from '../../stage/haptics'
-import { useStage } from '../../stage/store'
 import { ShareIcon, ShakeIcon, ShuffleIcon, StarIcon } from '../icons'
 import { Button, Dot, seq, Swatches } from '../ui'
 import { PoolSheet } from './PoolSheet'
@@ -23,8 +23,7 @@ export function Result() {
   const key = useRouterState({ select: (s) => (s.location.search as { k?: string }).k ?? '' })
   const dialogs = useSheetStackActions('dialogs')
   const [shared, setShared] = useState(false)
-  const { motion } = useStage()
-  const data = useLazyLoadQuery<ResultQuery>(
+  const data = useLocalQuery<ResultQuery>(
     graphql`
       query ResultQuery($key: String!) {
         roll(key: $key) {
@@ -44,10 +43,12 @@ export function Result() {
             possible
           }
         }
+        stage {
+          motion
+        }
       }
     `,
     { key },
-    { fetchPolicy: 'store-only' },
   )
   const roll = data.roll
 
@@ -83,22 +84,19 @@ export function Result() {
     setTimeout(() => setShared(false), 1600)
   }
 
-  const attributeIds = decodeRollKey(key)?.attributeIds ?? []
-
   return (
     <div data-stage-floor className="result-root">
       <div className="ms-seq flex items-start justify-between gap-3" style={seq(0)}>
         <div className="min-w-0">
-          <p className="eyebrow">STEP 3 · 완성 · #{roll.seed}</p>
-          <h2 className="display mt-1 truncate">{roll.name ?? '이름 없는 캐릭터'}</h2>
-          {motion === 'granted' ? <p className="mt-0.5 text-[11.5px] text-faint">한 번 더 세게 흔들면 새로 뽑아요</p> : null}
+          <h2 className="display truncate">{roll.name ?? '이름 없는 캐릭터'}</h2>
+          {data.stage?.motion === 'granted' ? <p className="mt-0.5 text-[11.5px] text-faint">한 번 더 세게 흔들면 새로 뽑아요</p> : null}
         </div>
         <button
           type="button"
           onClick={() => toggleSaved(roll.key ?? key)}
           aria-pressed={roll.saved ?? false}
           aria-label={roll.saved ? '보관함에서 빼기' : '보관함에 담기'}
-          className="press grid size-10 shrink-0 place-items-center rounded-full text-muted hover:text-ink aria-pressed:text-[#ffd34d]"
+          className="press star grid size-10 shrink-0 place-items-center rounded-full text-muted hover:text-ink aria-pressed:text-star"
         >
           <StarIcon filled={roll.saved ?? false} />
         </button>
@@ -119,7 +117,7 @@ export function Result() {
             >
               <button
                 type="button"
-                className="press min-w-0 flex-1 text-left"
+                className="press-soft min-w-0 flex-1 text-left"
                 onClick={(event) =>
                   void dialogs.push(
                     {
@@ -144,7 +142,7 @@ export function Result() {
                   {attribute?.label}
                 </span>
                 <span className="mt-0.5 flex items-center gap-1.5">
-                  <span className="line-clamp-2 text-[15px] leading-tight font-bold tracking-[-0.01em]">{value}</span>
+                  <span className="tnum line-clamp-2 text-[15px] leading-tight font-bold tracking-[-0.01em]">{value}</span>
                   <Swatches colors={entry.swatches ?? []} />
                 </span>
                 {entry.detail ? <span className="mt-0.5 block truncate text-[11px] text-faint">{entry.detail}</span> : null}
@@ -169,8 +167,10 @@ export function Result() {
         </Button>
         <Button
           variant="primary"
-          className="ml-auto px-5"
-          onClick={() => void router.navigate({ to: '/shake', search: { a: attributeIds.join('.'), n: roll.name ?? undefined } })}
+          className="flex-1 px-5"
+          // Back to the picker, still holding this roll's attributes and name
+          // (SceneSync restored both from the key), ready to adjust and shake.
+          onClick={() => void router.navigate({ to: '/', search: {} })}
         >
           <ShakeIcon width={17} height={17} />
           다시 흔들기

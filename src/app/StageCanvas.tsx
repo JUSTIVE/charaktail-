@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react'
-import { useLazyLoadQuery } from 'react-relay'
 import { graphql } from 'relay-runtime'
+
+import { useLocalQuery } from '../graph/useLocalQuery'
 
 import { freshSeed } from '../domain/rng'
 import { encodeRollKey } from '../domain/roll'
 import { router } from '../router'
+import { editsCell } from '../state/edits'
 import { currentName } from '../state/name'
 import { selectionCell } from '../state/selection'
 import { Stage } from '../stage/Stage'
@@ -19,7 +21,7 @@ export const stageHandle: { current: Stage | null } = { current: null }
  */
 export function StageCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const data = useLazyLoadQuery<StageCanvasQuery>(
+  const data = useLocalQuery<StageCanvasQuery>(
     graphql`
       query StageCanvasQuery {
         selectedAttributes {
@@ -30,13 +32,12 @@ export function StageCanvas() {
       }
     `,
     {},
-    { fetchPolicy: 'store-only' },
   )
 
   useEffect(() => {
     const stage = new Stage(canvasRef.current!)
     stage.onReveal = () => {
-      const key = encodeRollKey({ seed: freshSeed(), attributeIds: selectionCell.read(), name: currentName() })
+      const key = encodeRollKey({ seed: freshSeed(), attributeIds: selectionCell.read(), name: currentName(), edits: editsCell.read() })
       void router.navigate({ to: '/result', search: { k: key }, replace: true })
     }
     stage.onReshake = () => {

@@ -1,9 +1,10 @@
+import { hue } from '../palette'
 import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'secret',
   label: '비밀',
-  color: '#94a3b8',
+  color: hue.bronze,
   description: '아무에게도 말하지 않은 것',
   kind: 'pick',
   options: [

@@ -1,3 +1,4 @@
+import { hue } from '../palette'
 import { defineAttribute } from '../schema'
 
 const humanBands = [
@@ -11,7 +12,7 @@ const humanBands = [
 export default defineAttribute({
   id: 'age',
   label: '나이',
-  color: '#ffb020',
+  color: hue.amber,
   defaultSelected: true,
   kind: 'range',
   min: 12,

@@ -10,7 +10,7 @@ export function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'ghost' }) {
   const cls =
     variant === 'primary'
-      ? 'border-transparent bg-ink text-night shadow-[0_0_0_1px_oklch(1_0_0/0.2),0_8px_24px_-8px_oklch(0.8_0.15_300/0.6)]'
+      ? 'border-transparent bg-ink text-night shadow-[0_0_0_1px_rgb(255_255_255/0.2),0_8px_24px_-8px_rgb(110_86_207/0.7)]'
       : variant === 'ghost'
         ? 'border-transparent text-muted hover:bg-white/5 hover:text-ink'
         : 'border-line bg-white/[0.04] text-ink hover:border-faint'

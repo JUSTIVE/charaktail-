@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
-import { useLazyLoadQuery } from 'react-relay'
 import { graphql } from 'relay-runtime'
+
+import { useLocalQuery } from '../../graph/useLocalQuery'
 
 import { BackIcon } from '../icons'
 import { seq } from '../ui'
@@ -8,7 +9,7 @@ import type { SavedQuery } from '../../__generated__/SavedQuery.graphql'
 
 /** Kept characters. Each is only a roll key — the list re-derives the rest. */
 export function Saved() {
-  const data = useLazyLoadQuery<SavedQuery>(
+  const data = useLocalQuery<SavedQuery>(
     graphql`
       query SavedQuery {
         saved {
@@ -28,7 +29,6 @@ export function Saved() {
       }
     `,
     {},
-    { fetchPolicy: 'store-only' },
   )
   const saved = data.saved ?? []
 

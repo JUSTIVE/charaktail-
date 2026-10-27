@@ -1,8 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 
 import { requestMotionAccess } from '../../stage/motion'
-import { patchStage, useStage, type StageMode } from '../../stage/store'
+import { graphql } from 'relay-runtime'
+
+import { useLocalQuery } from '../../graph/useLocalQuery'
+import { patchStage, type StageMode } from '../../stage/store'
+import type { ShakeHudQuery } from '../../__generated__/ShakeHudQuery.graphql'
 import { stageHandle } from '../StageCanvas'
 import { BackIcon, ShakeIcon } from '../icons'
 import { Button, seq } from '../ui'
@@ -16,11 +20,23 @@ const COPY: Record<StageMode, { title: string; body: string }> = {
 }
 
 /**
- * Step two: a small HUD over the stage. The charge meter reads `--charge`,
- * which the stage writes every frame — no React render per frame.
+ * Step two: a small HUD over the stage. The stage writes the charge meter's
+ * transform itself every frame — no React render, no document-wide restyle.
  */
 export function ShakeHud() {
-  const { mode, motion } = useStage()
+  const data = useLocalQuery<ShakeHudQuery>(
+    graphql`
+      query ShakeHudQuery {
+        stage {
+          mode
+          motion
+        }
+      }
+    `,
+    {},
+  )
+  const mode = (data.stage?.mode ?? 'armed') as StageMode
+  const motion = data.stage?.motion ?? 'unknown'
   const copy = COPY[mode]
   const busy = mode === 'mixing' || mode === 'glowing'
 
@@ -39,6 +55,24 @@ export function ShakeHud() {
     }
   }, [])
 
+  const meter = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    const el = meter.current
+    if (!el) return
+    // On a cold load straight to /shake the stage may mount a tick later.
+    let stage = stageHandle.current
+    const attach = () => {
+      stage = stageHandle.current
+      stage?.meters.add(el)
+    }
+    const timer = stage ? 0 : window.setTimeout(attach, 0)
+    stage?.meters.add(el)
+    return () => {
+      window.clearTimeout(timer)
+      stage?.meters.delete(el)
+    }
+  }, [])
+
   const hold = (on: boolean) => () => stageHandle.current?.setManualShake(on)
 
   return (
@@ -48,14 +82,13 @@ export function ShakeHud() {
           <ShakeIcon width={22} height={22} />
         </span>
         <div className="min-w-0">
-          <p className="eyebrow">STEP 2 · 흔들기</p>
-          <h2 className="headline mt-0.5">{copy.title}</h2>
+          <h2 className="headline">{copy.title}</h2>
           <p className="mt-0.5 text-[12.5px] text-muted">{copy.body}</p>
         </div>
       </div>
 
       <div className="ms-seq charge" style={seq(1)} data-mode={mode}>
-        <span />
+        <span ref={meter} />
       </div>
 
       <div className="ms-seq flex items-center gap-2" style={seq(2)} hidden={busy}>

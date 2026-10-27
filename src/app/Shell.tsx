@@ -1,18 +1,20 @@
 import { Suspense, useEffect, type ReactNode } from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
-import { useLazyLoadQuery } from 'react-relay'
 import { graphql } from 'relay-runtime'
+
+import { useLocalQuery } from '../graph/useLocalQuery'
 import { SheetStackProvider, useSheetStackActions, type SheetDescriptor } from 'morphing-sheet/react'
 
 import { decodeRollKey } from '../domain/roll'
 import { setName } from '../state/name'
 import { setSelection } from '../state/selection'
-import { useStage, type StageMode } from '../stage/store'
+import type { StageMode } from '../stage/store'
 import { ArchiveIcon } from './icons'
 import { StageCanvas, stageHandle } from './StageCanvas'
 import { Picker } from './views/Picker'
 import { Result } from './views/Result'
 import { Saved } from './views/Saved'
+import { ValuesSheet } from './views/ValuesSheet'
 import { ShakeHud } from './views/ShakeHud'
 import type { ShellSavedCountQuery } from '../__generated__/ShellSavedCountQuery.graphql'
 
@@ -38,7 +40,7 @@ export function Shell() {
         closeOnScrimClick={false}
         lockScrollWhileOpen={false}
         trapFocusWhileOpen={false}
-        initialViews={[viewFor(readScene(location.pathname))]}
+        initialViews={[viewFor(readScene(location.pathname), new URLSearchParams(location.search).get('values') ?? undefined)]}
       >
         {null}
       </SheetStackProvider>
@@ -62,14 +64,20 @@ function useScene(): Scene {
 
 const STAGE_MODE: Record<Scene, StageMode> = { pick: 'idle', shake: 'armed', result: 'revealed', saved: 'idle' }
 
-/** Each step is one view id, so the panel morphs between steps and never within one. */
-function viewFor(scene: Scene): SheetDescriptor {
+/**
+ * Each step is one view id, so the panel morphs between steps and never within
+ * one. An attribute's value list is a view of its own on the same panel — the
+ * picker morphs into it and back, and the URL (`?values=`) owns which.
+ */
+function viewFor(scene: Scene, values?: string): SheetDescriptor {
   const body = (content: ReactNode) => (
     <Suspense fallback={<div className="h-40" data-stage-floor />}>{content}</Suspense>
   )
   switch (scene) {
     case 'pick':
-      return { id: 'pick', width: '560px', content: body(<Picker />) }
+      return values
+        ? { id: `values-${values}`, width: '520px', content: body(<ValuesSheet attributeId={values} />) }
+        : { id: 'pick', width: '560px', content: body(<Picker />) }
     case 'shake':
       return { id: 'shake', width: '400px', content: body(<ShakeHud />) }
     case 'result':
@@ -83,12 +91,13 @@ function SceneSync() {
   const panel = useSheetStackActions('panel')
   const dialogs = useSheetStackActions('dialogs')
   const scene = useScene()
-  const search = useRouterState({ select: (s) => s.location.search as { a?: string; n?: string; k?: string } })
+  const search = useRouterState({ select: (s) => s.location.search as { a?: string; n?: string; k?: string; values?: string } })
+  const values = scene === 'pick' ? search.values : undefined
 
   useEffect(() => {
-    void panel.replace(viewFor(scene))
+    void panel.replace(viewFor(scene, values))
     if (dialogs.getDepth() > 0) void dialogs.reset()
-  }, [panel, dialogs, scene])
+  }, [panel, dialogs, scene, values])
 
   // The URL carries the attribute set on /shake and /result; the stage's balls
   // come from the selection, so the selection follows the URL there.
@@ -130,19 +139,21 @@ function TopBar() {
 }
 
 function SavedLink() {
-  const data = useLazyLoadQuery<ShellSavedCountQuery>(
+  const data = useLocalQuery<ShellSavedCountQuery>(
     graphql`
       query ShellSavedCountQuery {
         saved {
           savedAt
         }
+        stage {
+          mode
+        }
       }
     `,
     {},
-    { fetchPolicy: 'store-only' },
   )
   const count = data.saved?.length ?? 0
-  const { mode } = useStage()
+  const mode = data.stage?.mode
   return (
     <Link
       to="/saved"

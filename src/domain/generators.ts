@@ -22,7 +22,7 @@ export function matches(when: Condition | undefined, rolled: ReadonlyMap<string,
 }
 
 /** Options allowed right now; the whole list if conditions would leave none. */
-function eligible<T extends { when?: Condition }>(options: readonly T[], ctx: RollContext): readonly T[] {
+function eligible<T extends { when?: Condition | undefined }>(options: readonly T[], ctx: RollContext): readonly T[] {
   const open = options.filter((option) => matches(option.when, ctx.rolled))
   return open.length > 0 ? open : options
 }
@@ -82,7 +82,7 @@ export const generators: { [K in AttributeKind]: Generator<K> } = {
  */
 export function possibilities(attribute: AttributeOf<AttributeKind>, rolled: ReadonlyMap<string, RolledValue>): string[] {
   const ctx = { rng: () => 0, rolled }
-  if (attribute.kind !== 'range') return eligible<{ when?: Condition; label: string }>(attribute.options, ctx).map((o) => o.label)
+  if (attribute.kind !== 'range') return eligible<{ when?: Condition | undefined; label: string }>(attribute.options, ctx).map((o) => o.label)
   const override = attribute.cases.find((c) => matches(c.when, rolled))
   const spec = { ...attribute, ...stripUndefined(override ?? {}) }
   return [`${spec.prefix ? `${spec.prefix} ` : ''}${spec.min}–${spec.max}${spec.unit}`, ...(spec.bands ?? []).map((b) => b.label)]

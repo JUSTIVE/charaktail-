@@ -1,28 +1,34 @@
 /*
  * charaktail — night stage, glass panel, colour from the catalogue.
+ * Every value below is a Radix Colors step (see src/domain/palette.ts):
+ * mauve for the neutrals, violet for the one UI accent.
  * Layer order first: preflight < morphing-sheet < app.
  */
 @layer theme, base, morphing-sheet, components, utilities;
 
 @import 'tailwindcss';
 
+@custom-variant hover (@media (hover: hover) and (pointer: fine) { &:hover });
+
 @theme {
   --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
 
-  --color-night: oklch(0.15 0.03 290);
-  --color-ink: oklch(0.97 0.006 290);
-  --color-muted: oklch(0.76 0.02 290);
-  --color-faint: oklch(0.6 0.025 290);
-  --color-line: oklch(1 0 0 / 0.12);
+  --color-night: #121113; /* mauve 1 */
+  --color-ink: #eeeef0; /* mauve 12 */
+  --color-muted: #b5b2bc; /* mauve 11 */
+  --color-faint: #7c7a85; /* mauve 10 */
+  --color-line: #3c393f; /* mauve 6 */
+  --color-accent: #baa7ff; /* violet 11 */
+  --color-star: #ffc53d; /* amber 9 */
 }
 
 :root {
   color-scheme: dark;
 
   /* The panel is glass over the stage: dark, a touch translucent, blurred. */
-  --ms-surface: oklch(0.19 0.03 290 / 0.78);
-  --ms-surface-border: oklch(1 0 0 / 0.1);
+  --ms-surface: rgb(26 25 27 / 0.82); /* mauve 2 */
+  --ms-surface-border: #3c393f; /* mauve 6 */
   --ms-edge-highlight: oklch(1 0 0 / 0.08);
   --ms-text: var(--color-ink);
   --ms-radius: 26px;
@@ -32,7 +38,7 @@
   --ms-inset: max(10px, env(safe-area-inset-left));
   --ms-pad-inline: 18px;
   --ms-pad-block: 18px;
-  --ms-scrim-color: oklch(0.08 0.03 290 / 0.5);
+  --ms-scrim-color: rgb(18 17 19 / 0.6); /* mauve 1 */
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -43,17 +49,39 @@ body,
   height: 100%;
 }
 
+/*
+ * Mobile platform layer (mobile-native): no tap flash, no font inflation,
+ * no pull-to-refresh behind the stage. Text stays selectable — results are
+ * content people copy — only controls opt out below.
+ */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
   overflow: hidden;
   overscroll-behavior: none;
-  background: oklch(0.12 0.03 290);
+  background: var(--color-night);
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-user-select: none;
-  user-select: none;
+}
+
+/* Controls fire on tap without the double-tap wait, and a long press neither
+   selects their label nor pops the link callout. In the base layer, so a
+   utility like the hold button's touch-none still wins. */
+@layer base {
+  button,
+  a,
+  [role='button'] {
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
 }
 
 /* Sheets take the glass: blur what the stage paints under them. */
@@ -73,7 +101,11 @@ body {
   width: 100%;
   height: 100%;
   display: block;
+  /* The stage owns every gesture: drags fling bubbles, nothing scrolls past it. */
   touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
   z-index: 0;
 }
 
@@ -95,19 +127,20 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 999px;
-  background: radial-gradient(circle at 35% 30%, #fff6d6, #ffb020 22%, #ff5fa2 55%, #7c5cff);
-  box-shadow: 0 0 16px #ff5fa2aa;
+  background: radial-gradient(circle at 35% 30%, #ffe7b3, #ffc53d 22%, #e93d82 58%, #6e56cf);
+  box-shadow: 0 0 16px rgb(233 61 130 / 0.55);
 }
 
 .glass {
-  background: oklch(0.19 0.03 290 / 0.6);
-  border: 1px solid oklch(1 0 0 / 0.1);
+  background: rgb(26 25 27 / 0.6);
+  border: 1px solid var(--color-line);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 }
 
 /* Type: tracking is size-specific. */
 .display {
+  text-wrap: balance;
   font-size: clamp(1.32rem, 5.2vw, 1.7rem);
   line-height: 1.12;
   letter-spacing: -0.03em;
@@ -130,16 +163,25 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.press {
-  transition: transform 140ms var(--ease-out), background-color 200ms var(--ease-out), border-color 200ms var(--ease-out),
-    color 200ms var(--ease-out), opacity 200ms var(--ease-out);
+/*
+ * Press feedback lands on pointer-down: transform on the strong ease-out,
+ * colours on plain ease. Big surfaces (chips, cards) dip less than buttons —
+ * 0.97 on a full-width card reads as a lurch. Disabled controls never dip.
+ */
+.press,
+.press-soft {
+  transition: transform 160ms var(--ease-out), background-color 160ms ease, border-color 160ms ease, color 160ms ease,
+    opacity 160ms ease, box-shadow 160ms ease;
 }
-.press:active {
+.press:active:not(:disabled) {
   transform: scale(0.97);
+}
+.press-soft:active:not(:disabled) {
+  transform: scale(0.985);
 }
 
 :where(a, button):focus-visible {
-  outline: 2px solid oklch(0.8 0.12 300);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: 12px;
 }
@@ -150,7 +192,7 @@ body {
   width: 100%;
   flex-direction: column;
   align-items: flex-start;
-  padding: 11px 12px;
+  padding: 13px 12px;
   border-radius: 16px;
   border: 1px solid var(--color-line);
   background: oklch(1 0 0 / 0.03);
@@ -176,25 +218,19 @@ body {
   overflow: hidden;
   background: oklch(1 0 0 / 0.07);
 }
+/* The stage writes this bar's transform every frame (see Stage.meters). */
 .charge > span {
   position: absolute;
   inset: 0;
   transform-origin: left;
-  transform: scaleX(var(--charge, 0));
+  transform: scaleX(0);
   border-radius: inherit;
-  background: linear-gradient(90deg, #7c5cff, #ff5fa2, #ffb020, #2ec5e6);
-  background-size: 200% 100%;
-  animation: charge-flow 1.6s linear infinite;
+  background: linear-gradient(90deg, #6e56cf, #e93d82, #ffc53d, #00a2c7);
+  transition: opacity 200ms ease;
 }
 .charge[data-mode='mixing'] > span,
 .charge[data-mode='glowing'] > span {
-  transform: scaleX(1);
-  filter: brightness(1.4);
-}
-@keyframes charge-flow {
-  to {
-    background-position: -200% 0;
-  }
+  opacity: 0.9;
 }
 
 .shake-icon[data-mode='armed'] {
@@ -263,10 +299,30 @@ body {
   grid-column: span 2;
 }
 
+/* Chips change state on a tap: let the colour settle instead of snapping. */
+.chip {
+  transition: transform 160ms var(--ease-out), background-color 180ms ease, border-color 180ms ease, color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+/* Saving is rare and worth a beat: the star pops once when it fills. */
+.star[aria-pressed='true'] svg {
+  animation: star-pop 320ms var(--ease-out);
+}
+@keyframes star-pop {
+  0% { transform: scale(0.8); }
+  55% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .shake-icon[data-mode='armed'],
-  .charge > span {
+  .star[aria-pressed='true'] svg {
     animation: none;
+  }
+  .press:active:not(:disabled),
+  .press-soft:active:not(:disabled) {
+    transform: none;
   }
 }
 
@@ -279,9 +335,7 @@ body {
   border-radius: 16px;
   border: 1px solid var(--color-line);
   background: oklch(1 0 0 / 0.04);
-  transition: border-color 200ms var(--ease-out), background-color 200ms var(--ease-out);
-  -webkit-user-select: text;
-  user-select: text;
+  transition: border-color 160ms ease, background-color 160ms ease;
 }
 .name-field:focus-within {
   border-color: oklch(1 0 0 / 0.3);
@@ -292,6 +346,143 @@ body {
 .picker-list {
   max-height: 36svh;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-inline: -4px;
+  padding: 6px 4px 10px;
+  /* Edges fade into the panel so a cut-off chip reads as "more here", not as clipped. */
+  --fade-top: 18px;
+  --fade-bottom: 22px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-top), #000 calc(100% - var(--fade-bottom)), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-top), #000 calc(100% - var(--fade-bottom)), transparent);
+}
+
+/* Where scroll-driven animations exist, each fade only shows while there is
+   something to scroll to on its side: none at the very top or bottom. */
+@property --fade-top {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 18px;
+}
+@property --fade-bottom {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 22px;
+}
+@supports (animation-timeline: scroll()) {
+  .picker-list {
+    animation: picker-fade linear both;
+    animation-timeline: scroll(self);
+  }
+  @keyframes picker-fade {
+    0% { --fade-top: 0px; --fade-bottom: 22px; }
+    8% { --fade-top: 18px; }
+    92% { --fade-bottom: 22px; }
+    100% { --fade-top: 18px; --fade-bottom: 0px; }
+  }
+}
+
+/* Kebab on a chip: a sibling pinned to the chip's corner. */
+.chip-kebab {
+  position: absolute;
+  top: 7px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  color: var(--color-faint);
+}
+@media (hover: hover) and (pointer: fine) {
+  .chip-kebab:hover {
+    color: var(--color-ink);
+    background: rgb(255 255 255 / 0.06);
+  }
+}
+
+/* Values sheet. */
+.values-list {
+  max-height: 38svh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   margin-inline: -4px;
   padding: 2px 4px;
+}
+.values-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 4px 4px 4px 12px;
+  border-radius: 12px;
+  transition: opacity 160ms ease;
+}
+.values-row + .values-row {
+  border-top: 1px solid rgb(255 255 255 / 0.05);
+}
+.values-row[data-off] {
+  opacity: 0.45;
+}
+.values-badge {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--color-accent);
+  background: rgb(186 167 255 / 0.12);
+}
+
+/* Switch: the knob slides on the strong ease-out; the track's colour eases. */
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 40px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--color-line);
+  transition: background-color 160ms ease, opacity 160ms ease;
+}
+.switch > span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+  transition: transform 180ms var(--ease-out);
+}
+.switch[aria-checked='true'] {
+  background: var(--switch-on, var(--color-accent));
+}
+.switch[aria-checked='true'] > span {
+  transform: translateX(16px);
+}
+.switch:active:not(:disabled) > span {
+  transform: translateX(var(--knob-x, 0)) scaleX(1.15);
+}
+.switch[aria-checked='true']:active:not(:disabled) > span {
+  --knob-x: 16px;
+}
+.switch:disabled {
+  opacity: 0.5;
+}
+
+/* Colour picker for new colour values: the swatch is the control. */
+.color-pick {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  overflow: hidden;
+}
+.color-pick > input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }

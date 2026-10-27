@@ -73,3 +73,58 @@ describe('explain', () => {
     }
   })
 })
+
+describe('edits', () => {
+  test('disabled and removed values are never drawn; added ones can be', async () => {
+    const { applyEdits } = await import('./edits')
+    const edits = { gender: { disabled: ['여성'], removed: ['남성'], added: [{ id: 'u1', label: '안드로진' }] } }
+    const seen = new Set<string>()
+    for (let i = 0; i < 300; i++) {
+      const [value] = rollCharacter(catalog, { seed: `d${i}`, attributeIds: ['gender'], edits })
+      seen.add(value!.label)
+    }
+    expect(seen.has('여성')).toBe(false)
+    expect(seen.has('남성')).toBe(false)
+    expect(seen.has('안드로진')).toBe(true)
+    expect(applyEdits(catalog, {})).toBe(catalog)
+  })
+
+  test('edits and a tricky name survive the roll key', () => {
+    const request = {
+      seed: 's',
+      attributeIds: ['gender', 'eyeColor'],
+      nonces: {},
+      name: 'e:렌~',
+      edits: { eyeColor: { disabled: ['흑갈색'], removed: [], added: [{ id: 'u2', label: '무지개', hex: '#ff00aa' }] } },
+    }
+    expect(decodeRollKey(encodeRollKey(request))).toEqual(request)
+    const plain = { seed: 's', attributeIds: ['gender'], nonces: {}, name: 'e:x' }
+    expect(decodeRollKey(encodeRollKey(plain))).toEqual(plain)
+  })
+})
+
+describe('range edits', () => {
+  test("the player's bounds win over every species case", () => {
+    const edits = { age: { disabled: [], removed: [], added: [], min: 20, max: 25 } }
+    for (let i = 0; i < 300; i++) {
+      const values = rollCharacter(catalog, { seed: `r${i}`, attributeIds: ['world', 'species', 'age'], edits })
+      const age = values.find((v) => v.attributeId === 'age')!
+      const n = Number(age.label.replace(/[^0-9]/g, ''))
+      expect(n).toBeGreaterThanOrEqual(20)
+      expect(n).toBeLessThanOrEqual(25)
+    }
+  })
+
+  test('bounds and a two-colour value survive the roll key', () => {
+    const request = {
+      seed: 's',
+      attributeIds: ['age', 'eyeColor'],
+      nonces: {},
+      edits: {
+        age: { disabled: [], removed: [], added: [], min: 18, max: 30 },
+        eyeColor: { disabled: [], removed: [], added: [{ id: 'u3', label: '금청', hex: '#e8b923', hex2: '#6fb7ea' }] },
+      },
+    }
+    expect(decodeRollKey(encodeRollKey(request))).toEqual(request)
+  })
+})

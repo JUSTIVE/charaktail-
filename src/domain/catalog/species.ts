@@ -1,3 +1,4 @@
+import { hue } from '../palette'
 import { defineAttribute } from '../schema'
 
 const magical = ['fantasy', 'darkFantasy']
@@ -5,7 +6,7 @@ const magical = ['fantasy', 'darkFantasy']
 export default defineAttribute({
   id: 'species',
   label: '종족',
-  color: '#2fbf71',
+  color: hue.grass,
   description: '세계관에 따라 등장하는 종족이 달라진다',
   defaultSelected: true,
   kind: 'pick',

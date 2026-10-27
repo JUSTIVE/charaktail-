@@ -1,5 +1,6 @@
 import { catalog } from '../domain/catalog/index'
 import { Cell } from './cell'
+import { revive, Selection } from './schema'
 
 /**
  * Which attributes go into the next roll, in catalogue order. Persisted, and
@@ -8,7 +9,10 @@ import { Cell } from './cell'
 export const selectionCell = new Cell<readonly string[]>(
   catalog.attributes.filter((a) => a.defaultSelected).map((a) => a.id),
   'charaktail:selection',
-  (stored) => (Array.isArray(stored) ? normalise(stored.filter((id): id is string => typeof id === 'string')) : null),
+  (stored) => {
+    const ids = revive(Selection)(stored)
+    return ids ? normalise(ids) : null
+  },
 )
 
 function normalise(ids: readonly string[]): string[] {

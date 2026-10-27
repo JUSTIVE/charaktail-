@@ -1,10 +1,11 @@
+import { hue } from '../palette'
 import { defineAttribute } from '../schema'
 
 /** 세계관은 다른 속성들의 조건이 가장 많이 가리키는 뿌리다 — id를 바꾸면 조건도 함께 바꿀 것. */
 export default defineAttribute({
   id: 'world',
   label: '세계관',
-  color: '#7c5cff',
+  color: hue.violet,
   description: '캐릭터가 사는 세상',
   defaultSelected: true,
   kind: 'pick',

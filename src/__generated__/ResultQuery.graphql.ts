@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<e8e86cbea6c28ac56ac6345b31d074c5>>
+ * @generated SignedSource<<e774557b7c2dbd16773493a6a7d43817>>
  * @lightSyntaxTransform
  */
 
@@ -35,6 +35,12 @@ import { roll as queryRollResolverType } from "../graph/root";
     key: string;
   },
 ) => {
+  readonly id: DataID;
+} | null | undefined);
+import { stage as queryStageResolverType } from "../graph/root";
+// Type assertion validating that `queryStageResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(queryStageResolverType satisfies () => {
   readonly id: DataID;
 } | null | undefined);
 import { entries as rollEntriesResolverType } from "../graph/roll";
@@ -99,6 +105,12 @@ import { seed as rollSeedResolverType } from "../graph/roll";
 (rollSeedResolverType satisfies (
   __relay_model_instance: Roll____relay_model_instance$data['__relay_model_instance'],
 ) => string | null | undefined);
+import { motion as stageStatusMotionResolverType } from "../graph/stageStatus";
+// Type assertion validating that `stageStatusMotionResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(stageStatusMotionResolverType satisfies (
+  __relay_model_instance: StageStatus____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<string | null | undefined>);
 import { RollEntry } from "../graph/rollEntry";
 export type ResultQuery$variables = {
   key: string;
@@ -120,6 +132,9 @@ export type ResultQuery$data = {
     readonly name: string | null | undefined;
     readonly saved: boolean | null | undefined;
     readonly seed: string | null | undefined;
+  } | null | undefined;
+  readonly stage: {
+    readonly motion: string | null | undefined;
   } | null | undefined;
 };
 export type ResultQuery = {
@@ -143,11 +158,16 @@ import {possible as rollEntryPossibleResolver} from '../graph/rollEntry';
 import {swatches as rollEntrySwatchesResolver} from '../graph/rollEntry';
 import {value as rollEntryValueResolver} from '../graph/rollEntry';
 import {roll as queryRollResolver} from '../graph/root';
+import {stage as queryStageResolver} from '../graph/root';
+import {StageStatus as stageStatusRelayModelInstanceResolver} from '../graph/stageStatus';
+import {motion as stageStatusMotionResolver} from '../graph/stageStatus';
 import Attribute____relay_model_instance_graphql from './Attribute____relay_model_instance.graphql';
 import Attribute__id_graphql from './Attribute__id.graphql';
 import RollEntry____relay_model_instance_graphql from './RollEntry____relay_model_instance.graphql';
 import Roll____relay_model_instance_graphql from './Roll____relay_model_instance.graphql';
 import Roll__id_graphql from './Roll__id.graphql';
+import StageStatus____relay_model_instance_graphql from './StageStatus____relay_model_instance.graphql';
+import StageStatus__id_graphql from './StageStatus__id.graphql';
 import {resolverDataInjector} from 'relay-runtime/experimental';
 
 const node: ConcreteRequest = (function(){
@@ -462,6 +482,59 @@ return {
           ],
           "storageKey": null
         }
+      },
+      {
+        "kind": "ClientEdgeToClientObject",
+        "concreteType": "StageStatus",
+        "modelResolvers": {
+          "StageStatus": {
+            "alias": null,
+            "args": null,
+            "fragment": {
+              "args": null,
+              "kind": "FragmentSpread",
+              "name": "StageStatus__id"
+            },
+            "kind": "RelayResolver",
+            "name": "__relay_model_instance",
+            "resolverModule": resolverDataInjector(StageStatus__id_graphql, stageStatusRelayModelInstanceResolver, 'id', true),
+            "path": "stage.__relay_model_instance"
+          }
+        },
+        "serverObjectOperations": null,
+        "backingField": {
+          "alias": null,
+          "args": null,
+          "fragment": null,
+          "kind": "RelayResolver",
+          "name": "stage",
+          "resolverModule": queryStageResolver,
+          "path": "stage"
+        },
+        "linkedField": {
+          "alias": null,
+          "args": null,
+          "concreteType": "StageStatus",
+          "kind": "LinkedField",
+          "name": "stage",
+          "plural": false,
+          "selections": [
+            {
+              "alias": null,
+              "args": null,
+              "fragment": {
+                "args": null,
+                "kind": "FragmentSpread",
+                "name": "StageStatus____relay_model_instance"
+              },
+              "kind": "RelayLiveResolver",
+              "name": "motion",
+              "resolverModule": resolverDataInjector(StageStatus____relay_model_instance_graphql, stageStatusMotionResolver, '__relay_model_instance', true),
+              "path": "stage.motion"
+            }
+          ],
+          "storageKey": null
+        }
       }
     ],
     "type": "Query",
@@ -628,6 +701,56 @@ return {
           ],
           "storageKey": null
         }
+      },
+      {
+        "kind": "ClientEdgeToClientObject",
+        "backingField": {
+          "name": "stage",
+          "args": null,
+          "fragment": null,
+          "kind": "RelayResolver",
+          "storageKey": null,
+          "isOutputType": false
+        },
+        "linkedField": {
+          "alias": null,
+          "args": null,
+          "concreteType": "StageStatus",
+          "kind": "LinkedField",
+          "name": "stage",
+          "plural": false,
+          "selections": [
+            {
+              "name": "motion",
+              "args": null,
+              "fragment": {
+                "kind": "InlineFragment",
+                "selections": [
+                  {
+                    "name": "__relay_model_instance",
+                    "args": null,
+                    "fragment": {
+                      "kind": "InlineFragment",
+                      "selections": (v6/*:: as any*/),
+                      "type": "StageStatus",
+                      "abstractKey": null
+                    },
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": false
+                  }
+                ],
+                "type": "StageStatus",
+                "abstractKey": null
+              },
+              "kind": "RelayResolver",
+              "storageKey": null,
+              "isOutputType": true
+            },
+            (v5/*:: as any*/)
+          ],
+          "storageKey": null
+        }
       }
     ]
   },
@@ -642,6 +765,6 @@ return {
 };
 })();
 
-(node as any).hash = "dba0906943c9351de5a57cba89cfd756";
+(node as any).hash = "cfaa6eb83a3d22ec83a845b8ba643108";
 
 export default node;

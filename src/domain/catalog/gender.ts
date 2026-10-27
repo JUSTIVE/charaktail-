@@ -1,9 +1,10 @@
+import { hue } from '../palette'
 import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'gender',
   label: '성별',
-  color: '#ff5fa2',
+  color: hue.crimson,
   defaultSelected: true,
   kind: 'pick',
   options: [

@@ -18,7 +18,7 @@ interface SheetViewportProps {
   tier: SheetTier
   /** True while this region's own morph runs — the only time names exist. */
   morphing: boolean
-  adjacent?: readonly SheetEdge[]
+  adjacent?: readonly SheetEdge[] | undefined
   slots: readonly SheetSlot<SheetDescriptor>[]
   placement: SheetPlacement
   phase: StackPhase
@@ -40,9 +40,9 @@ interface SheetViewportProps {
   anchors: ReadonlyMap<string, AnchorPoint>
   /** Ops waiting in the region's queue — non-empty only while the inspector
    * shows them (#105). Their views are drawn as inert ghosts. */
-  queued?: readonly QueuedOp[]
-  onScrimClick?: () => void
-  container?: Element | DocumentFragment | null
+  queued?: readonly QueuedOp[] | undefined
+  onScrimClick?: (() => void) | undefined
+  container?: Element | DocumentFragment | null | undefined
 }
 
 /**

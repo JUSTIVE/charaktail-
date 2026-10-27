@@ -1,9 +1,10 @@
+import { hue } from '../palette'
 import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'occupation',
   label: '직업',
-  color: '#14b8a6',
+  color: hue.teal,
   kind: 'pick',
   options: [
     { label: '떠돌이 용병' },

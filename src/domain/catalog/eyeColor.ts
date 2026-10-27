@@ -1,9 +1,10 @@
+import { hue } from '../palette'
 import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'eyeColor',
   label: '눈 색상',
-  color: '#4d7cff',
+  color: hue.indigo,
   defaultSelected: true,
   kind: 'color',
   options: [

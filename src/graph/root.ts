@@ -20,6 +20,29 @@ export function attributes(): Edge[] {
 }
 
 /**
+ * The character being set up — name and selection.
+ * @relayField Query.draft: Draft
+ */
+export function draft(): Edge {
+  return { id: 'draft' }
+}
+
+/**
+ * The stage's mode and motion permission.
+ * @relayField Query.stage: StageStatus
+ */
+export function stage(): Edge {
+  return { id: 'stage' }
+}
+
+/**
+ * @relayField Query.attribute(id: ID!): Attribute
+ */
+export function attribute(args: { id: string }): Edge | null {
+  return catalog.byId.has(args.id) ? { id: args.id } : null
+}
+
+/**
  * @relayField Query.selectedAttributes: [Attribute!]
  * @live
  */

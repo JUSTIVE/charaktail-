@@ -1,9 +1,10 @@
+import { hue } from '../palette'
 import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'hairColor',
   label: '머리 색',
-  color: '#ff6b3d',
+  color: hue.tomato,
   kind: 'color',
   options: [
     { label: '흑발', hex: '#1b1a1f', weight: 3 },

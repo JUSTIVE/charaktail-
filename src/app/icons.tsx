@@ -20,3 +20,12 @@ export const ArchiveIcon = (p: SVGProps<SVGSVGElement>) => (
 export const ShakeIcon = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base} {...p}><rect x="7" y="3" width="10" height="18" rx="2.5" /><path d="M3 8v8" /><path d="M21 8v8" /><path d="M11 18h2" /></svg>
 )
+export const KebabIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}><circle cx="12" cy="5" r="1.4" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="12" cy="19" r="1.4" fill="currentColor" stroke="none" /></svg>
+)
+export const TrashIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}><path d="M4 7h16" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" /><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
+)
+export const PlusIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+)

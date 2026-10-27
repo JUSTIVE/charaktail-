@@ -1,16 +1,9 @@
 import { Cell } from './cell'
+import { revive, SavedList, type SavedCharacter } from './schema'
 
-/** A kept character is just its roll key — the catalogue re-derives the rest. */
-export interface SavedCharacter {
-  key: string
-  savedAt: number
-}
+export type { SavedCharacter }
 
-export const savedCell = new Cell<readonly SavedCharacter[]>([], 'charaktail:saved', (stored) =>
-  Array.isArray(stored)
-    ? stored.filter((s): s is SavedCharacter => typeof s?.key === 'string' && typeof s?.savedAt === 'number')
-    : null,
-)
+export const savedCell = new Cell<readonly SavedCharacter[]>([], 'charaktail:saved', revive(SavedList))
 
 export function toggleSaved(key: string): void {
   savedCell.set((list) =>
