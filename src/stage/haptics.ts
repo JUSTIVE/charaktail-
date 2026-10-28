@@ -8,22 +8,30 @@
  * behind them and stay silent on iOS.
  */
 
-let switchLabel: HTMLLabelElement | null = null
+/*
+ * The iOS tick, done the way that is known to work on iPhones (the
+ * ios-haptics technique): a fresh, hidden `<label>` around a switch checkbox,
+ * clicked and removed straight away. Only on touch screens — a desktop has
+ * nothing to tick.
+ */
+const touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches
 
 function iosTick(): void {
-  if (!switchLabel) {
+  if (!touch) return
+  try {
+    const label = document.createElement('label')
+    label.ariaHidden = 'true'
+    label.style.display = 'none'
     const input = document.createElement('input')
     input.type = 'checkbox'
     input.setAttribute('switch', '')
-    input.id = 'charaktail-haptic'
-    switchLabel = document.createElement('label')
-    switchLabel.htmlFor = input.id
-    switchLabel.setAttribute('aria-hidden', 'true')
-    switchLabel.style.cssText = 'position:fixed;inset:auto;width:1px;height:1px;opacity:0;pointer-events:none'
-    switchLabel.append(input)
-    document.body.append(switchLabel)
+    label.append(input)
+    document.head.append(label)
+    label.click()
+    label.remove()
+  } catch {
+    // No haptics is never worth an error.
   }
-  switchLabel.click()
 }
 
 /** `pattern`: on/off durations in ms, like `navigator.vibrate`. */

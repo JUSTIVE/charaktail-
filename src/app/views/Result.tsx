@@ -124,7 +124,9 @@ export function Result() {
               <button
                 type="button"
                 className="press-soft min-w-0 flex-1 text-left"
-                onClick={(event) =>
+                // A plain sheet, not one grown out of the card: on iOS the card's
+                // text did not repaint after being the morph's source (#78, #113).
+                onClick={() =>
                   void dialogs.push(
                     {
                       id: `pool-${attribute?.key}`,
@@ -139,7 +141,6 @@ export function Result() {
                         />
                       ),
                     },
-                    { from: event.currentTarget },
                   )
                 }
               >
