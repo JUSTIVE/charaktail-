@@ -65,7 +65,7 @@ export function addOption(
 /** Returns why the bounds were refused, or null when they were set. */
 export function setRange(attributeId: string, min: number, max: number): string | null {
   const attribute = catalog.byId.get(attributeId)
-  if (!attribute || attribute.kind !== 'range') return '범위 속성이 아니에요.'
+  if (!attribute || (attribute.kind !== 'range' && attribute.kind !== 'stats')) return '범위 속성이 아니에요.'
   if (!Number.isFinite(min) || !Number.isFinite(max)) return '숫자를 입력해 주세요.'
   if (min < 0 || max > 99999) return '0 이상 99999 이하로 입력해 주세요.'
   if (min > max) return '최소가 최대보다 클 수 없어요.'

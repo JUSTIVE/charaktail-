@@ -73,7 +73,8 @@ export const generators: { [K in AttributeKind]: Generator<K> } = {
   stats(attribute, ctx) {
     const rolled = attribute.stats.map((stat) => {
       const t = attribute.distribution === 'normal' ? bell(ctx.rng) : ctx.rng()
-      return { stat, value: 1 + Math.min(Math.floor(t * attribute.max), attribute.max - 1) }
+      const span = attribute.max - attribute.min + 1
+      return { stat, value: attribute.min + Math.min(Math.floor(t * span), span - 1) }
     })
     const best = rolled.reduce((a, b) => (b.value > a.value ? b : a))
     return {
@@ -139,7 +140,7 @@ export function possibilities(attribute: AttributeOf<AttributeKind>, rolled: Rea
     case 'date':
       return ['1월 1일 – 12월 31일', ...(attribute.zodiac ? ['별자리 12종'] : [])]
     case 'stats':
-      return attribute.stats.map((s) => `${s.label} 1–${attribute.max}`)
+      return attribute.stats.map((s) => `${s.label} ${attribute.min}–${attribute.max}`)
     case 'traits':
       return attribute.options.filter((o) => matches(o.when, rolled)).map((o) => `${o.label} ${Math.round(o.chance * 100)}%`)
     case 'compose':

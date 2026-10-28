@@ -54,7 +54,7 @@ export function isEdited(edits: AttributeEdits | undefined): boolean {
 
 /** Whether this kind has a value list to edit — a range has bounds instead, and the generated kinds have neither. */
 export function isEditable(attribute: Attribute): boolean {
-  return attribute.kind === 'pick' || attribute.kind === 'color' || attribute.kind === 'compose'
+  return attribute.kind === 'pick' || attribute.kind === 'color' || attribute.kind === 'compose' || attribute.kind === 'stats'
 }
 
 const swatchesOf = (o: AddedOption): string[] => [o.hex, o.hex2].filter((h): h is string => !!h)
@@ -87,7 +87,9 @@ export function listOptions(attribute: Attribute, edits: AttributeEdits | undefi
         ? attribute.parts.flatMap((options, part) => options.map((o) => ({ ...o, swatches: [], part, groups: [] })))
         : attribute.kind === 'pick'
           ? attribute.options.map((o) => ({ ...o, swatches: [], part: 0, groups: groupsOf(o.when) }))
-          : []
+          : attribute.kind === 'stats'
+            ? attribute.stats.map((o) => ({ ...o, swatches: [], part: 0, groups: [] }))
+            : []
   const builtIn = shipped
     .filter((o) => !removed.has(o.id))
     .map((o) => ({ id: o.id, label: o.label, hint: o.hint ?? null, part: o.part, groups: o.groups, enabled: !disabled.has(o.id), custom: false, swatches: o.swatches }))
@@ -117,9 +119,16 @@ export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits 
     const cases = attribute.cases.map(({ min: _min, max: _max, ...rest }) => rest)
     return { ...attribute, min, max, cases }
   }
-  if (attribute.kind !== 'pick' && attribute.kind !== 'color' && attribute.kind !== 'compose') return attribute
+  if (attribute.kind !== 'pick' && attribute.kind !== 'color' && attribute.kind !== 'compose' && attribute.kind !== 'stats') return attribute
   const drop = new Set([...edits!.disabled, ...edits!.removed])
   const added = edits!.added.filter((o) => !drop.has(o.id))
+  if (attribute.kind === 'stats') {
+    // Which stats to roll, and the span each one rolls in.
+    const kept = [...attribute.stats.filter((s) => !drop.has(s.id)), ...added.map((o) => ({ id: o.id, label: o.label }))]
+    const min = edits!.min ?? attribute.min
+    const max = edits!.max ?? attribute.max
+    return { ...attribute, stats: kept.length > 0 ? kept : attribute.stats, ...(min <= max ? { min, max } : {}) }
+  }
   if (attribute.kind === 'compose') {
     // Each part keeps at least one value: a part emptied by edits falls back to its shipped list.
     const parts = attribute.parts.map((options, part) => {

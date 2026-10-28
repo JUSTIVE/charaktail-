@@ -180,6 +180,21 @@ describe('locks', () => {
   })
 })
 
+describe('stats edits', () => {
+  test('stats roll only the kept items, in the edited span', () => {
+    const edits = { stats: { disabled: ['luck'], removed: [], added: [{ id: 'uM', label: '마력' }], min: 50, max: 100 } }
+    for (let i = 0; i < 100; i++) {
+      const [value] = rollCharacter(catalog, decodeRollKey(encodeRollKey({ seed: `t${i}`, attributeIds: ['stats'], nonces: {}, edits }))!)
+      expect(value!.label).not.toContain('운')
+      expect(value!.label).toContain('마력')
+      for (const n of value!.label.match(/\d+/g)!.map(Number)) {
+        expect(n).toBeGreaterThanOrEqual(50)
+        expect(n).toBeLessThanOrEqual(100)
+      }
+    }
+  })
+})
+
 describe('range edits', () => {
   test("the player's bounds win over every species case", () => {
     const edits = { age: { disabled: [], removed: [], added: [], min: 20, max: 25 } }

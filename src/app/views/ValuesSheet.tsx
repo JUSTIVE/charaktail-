@@ -23,7 +23,6 @@ const back = () => void router.navigate({ to: '/', search: {} })
 /** What a generated kind does, in a line — they have no value list to edit. */
 const GENERATED_NOTE: Record<string, string> = {
   date: '1년 365일 중 하루를 뽑고, 그날의 별자리를 함께 알려줘요.',
-  stats: '여러 능력치를 한 번에 뽑아요. 대부분은 중간쯤, 가끔 뛰어난 게 하나씩 나와요.',
   traits: '특징마다 나올 확률이 따로 있어서, 하나도 없거나 여러 개가 함께 나올 수 있어요.',
 }
 
@@ -129,7 +128,7 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
       </div>
 
       {!attribute.editable && attribute.kind !== 'range' ? (
-        // Generated kinds (date, stats, traits) have no list to edit.
+        // Generated kinds (date, traits) have no list to edit.
         <div className="ms-seq space-y-2" style={seq(1)}>
           <p className="rounded-[14px] bg-white/[0.04] px-4 py-4 text-[13px] text-muted">
             {GENERATED_NOTE[attribute.kind ?? ''] ?? '자동으로 만들어지는 속성이에요.'}
@@ -234,6 +233,16 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
           })}
         </ul>
       )}
+      {attribute.kind === 'stats' ? (
+        // 능력치: which stats (the list above) and the span each rolls in.
+        <RangeEditor
+          attributeId={attributeId}
+          min={attribute.rangeMin ?? 1}
+          max={attribute.rangeMax ?? 10}
+          unit=""
+          note="능력치마다 이 범위 안에서 뽑아요. 대부분은 중간쯤, 가끔 뛰어난 게 나와요."
+        />
+      ) : null}
       <div className="ms-seq flex gap-2" style={seq(3)}>
         <Button variant="primary" className="flex-1 py-3" onClick={back}>
           완료

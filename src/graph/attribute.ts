@@ -74,7 +74,7 @@ function summaryOf(attribute: AttributeRecord): string {
     case 'date':
       return attribute.zodiac ? '365일 중 하루 · 별자리' : '365일 중 하루'
     case 'stats':
-      return `${attribute.stats.map((s) => s.label).join('·')} · 1–${attribute.max}`
+      return `${attribute.stats.map((s) => s.label).join('·')} · ${attribute.min}–${attribute.max}`
     case 'traits':
       return `${attribute.options.length}가지 특징 중 해당하는 것`
     case 'compose':
@@ -178,7 +178,7 @@ export function locked(attribute: AttributeRecord) {
 export function rangeMin(attribute: AttributeRecord) {
   return editsCell.live((edits) => {
     const edited = applyAttributeEdits(attribute, edits[attribute.id])
-    return edited.kind === 'range' ? edited.min : null
+    return edited.kind === 'range' || edited.kind === 'stats' ? edited.min : null
   })
 }
 
@@ -189,7 +189,7 @@ export function rangeMin(attribute: AttributeRecord) {
 export function rangeMax(attribute: AttributeRecord) {
   return editsCell.live((edits) => {
     const edited = applyAttributeEdits(attribute, edits[attribute.id])
-    return edited.kind === 'range' ? edited.max : null
+    return edited.kind === 'range' || edited.kind === 'stats' ? edited.max : null
   })
 }
 

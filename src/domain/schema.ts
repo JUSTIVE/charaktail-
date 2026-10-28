@@ -154,6 +154,8 @@ const StatsAttribute = z.object({
   ...Base,
   kind: z.literal('stats'),
   stats: z.array(z.object({ id: Key, label: Key })).min(1),
+  /** Each stat is a whole number in [min, max]. */
+  min: z.number().int().min(0).default(1),
   max: z.number().int().positive().default(10),
   /** 'normal' keeps most stats middling, a few standing out. */
   distribution: z.enum(['uniform', 'normal']).default('normal'),
@@ -202,6 +204,9 @@ export const Attribute = z
         }
       }
       return
+    }
+    if (attribute.kind === 'stats' && attribute.min > attribute.max) {
+      ctx.addIssue({ code: 'custom', message: `${attribute.id}: min(${attribute.min}) > max(${attribute.max})` })
     }
     if (attribute.kind === 'date') return
     const ids =
