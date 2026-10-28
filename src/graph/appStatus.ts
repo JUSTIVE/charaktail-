@@ -20,7 +20,7 @@ export function App(id: DataID): AppModel | null {
 
 /**
  * A new version is downloaded and waiting for the player to accept it.
- * @relayField App.updateReady: Boolean
+ * @relayField App.updateReady: Boolean!
  * @live
  */
 export function updateReady(_app: AppModel) {
@@ -29,7 +29,7 @@ export function updateReady(_app: AppModel) {
 
 /**
  * Everything is cached; the app works without a connection.
- * @relayField App.offlineReady: Boolean
+ * @relayField App.offlineReady: Boolean!
  * @live
  */
 export function offlineReady(_app: AppModel) {

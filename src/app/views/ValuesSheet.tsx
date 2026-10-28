@@ -7,6 +7,7 @@ import { addOption, removeOption, resetAttribute, setRange, toggleOption } from 
 import { router } from '../../router'
 import { haptic } from '../../stage/haptics'
 import { BackIcon, PlusIcon, TrashIcon } from '../icons'
+import { attributeHead } from '../attributeHead'
 import { HairArt, hasHairArt } from '../hairArt'
 import { Button, Dot, seq, Swatches } from '../ui'
 import type { AddValueSheetQuery } from '../../__generated__/AddValueSheetQuery.graphql'
@@ -22,8 +23,8 @@ const back = () => void router.navigate({ to: '/', search: {} })
 
 /** What a generated kind does, in a line — they have no value list to edit. */
 const GENERATED_NOTE: Record<string, string> = {
-  date: '1년 365일 중 하루를 뽑고, 그날의 별자리를 함께 알려줘요.',
-  traits: '특징마다 나올 확률이 따로 있어서, 하나도 없거나 여러 개가 함께 나올 수 있어요.',
+  DateAttribute: '1년 365일 중 하루를 뽑고, 그날의 별자리를 함께 알려줘요.',
+  TraitsAttribute: '특징마다 나올 확률이 따로 있어서, 하나도 없거나 여러 개가 함께 나올 수 있어요.',
 }
 
 export function ValuesSheet({ attributeId, group }: { attributeId: string; group?: string | undefined }) {
@@ -31,38 +32,10 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
     graphql`
       query ValuesSheetQuery($id: ID!) {
         attribute(id: $id) {
-          key
-          label
-          color
-          kind
-          editable
-          edited
-          summary
-          rangeMin
-          rangeMax
-          unit
-          hasCases
-          dependsOnSpecies
-          locked
-          speciesRanges {
-            speciesKey
-            speciesLabel
-            speciesHint
-            span
-            bands
-          }
-          partLabels
-          groupBy {
-            key
-            label
+          __typename
+          ...attributeHead_attribute
+          ... on PickAttribute {
             options {
-              key
-              label
-              hint
-              enabled
-            }
-          }
-          options {
             key
             label
             hint
@@ -71,20 +44,97 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
             enabled
             custom
             swatches
+            }
+            groupBy {
+              key
+              label
+              options {
+                key
+                label
+                hint
+                enabled
+              }
+            }
+          }
+          ... on ColorAttribute {
+            options {
+            key
+            label
+            hint
+            groups
+            part
+            enabled
+            custom
+            swatches
+            }
+          }
+          ... on ComposeAttribute {
+            partLabels
+            options {
+            key
+            label
+            hint
+            groups
+            part
+            enabled
+            custom
+            swatches
+            }
+          }
+          ... on StatsAttribute {
+            rangeMin
+            rangeMax
+            options {
+            key
+            label
+            hint
+            groups
+            part
+            enabled
+            custom
+            swatches
+            }
+          }
+          ... on RangeAttribute {
+            rangeMin
+            rangeMax
+            unit
+            hasCases
+            dependsOnSpecies
+            speciesRanges {
+              speciesKey
+              speciesLabel
+              speciesHint
+              span
+              bands
+            }
           }
         }
       }
     `,
     { id: attributeId },
   )
-  const attribute = data.attribute
-  if (!attribute) {
+  const raw = data.attribute
+  const head = raw ? attributeHead(raw) : null
+  if (!raw || !head || raw.__typename === '%other') {
     return (
       <div data-stage-floor className="space-y-3 text-center">
         <p className="headline">없는 속성이에요</p>
         <Button onClick={back}>돌아가기</Button>
       </div>
     )
+  }
+
+  // The union, read by kind: each field exists only on the members that have it.
+  const kind = raw.__typename
+  const editable = 'options' in raw
+  const range = kind === 'RangeAttribute' ? raw : null
+  const bounds = 'rangeMin' in raw ? { min: raw.rangeMin ?? 0, max: raw.rangeMax ?? 0 } : null
+  const attribute = {
+    ...head,
+    options: 'options' in raw ? (raw.options ?? []) : [],
+    partLabels: kind === 'ComposeAttribute' ? (raw.partLabels ?? []) : [],
+    groupBy: kind === 'PickAttribute' ? raw.groupBy : null,
   }
 
   // Grouped kinds (직업 by 세계관) open on the list of groups — the enabled
@@ -127,27 +177,27 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
         ) : null}
       </div>
 
-      {!attribute.editable && attribute.kind !== 'range' ? (
+      {!editable && !range ? (
         // Generated kinds (date, traits) have no list to edit.
         <div className="ms-seq space-y-2" style={seq(1)}>
           <p className="rounded-[14px] bg-white/[0.04] px-4 py-4 text-[13px] text-muted">
-            {GENERATED_NOTE[attribute.kind ?? ''] ?? '자동으로 만들어지는 속성이에요.'}
+            {GENERATED_NOTE[kind] ?? '자동으로 만들어지는 속성이에요.'}
           </p>
         </div>
-      ) : !attribute.editable ? (
+      ) : range ? (
         <>
           <RangeEditor
             attributeId={attributeId}
-            min={attribute.rangeMin ?? 0}
-            max={attribute.rangeMax ?? 0}
-            unit={attribute.unit ?? ''}
-            note={attribute.hasCases ? (attribute.edited ? '종족별 범위 대신 이 범위로 뽑아요.' : '지금은 종족마다 범위가 달라요. 입력하면 모두 이 범위로 뽑아요.') : null}
+            min={range.rangeMin ?? 0}
+            max={range.rangeMax ?? 0}
+            unit={range.unit ?? ''}
+            note={range.hasCases ? (attribute.edited ? '종족별 범위 대신 이 범위로 뽑아요.' : '지금은 종족마다 범위가 달라요. 입력하면 모두 이 범위로 뽑아요.') : null}
           />
           {/* Only while this range is locked: its value stays put through
               re-rolls while 종족 may change, so the player can see which
               species it suits and preview another. */}
-          {attribute.dependsOnSpecies && attribute.locked ? (
-            <SpeciesPreview label={attribute.label ?? ''} color={attribute.color ?? '#888'} ranges={attribute.speciesRanges ?? []} />
+          {range.dependsOnSpecies && attribute.locked ? (
+            <SpeciesPreview label={attribute.label} color={attribute.color} ranges={range.speciesRanges ?? []} />
           ) : null}
         </>
       ) : atGroups ? (
@@ -233,12 +283,12 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
           })}
         </ul>
       )}
-      {attribute.kind === 'stats' ? (
+      {kind === 'StatsAttribute' && bounds ? (
         // 능력치: which stats (the list above) and the span each rolls in.
         <RangeEditor
           attributeId={attributeId}
-          min={attribute.rangeMin ?? 1}
-          max={attribute.rangeMax ?? 10}
+          min={bounds.min}
+          max={bounds.max}
           unit=""
           note="능력치마다 이 범위 안에서 뽑아요. 대부분은 중간쯤, 가끔 뛰어난 게 나와요."
         />
@@ -247,7 +297,7 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
         <Button variant="primary" className="flex-1 py-3" onClick={back}>
           완료
         </Button>
-        {attribute.editable && !atGroups ? (
+        {editable && !atGroups ? (
           <Button
             aria-label={`${attribute.label} 값 추가하기`}
             className="aspect-square shrink-0 px-0 py-3"
@@ -403,10 +453,11 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
     graphql`
       query AddValueSheetQuery($id: ID!) {
         attribute(id: $id) {
-          label
-          color
-          kind
-          partLabels
+          __typename
+          ...attributeHead_attribute
+          ... on ComposeAttribute {
+            partLabels
+          }
         }
       }
     `,
@@ -421,13 +472,14 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
   const [high, setHigh] = useState('100')
   const [error, setError] = useState<string | null>(null)
 
-  const attribute = data.attribute
+  const raw = data.attribute
+  const attribute = raw ? attributeHead(raw) : null
   const toList = () => void router.navigate({ to: '/', search: { values: attributeId, group } })
-  if (!attribute) return null
-  const color = attribute.color ?? '#888'
-  const isColor = attribute.kind === 'color'
+  if (!raw || !attribute || raw.__typename === '%other') return null
+  const color = attribute.color
+  const isColor = raw.__typename === 'ColorAttribute'
   const isSpecies = attributeId === 'species'
-  const partLabels = attribute.partLabels ?? []
+  const partLabels = raw.__typename === 'ComposeAttribute' ? (raw.partLabels ?? []) : []
 
   const submit = (event: FormEvent) => {
     event.preventDefault()

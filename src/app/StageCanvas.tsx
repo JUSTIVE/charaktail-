@@ -6,6 +6,7 @@ import { useLocalQuery } from '../graph/useLocalQuery'
 
 import { freshSeed } from '../domain/rng'
 import { encodeRollKey } from '../domain/roll'
+import { attributeHead } from './attributeHead'
 import { activeLocks } from '../state/locks'
 import { router } from '../router'
 import { editsCell } from '../state/edits'
@@ -27,9 +28,7 @@ export function StageCanvas() {
     graphql`
       query StageCanvasQuery {
         selectedAttributes {
-          key
-          label
-          color
+          ...attributeHead_attribute
         }
       }
     `,
@@ -62,7 +61,10 @@ export function StageCanvas() {
     }
   }, [])
 
-  const balls = (data.selectedAttributes ?? []).map((a) => ({ id: a.key ?? '', label: a.label ?? '', color: a.color ?? '#888888' }))
+  const balls = (data.selectedAttributes ?? []).flatMap((ref) => {
+    const a = attributeHead(ref)
+    return a ? [{ id: a.key, label: a.label, color: a.color }] : []
+  })
   const signature = balls.map((b) => b.id).join('.')
   useEffect(() => {
     stageHandle.current?.setBalls(balls)

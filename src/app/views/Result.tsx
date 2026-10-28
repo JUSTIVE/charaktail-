@@ -11,6 +11,7 @@ import { toggleLock } from '../../state/locks'
 import { toggleSaved } from '../../state/saved'
 import { haptic } from '../../stage/haptics'
 import { LockIcon, ShareIcon, ShakeIcon, ShuffleIcon, StarIcon } from '../icons'
+import { attributeHead } from '../attributeHead'
 import { HairArt } from '../hairArt'
 import { Button, Dot, seq, Swatches } from '../ui'
 import { PoolSheet } from './PoolSheet'
@@ -35,10 +36,7 @@ export function Result() {
           saved
           entries {
             attribute {
-              key
-              label
-              color
-              locked
+              ...attributeHead_attribute
             }
             value
             detail
@@ -76,7 +74,7 @@ export function Result() {
 
   const share = async () => {
     const url = location.href
-    const lines = (roll.entries ?? []).map((e) => `${e.attribute?.label}: ${e.value}`)
+    const lines = (roll.entries ?? []).map((e) => `${(e.attribute && attributeHead(e.attribute)?.label) ?? ''}: ${e.value}`)
     const text = [roll.name ?? '', ...lines].filter(Boolean).join('\n')
     if (navigator.share) {
       await navigator.share({ title: 'charaktail 캐릭터', text, url }).catch(() => {})
@@ -111,7 +109,7 @@ export function Result() {
       {/* Only the cards scroll; the header and the actions always fit. */}
       <ul className="result-list">
         {(roll.entries ?? []).map((entry, index) => {
-          const attribute = entry.attribute
+          const attribute = entry.attribute ? attributeHead(entry.attribute) : null
           const value = entry.value ?? ''
           const locked = attribute?.locked ?? false
           const wide = value.length + (entry.swatches?.length ?? 0) * 2 > 10
@@ -152,7 +150,7 @@ export function Result() {
                 <span className="mt-0.5 flex items-center gap-1.5">
                   <span className="tnum line-clamp-2 text-[15px] leading-tight font-bold tracking-[-0.01em]">{value}</span>
                   <Swatches colors={entry.swatches ?? []} />
-                  {attribute?.key === 'hairStyle' ? <HairArt id={value} width={30} height={30} className="-my-1.5 shrink-0" style={{ color: attribute.color ?? undefined }} /> : null}
+                  {attribute?.key === 'hairStyle' ? <HairArt id={value} width={30} height={30} className="-my-1.5 shrink-0" style={{ color: attribute.color }} /> : null}
                 </span>
                 {entry.detail ? <span className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-faint">{entry.detail}</span> : null}
               </button>

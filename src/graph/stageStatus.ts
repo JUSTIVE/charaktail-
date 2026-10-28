@@ -21,7 +21,7 @@ export function StageStatus(id: DataID): StageStatusModel | null {
 
 /**
  * idle · armed · mixing · glowing · revealed
- * @relayField StageStatus.mode: String
+ * @relayField StageStatus.mode: StageMode!
  * @live
  */
 export function mode(_stage: StageStatusModel) {
@@ -30,7 +30,7 @@ export function mode(_stage: StageStatusModel) {
 
 /**
  * unknown · prompt · granted · denied · unsupported
- * @relayField StageStatus.motion: String
+ * @relayField StageStatus.motion: MotionAccess!
  * @live
  */
 export function motion(_stage: StageStatusModel) {

@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<98d9314817f7d560170b4d346d3588f1>>
+ * @generated SignedSource<<ed06bd5a5e2d43fe9aab8eea3e9c5a54>>
  * @lightSyntaxTransform
  */
 
@@ -9,20 +9,20 @@
 
 import { ReaderFragment } from 'relay-runtime';
 import { FragmentRefs } from "relay-runtime";
-export type Attribute__id$data = {
+export type StatsAttribute__id$data = {
   readonly id: string;
-  readonly " $fragmentType": "Attribute__id";
+  readonly " $fragmentType": "StatsAttribute__id";
 };
-export type Attribute__id$key = {
-  readonly " $data"?: Attribute__id$data;
-  readonly " $fragmentSpreads": FragmentRefs<"Attribute__id">;
+export type StatsAttribute__id$key = {
+  readonly " $data"?: StatsAttribute__id$data;
+  readonly " $fragmentSpreads": FragmentRefs<"StatsAttribute__id">;
 };
 
 const node: ReaderFragment = {
   "argumentDefinitions": [],
   "kind": "Fragment",
   "metadata": null,
-  "name": "Attribute__id",
+  "name": "StatsAttribute__id",
   "selections": [
     {
       "kind": "ClientExtension",
@@ -37,7 +37,7 @@ const node: ReaderFragment = {
       ]
     }
   ],
-  "type": "Attribute",
+  "type": "StatsAttribute",
   "abstractKey": null
 };
 

@@ -37,7 +37,9 @@ const typeOf = (name: string): TypeDef => {
   return def
 }
 
-for (const file of readdirSync(graphDir).filter((f) => f.endsWith('.ts')).sort()) {
+// Resolver files live in subfolders too — one per attribute kind in kinds/.
+const files = (readdirSync(graphDir, { recursive: true }) as string[]).filter((f) => f.endsWith('.ts')).sort()
+for (const file of files) {
   const source = readFileSync(join(graphDir, file), 'utf8')
   for (const [, body] of source.matchAll(/\/\*\*([\s\S]*?)\*\//g)) {
     const lines = (body ?? '')
@@ -87,10 +89,19 @@ const out: string[] = [
   '# @weak  — a weak type: a plain value with no identity of its own.',
   '# Types without @weak are model types with an id, resolved from that id.',
   '',
+  '# A `!` on a resolver field is a promise the resolver keeps: it is always',
+  '# there (relay.config.json enables allow_resolver_non_nullable_return_type).',
+  '',
   'directive @live on FIELD_DEFINITION',
   'directive @weak on OBJECT',
   '',
 ]
+// What resolvers cannot declare (the union, enums) lives in schema extension
+// files beside them; they are copied in as written.
+const extensionDir = join(graphDir, 'schema')
+for (const file of readdirSync(extensionDir).filter((f) => f.endsWith('.graphql')).sort()) {
+  out.push(readFileSync(join(extensionDir, file), 'utf8').trim(), '')
+}
 for (const name of order) {
   const def = types.get(name)
   if (!def) continue

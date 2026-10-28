@@ -4,5 +4,17 @@
   "language": "typescript",
   "eagerEsModules": true,
   "artifactDirectory": "./src/__generated__",
-  "excludes": ["**/node_modules/**", "**/__generated__/**", "**/dist/**"]
+  "excludes": [
+    "**/node_modules/**",
+    "**/__generated__/**",
+    "**/dist/**"
+  ],
+  "schemaExtensions": [
+    "./src/graph/schema"
+  ],
+  "featureFlags": {
+    "allow_resolver_non_nullable_return_type": {
+      "kind": "enabled"
+    }
+  }
 }

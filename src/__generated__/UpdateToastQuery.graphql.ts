@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<87bc3a2b3ebb0384c3ab51f782dcc379>>
+ * @generated SignedSource<<d879cc3df1893110897a4812ebdd7d8f>>
  * @lightSyntaxTransform
  */
 
@@ -14,25 +14,25 @@ import { offlineReady as appOfflineReadyResolverType } from "../graph/appStatus"
 // A type error here indicates that the type signature of the resolver module is incorrect.
 (appOfflineReadyResolverType satisfies (
   __relay_model_instance: App____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean | null | undefined>);
+) => LiveState<boolean>);
 import { updateReady as appUpdateReadyResolverType } from "../graph/appStatus";
 // Type assertion validating that `appUpdateReadyResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
 (appUpdateReadyResolverType satisfies (
   __relay_model_instance: App____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean | null | undefined>);
+) => LiveState<boolean>);
 import { app as queryAppResolverType } from "../graph/root";
 // Type assertion validating that `queryAppResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
 (queryAppResolverType satisfies () => {
   readonly id: DataID;
-} | null | undefined);
+});
 export type UpdateToastQuery$variables = Record<PropertyKey, never>;
 export type UpdateToastQuery$data = {
   readonly app: {
-    readonly offlineReady: boolean | null | undefined;
-    readonly updateReady: boolean | null | undefined;
-  } | null | undefined;
+    readonly offlineReady: boolean;
+    readonly updateReady: boolean;
+  };
 };
 export type UpdateToastQuery = {
   response: UpdateToastQuery$data;

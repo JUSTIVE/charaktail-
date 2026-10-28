@@ -1,0 +1,10 @@
+# The attribute graph's one abstract type. Members and their fields are
+# declared by @relayType / @relayField docblocks in src/graph/kinds/; this file
+# only names what Relay resolvers cannot declare themselves.
+#
+# An attribute is exactly one kind, and each kind carries only the fields that
+# make sense for it — a 세계관 has no bounds, a 키 has no value list. What
+# could not happen cannot be asked for.
+
+"""One attribute, as exactly one of its kinds."""
+union Attribute = PickAttribute | ColorAttribute | RangeAttribute | DateAttribute | StatsAttribute | TraitsAttribute | ComposeAttribute

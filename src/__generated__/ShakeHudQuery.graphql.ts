@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<16bfecd97bdbcd768217c1c62e3126d3>>
+ * @generated SignedSource<<37e462d15bb60e2dcd7d58ce17f2c8ba>>
  * @lightSyntaxTransform
  */
 
@@ -14,25 +14,27 @@ import { stage as queryStageResolverType } from "../graph/root";
 // A type error here indicates that the type signature of the resolver module is incorrect.
 (queryStageResolverType satisfies () => {
   readonly id: DataID;
-} | null | undefined);
+});
 import { mode as stageStatusModeResolverType } from "../graph/stageStatus";
 // Type assertion validating that `stageStatusModeResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
 (stageStatusModeResolverType satisfies (
   __relay_model_instance: StageStatus____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
+) => LiveState<StageMode>);
 import { motion as stageStatusMotionResolverType } from "../graph/stageStatus";
 // Type assertion validating that `stageStatusMotionResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
 (stageStatusMotionResolverType satisfies (
   __relay_model_instance: StageStatus____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
+) => LiveState<MotionAccess>);
+export type MotionAccess = "denied" | "granted" | "prompt" | "unknown" | "unsupported";
+export type StageMode = "armed" | "glowing" | "idle" | "mixing" | "revealed";
 export type ShakeHudQuery$variables = Record<PropertyKey, never>;
 export type ShakeHudQuery$data = {
   readonly stage: {
-    readonly mode: string | null | undefined;
-    readonly motion: string | null | undefined;
-  } | null | undefined;
+    readonly mode: StageMode;
+    readonly motion: MotionAccess;
+  };
 };
 export type ShakeHudQuery = {
   response: ShakeHudQuery$data;

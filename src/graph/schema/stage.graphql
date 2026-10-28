@@ -1,0 +1,20 @@
+# The stage's state, as closed sets — a mode or a motion permission that is
+# not one of these cannot be stored, sent or asked about.
+
+"""Where the roll is: picking, waiting for a shake, mixing, glowing, showing the result."""
+enum StageMode {
+  idle
+  armed
+  mixing
+  glowing
+  revealed
+}
+
+"""Whether this device lets the stage read its motion sensors."""
+enum MotionAccess {
+  unknown
+  prompt
+  granted
+  denied
+  unsupported
+}

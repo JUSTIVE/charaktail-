@@ -3,6 +3,7 @@ import { graphql } from 'relay-runtime'
 
 import { useLocalQuery } from '../../graph/useLocalQuery'
 
+import { attributeHead } from '../attributeHead'
 import { BackIcon } from '../icons'
 import { seq } from '../ui'
 import type { SavedQuery } from '../../__generated__/SavedQuery.graphql'
@@ -20,8 +21,7 @@ export function Saved() {
             headline
             entries {
               attribute {
-                key
-                color
+                ...attributeHead_attribute
               }
             }
           }
@@ -58,8 +58,8 @@ export function Saved() {
                 className="press result-row flex items-center gap-3"
               >
                 <span className="flex -space-x-1">
-                  {(entry.roll?.entries ?? []).slice(0, 6).map((e) => (
-                    <span key={e.attribute?.key} className="size-3.5 rounded-full ring-2 ring-[var(--ms-surface)]" style={{ background: e.attribute?.color ?? '#888' }} />
+                  {(entry.roll?.entries ?? []).slice(0, 6).map((e, i) => (
+                    <span key={i} className="size-3.5 rounded-full ring-2 ring-[var(--ms-surface)]" style={{ background: (e.attribute && attributeHead(e.attribute)?.color) ?? '#888' }} />
                   ))}
                 </span>
                 <span className="min-w-0 flex-1">

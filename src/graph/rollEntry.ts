@@ -1,6 +1,6 @@
 
 import type { ExplainedValue } from '../domain/roll'
-import type { Edge } from './root'
+import { attributeRef } from './refs'
 
 /**
  * @relayType RollEntry
@@ -15,14 +15,17 @@ export type RollEntry = ExplainedValue
 export const RollEntry = undefined as unknown as RollEntry
 
 /**
- * @relayField RollEntry.attribute: Attribute
+ * @relayField RollEntry.attribute: Attribute!
  */
-export function attribute(entry: RollEntry): Edge {
-  return { id: entry.attributeId }
+export function attribute(entry: RollEntry) {
+  // A rolled value always comes from a catalogue attribute.
+  const ref = attributeRef(entry.attributeId)
+  if (!ref) throw new Error(`rolled an unknown attribute ${entry.attributeId}`)
+  return ref
 }
 
 /**
- * @relayField RollEntry.value: String
+ * @relayField RollEntry.value: String!
  */
 export function value(entry: RollEntry): string {
   return entry.label
@@ -36,7 +39,7 @@ export function detail(entry: RollEntry): string | null {
 }
 
 /**
- * @relayField RollEntry.swatches: [String!]
+ * @relayField RollEntry.swatches: [String!]!
  */
 export function swatches(entry: RollEntry): string[] {
   return entry.swatches
@@ -44,7 +47,7 @@ export function swatches(entry: RollEntry): string[] {
 
 /**
  * What this attribute could have been, given the rest of the roll.
- * @relayField RollEntry.possible: [String!]
+ * @relayField RollEntry.possible: [String!]!
  */
 export function possible(entry: RollEntry): string[] {
   return entry.possible

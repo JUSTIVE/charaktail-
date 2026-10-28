@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<f7f155431a3ef11a6b884da85a2f21e8>>
+ * @generated SignedSource<<fefb0c09bffffc0ef2ac021ab0c75508>>
  * @lightSyntaxTransform
  */
 
@@ -12,34 +12,35 @@ import { LiveState, FragmentRefs, DataID } from "relay-runtime";
 import { saved as querySavedResolverType } from "../graph/root";
 // Type assertion validating that `querySavedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
-(querySavedResolverType satisfies () => LiveState<ReadonlyArray<SavedEntry> | null | undefined>);
+(querySavedResolverType satisfies () => LiveState<ReadonlyArray<SavedEntry>>);
 import { stage as queryStageResolverType } from "../graph/root";
 // Type assertion validating that `queryStageResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
 (queryStageResolverType satisfies () => {
   readonly id: DataID;
-} | null | undefined);
+});
 import { savedAt as savedEntrySavedAtResolverType } from "../graph/savedEntry";
 // Type assertion validating that `savedEntrySavedAtResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
 (savedEntrySavedAtResolverType satisfies (
   __relay_model_instance: SavedEntry____relay_model_instance$data['__relay_model_instance'],
-) => string | null | undefined);
+) => string);
 import { mode as stageStatusModeResolverType } from "../graph/stageStatus";
 // Type assertion validating that `stageStatusModeResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
 (stageStatusModeResolverType satisfies (
   __relay_model_instance: StageStatus____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
+) => LiveState<StageMode>);
+export type StageMode = "armed" | "glowing" | "idle" | "mixing" | "revealed";
 import { SavedEntry } from "../graph/root";
 export type ShellSavedCountQuery$variables = Record<PropertyKey, never>;
 export type ShellSavedCountQuery$data = {
   readonly saved: ReadonlyArray<{
-    readonly savedAt: string | null | undefined;
-  }> | null | undefined;
+    readonly savedAt: string;
+  }>;
   readonly stage: {
-    readonly mode: string | null | undefined;
-  } | null | undefined;
+    readonly mode: StageMode;
+  };
 };
 export type ShellSavedCountQuery = {
   response: ShellSavedCountQuery$data;

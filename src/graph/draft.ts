@@ -21,7 +21,7 @@ export function Draft(id: DataID): DraftModel | null {
 }
 
 /**
- * @relayField Draft.name: String
+ * @relayField Draft.name: String!
  * @live
  */
 export function name(_draft: DraftModel) {
@@ -29,7 +29,7 @@ export function name(_draft: DraftModel) {
 }
 
 /**
- * @relayField Draft.selectionCount: Int
+ * @relayField Draft.selectionCount: Int!
  * @live
  */
 export function selectionCount(_draft: DraftModel) {
@@ -38,7 +38,7 @@ export function selectionCount(_draft: DraftModel) {
 
 /**
  * Ready to shake: a name and at least one attribute.
- * @relayField Draft.canShake: Boolean
+ * @relayField Draft.canShake: Boolean!
  * @live
  */
 export function canShake(_draft: DraftModel) {

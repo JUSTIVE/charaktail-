@@ -11,14 +11,14 @@ export type SpeciesRange = SpeciesRangeRecord
 export const SpeciesRange = undefined as unknown as SpeciesRange
 
 /**
- * @relayField SpeciesRange.speciesKey: String
+ * @relayField SpeciesRange.speciesKey: String!
  */
 export function speciesKey(range: SpeciesRange): string {
   return range.speciesId
 }
 
 /**
- * @relayField SpeciesRange.speciesLabel: String
+ * @relayField SpeciesRange.speciesLabel: String!
  */
 export function speciesLabel(range: SpeciesRange): string {
   return range.speciesLabel
@@ -34,14 +34,14 @@ export function speciesHint(range: SpeciesRange): string | null {
 
 /**
  * The span as it reads: `110–150cm`, `제조 후 1–40년`.
- * @relayField SpeciesRange.span: String
+ * @relayField SpeciesRange.span: String!
  */
 export function span(range: SpeciesRange): string {
   return `${range.prefix ? `${range.prefix} ` : ''}${range.min.toLocaleString('ko-KR')}–${range.max.toLocaleString('ko-KR')}${range.unit}`
 }
 
 /**
- * @relayField SpeciesRange.bands: [String!]
+ * @relayField SpeciesRange.bands: [String!]!
  */
 export function bands(range: SpeciesRange): string[] {
   return range.bands

@@ -8,27 +8,62 @@
 # @weak  — a weak type: a plain value with no identity of its own.
 # Types without @weak are model types with an id, resolved from that id.
 
+# A `!` on a resolver field is a promise the resolver keeps: it is always
+# there (relay.config.json enables allow_resolver_non_nullable_return_type).
+
 directive @live on FIELD_DEFINITION
 directive @weak on OBJECT
 
+# The attribute graph's one abstract type. Members and their fields are
+# declared by @relayType / @relayField docblocks in src/graph/kinds/; this file
+# only names what Relay resolvers cannot declare themselves.
+#
+# An attribute is exactly one kind, and each kind carries only the fields that
+# make sense for it — a 세계관 has no bounds, a 키 has no value list. What
+# could not happen cannot be asked for.
+
+"""One attribute, as exactly one of its kinds."""
+union Attribute = PickAttribute | ColorAttribute | RangeAttribute | DateAttribute | StatsAttribute | TraitsAttribute | ComposeAttribute
+
+# The stage's state, as closed sets — a mode or a motion permission that is
+# not one of these cannot be stored, sent or asked about.
+
+"""Where the roll is: picking, waiting for a shake, mixing, glowing, showing the result."""
+enum StageMode {
+  idle
+  armed
+  mixing
+  glowing
+  revealed
+}
+
+"""Whether this device lets the stage read its motion sensors."""
+enum MotionAccess {
+  unknown
+  prompt
+  granted
+  denied
+  unsupported
+}
+
 type Query {
-  attributes: [Attribute!]
+  attributes: [Attribute!]!
   """
   The character being set up — name and selection.
   """
-  draft: Draft
+  draft: Draft!
   """
   The installed app: waiting update, offline readiness.
   """
-  app: App
+  app: App!
   """
   The stage's mode and motion permission.
   """
-  stage: StageStatus
+  stage: StageStatus!
   attribute(id: ID!): Attribute
-  selectedAttributes: [Attribute!] @live
+  selectedAttributes: [Attribute!]! @live
   roll(key: String!): Roll
-  saved: [SavedEntry!] @live
+  saved: [SavedEntry!]! @live
 }
 
 type App {
@@ -36,80 +71,19 @@ type App {
   """
   A new version is downloaded and waiting for the player to accept it.
   """
-  updateReady: Boolean @live
+  updateReady: Boolean! @live
   """
   Everything is cached; the app works without a connection.
   """
-  offlineReady: Boolean @live
-}
-
-type Attribute {
-  id: ID!
-  """
-  The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
-  """
-  key: String
-  label: String
-  color: String
-  description: String
-  """
-  One line on what the attribute can become: "9가지 중 하나", "12–72세" — counted after the player's edits, so switching a value off shows here.
-  """
-  summary: String @live
-  """
-  A handful of values to tease with — swatches for colours, labels otherwise.
-  """
-  preview: [String!]
-  swatches: [String!] @live
-  kind: String
-  """
-  Whether there is a value list to edit — a numeric range has none.
-  """
-  editable: Boolean
-  """
-  Names of a compose kind's parts, for grouping its value list.
-  """
-  partLabels: [String!]
-  edited: Boolean @live
-  """
-  Every value in the editor, with the player's switches and additions.
-  """
-  options: [AttributeOption!] @live
-  selected: Boolean @live
-  """
-  Kept as it is through re-rolls.
-  """
-  locked: Boolean @live
-  """
-  Range attributes: the lower bound rolls draw from, after the player's edits.
-  """
-  rangeMin: Float @live
-  rangeMax: Float @live
-  unit: String
-  """
-  The attribute this one's values are listed under in the editor — 직업 → 세계관.
-  """
-  groupBy: Attribute
-  """
-  Whether this range changes with 종족 — 키, 나이.
-  """
-  dependsOnSpecies: Boolean
-  """
-  This range as each enabled species would roll it, edits applied.
-  """
-  speciesRanges: [SpeciesRange!] @live
-  """
-  Whether species (or another attribute) change this range by default.
-  """
-  hasCases: Boolean
+  offlineReady: Boolean! @live
 }
 
 """
 One value in an attribute's editor.
 """
 type AttributeOption @weak {
-  key: String
-  label: String
+  key: String!
+  label: String!
   """
   A line under the value, e.g. a species' lifespan.
   """
@@ -117,64 +91,310 @@ type AttributeOption @weak {
   """
   Compose kinds: which part the value belongs to.
   """
-  part: Int
+  part: Int!
   """
   Grouped kinds: the group values it is listed under; empty means all.
   """
-  groups: [String!]
-  enabled: Boolean
+  groups: [String!]!
+  enabled: Boolean!
   """
   Added by the player rather than shipped in the catalogue.
   """
-  custom: Boolean
-  swatches: [String!]
+  custom: Boolean!
+  swatches: [String!]!
+}
+
+"""
+Named colours, one or two swatches each — 눈 색상.
+"""
+type ColorAttribute {
+  id: ID!
+  """
+  The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
+  """
+  key: String!
+  label: String!
+  """
+  The metaball's colour.
+  """
+  color: String!
+  description: String!
+  """
+  One line on what it can become, after the player's edits: "9가지 중 하나", "12–72세".
+  """
+  summary: String! @live
+  """
+  A handful of values to tease with.
+  """
+  preview: [String!]!
+  """
+  Colours its values show, after edits.
+  """
+  swatches: [String!]! @live
+  """
+  Whether the player has changed it from the catalogue.
+  """
+  edited: Boolean! @live
+  """
+  Going into the next roll.
+  """
+  selected: Boolean! @live
+  """
+  Kept as it is through re-rolls.
+  """
+  locked: Boolean! @live
+  """
+  Its values, as the player sees them in the editor.
+  """
+  options: [AttributeOption!]! @live
+}
+
+"""
+A phrase built one part at a time — 이명.
+"""
+type ComposeAttribute {
+  id: ID!
+  """
+  The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
+  """
+  key: String!
+  label: String!
+  """
+  The metaball's colour.
+  """
+  color: String!
+  description: String!
+  """
+  One line on what it can become, after the player's edits: "9가지 중 하나", "12–72세".
+  """
+  summary: String! @live
+  """
+  A handful of values to tease with.
+  """
+  preview: [String!]!
+  """
+  Colours its values show, after edits.
+  """
+  swatches: [String!]! @live
+  """
+  Whether the player has changed it from the catalogue.
+  """
+  edited: Boolean! @live
+  """
+  Going into the next roll.
+  """
+  selected: Boolean! @live
+  """
+  Kept as it is through re-rolls.
+  """
+  locked: Boolean! @live
+  """
+  Its values, as the player sees them in the editor.
+  """
+  options: [AttributeOption!]! @live
+  """
+  A name per part — 수식어, 이름.
+  """
+  partLabels: [String!]!
+}
+
+"""
+A day of the year — 생일.
+"""
+type DateAttribute {
+  id: ID!
+  """
+  The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
+  """
+  key: String!
+  label: String!
+  """
+  The metaball's colour.
+  """
+  color: String!
+  description: String!
+  """
+  One line on what it can become, after the player's edits: "9가지 중 하나", "12–72세".
+  """
+  summary: String! @live
+  """
+  A handful of values to tease with.
+  """
+  preview: [String!]!
+  """
+  Colours its values show, after edits.
+  """
+  swatches: [String!]! @live
+  """
+  Whether the player has changed it from the catalogue.
+  """
+  edited: Boolean! @live
+  """
+  Going into the next roll.
+  """
+  selected: Boolean! @live
+  """
+  Kept as it is through re-rolls.
+  """
+  locked: Boolean! @live
 }
 
 type Draft {
   id: ID!
-  name: String @live
-  selectionCount: Int @live
+  name: String! @live
+  selectionCount: Int! @live
   """
   Ready to shake: a name and at least one attribute.
   """
-  canShake: Boolean @live
+  canShake: Boolean! @live
+}
+
+"""
+Drawn from a list — 성격, 직업.
+"""
+type PickAttribute {
+  id: ID!
+  """
+  The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
+  """
+  key: String!
+  label: String!
+  """
+  The metaball's colour.
+  """
+  color: String!
+  description: String!
+  """
+  One line on what it can become, after the player's edits: "9가지 중 하나", "12–72세".
+  """
+  summary: String! @live
+  """
+  A handful of values to tease with.
+  """
+  preview: [String!]!
+  """
+  Colours its values show, after edits.
+  """
+  swatches: [String!]! @live
+  """
+  Whether the player has changed it from the catalogue.
+  """
+  edited: Boolean! @live
+  """
+  Going into the next roll.
+  """
+  selected: Boolean! @live
+  """
+  Kept as it is through re-rolls.
+  """
+  locked: Boolean! @live
+  """
+  Its values, as the player sees them in the editor.
+  """
+  options: [AttributeOption!]! @live
+  """
+  The attribute its values are listed under in the editor — 직업 → 세계관.
+  """
+  groupBy: PickAttribute
+}
+
+"""
+One number within bounds, which species may change — 키, 나이.
+"""
+type RangeAttribute {
+  id: ID!
+  """
+  The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
+  """
+  key: String!
+  label: String!
+  """
+  The metaball's colour.
+  """
+  color: String!
+  description: String!
+  """
+  One line on what it can become, after the player's edits: "9가지 중 하나", "12–72세".
+  """
+  summary: String! @live
+  """
+  A handful of values to tease with.
+  """
+  preview: [String!]!
+  """
+  Colours its values show, after edits.
+  """
+  swatches: [String!]! @live
+  """
+  Whether the player has changed it from the catalogue.
+  """
+  edited: Boolean! @live
+  """
+  Going into the next roll.
+  """
+  selected: Boolean! @live
+  """
+  Kept as it is through re-rolls.
+  """
+  locked: Boolean! @live
+  """
+  The lower bound rolls draw from, after edits.
+  """
+  rangeMin: Float! @live
+  """
+  The upper bound rolls draw from, after edits.
+  """
+  rangeMax: Float! @live
+  unit: String!
+  """
+  Whether species (or another attribute) change the span by default.
+  """
+  hasCases: Boolean!
+  """
+  Whether the span changes with 종족 — 키, 나이.
+  """
+  dependsOnSpecies: Boolean!
+  """
+  The span as each enabled species would roll it, edits applied.
+  """
+  speciesRanges: [SpeciesRange!]! @live
 }
 
 type Roll {
   id: ID!
-  key: String
+  key: String!
   name: String
-  seed: String
-  entries: [RollEntry!]
+  seed: String!
+  entries: [RollEntry!]!
   """
   The first values, as a one-line teaser for lists.
   """
-  headline: String
-  saved: Boolean @live
+  headline: String!
+  saved: Boolean! @live
 }
 
 type RollEntry @weak {
-  attribute: Attribute
-  value: String
+  attribute: Attribute!
+  value: String!
   detail: String
-  swatches: [String!]
+  swatches: [String!]!
   """
   What this attribute could have been, given the rest of the roll.
   """
-  possible: [String!]
+  possible: [String!]!
 }
 
 type SavedEntry @weak {
   roll: Roll
-  savedAt: String
+  savedAt: String!
 }
 
 """
 A range attribute as one species would roll it.
 """
 type SpeciesRange @weak {
-  speciesKey: String
-  speciesLabel: String
+  speciesKey: String!
+  speciesLabel: String!
   """
   The species' own line — its lifespan.
   """
@@ -182,8 +402,8 @@ type SpeciesRange @weak {
   """
   The span as it reads: `110–150cm`, `제조 후 1–40년`.
   """
-  span: String
-  bands: [String!]
+  span: String!
+  bands: [String!]!
 }
 
 type StageStatus {
@@ -191,9 +411,103 @@ type StageStatus {
   """
   idle · armed · mixing · glowing · revealed
   """
-  mode: String @live
+  mode: StageMode! @live
   """
   unknown · prompt · granted · denied · unsupported
   """
-  motion: String @live
+  motion: MotionAccess! @live
+}
+
+"""
+Several numbers rolled at once, within bounds — 능력치.
+"""
+type StatsAttribute {
+  id: ID!
+  """
+  The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
+  """
+  key: String!
+  label: String!
+  """
+  The metaball's colour.
+  """
+  color: String!
+  description: String!
+  """
+  One line on what it can become, after the player's edits: "9가지 중 하나", "12–72세".
+  """
+  summary: String! @live
+  """
+  A handful of values to tease with.
+  """
+  preview: [String!]!
+  """
+  Colours its values show, after edits.
+  """
+  swatches: [String!]! @live
+  """
+  Whether the player has changed it from the catalogue.
+  """
+  edited: Boolean! @live
+  """
+  Going into the next roll.
+  """
+  selected: Boolean! @live
+  """
+  Kept as it is through re-rolls.
+  """
+  locked: Boolean! @live
+  """
+  Its values, as the player sees them in the editor.
+  """
+  options: [AttributeOption!]! @live
+  """
+  The lower bound rolls draw from, after edits.
+  """
+  rangeMin: Float! @live
+  """
+  The upper bound rolls draw from, after edits.
+  """
+  rangeMax: Float! @live
+}
+
+"""
+Features each rolled on their own odds — 외형 특징.
+"""
+type TraitsAttribute {
+  id: ID!
+  """
+  The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
+  """
+  key: String!
+  label: String!
+  """
+  The metaball's colour.
+  """
+  color: String!
+  description: String!
+  """
+  One line on what it can become, after the player's edits: "9가지 중 하나", "12–72세".
+  """
+  summary: String! @live
+  """
+  A handful of values to tease with.
+  """
+  preview: [String!]!
+  """
+  Colours its values show, after edits.
+  """
+  swatches: [String!]! @live
+  """
+  Whether the player has changed it from the catalogue.
+  """
+  edited: Boolean! @live
+  """
+  Going into the next roll.
+  """
+  selected: Boolean! @live
+  """
+  Kept as it is through re-rolls.
+  """
+  locked: Boolean! @live
 }

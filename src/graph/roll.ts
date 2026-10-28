@@ -23,7 +23,7 @@ export function Roll(id: DataID): RollRecord | null {
 }
 
 /**
- * @relayField Roll.key: String
+ * @relayField Roll.key: String!
  */
 export function key(roll: RollRecord): string {
   return roll.key
@@ -37,14 +37,14 @@ export function name(roll: RollRecord): string | null {
 }
 
 /**
- * @relayField Roll.seed: String
+ * @relayField Roll.seed: String!
  */
 export function seed(roll: RollRecord): string {
   return roll.seed
 }
 
 /**
- * @relayField Roll.entries: [RollEntry!]
+ * @relayField Roll.entries: [RollEntry!]!
  */
 export function entries(roll: RollRecord): ExplainedValue[] {
   return explainRoll(catalog, roll)
@@ -52,7 +52,7 @@ export function entries(roll: RollRecord): ExplainedValue[] {
 
 /**
  * The first values, as a one-line teaser for lists.
- * @relayField Roll.headline: String
+ * @relayField Roll.headline: String!
  */
 export function headline(roll: RollRecord): string {
   return rollCharacter(catalog, roll)
@@ -62,7 +62,7 @@ export function headline(roll: RollRecord): string {
 }
 
 /**
- * @relayField Roll.saved: Boolean
+ * @relayField Roll.saved: Boolean!
  * @live
  */
 export function saved(roll: RollRecord) {

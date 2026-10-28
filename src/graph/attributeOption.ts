@@ -11,14 +11,14 @@ export type AttributeOption = ListedOption
 export const AttributeOption = undefined as unknown as AttributeOption
 
 /**
- * @relayField AttributeOption.key: String
+ * @relayField AttributeOption.key: String!
  */
 export function key(option: AttributeOption): string {
   return option.id
 }
 
 /**
- * @relayField AttributeOption.label: String
+ * @relayField AttributeOption.label: String!
  */
 export function label(option: AttributeOption): string {
   return option.label
@@ -34,7 +34,7 @@ export function hint(option: AttributeOption): string | null {
 
 /**
  * Compose kinds: which part the value belongs to.
- * @relayField AttributeOption.part: Int
+ * @relayField AttributeOption.part: Int!
  */
 export function part(option: AttributeOption): number {
   return option.part
@@ -42,14 +42,14 @@ export function part(option: AttributeOption): number {
 
 /**
  * Grouped kinds: the group values it is listed under; empty means all.
- * @relayField AttributeOption.groups: [String!]
+ * @relayField AttributeOption.groups: [String!]!
  */
 export function groups(option: AttributeOption): string[] {
   return option.groups
 }
 
 /**
- * @relayField AttributeOption.enabled: Boolean
+ * @relayField AttributeOption.enabled: Boolean!
  */
 export function enabled(option: AttributeOption): boolean {
   return option.enabled
@@ -57,14 +57,14 @@ export function enabled(option: AttributeOption): boolean {
 
 /**
  * Added by the player rather than shipped in the catalogue.
- * @relayField AttributeOption.custom: Boolean
+ * @relayField AttributeOption.custom: Boolean!
  */
 export function custom(option: AttributeOption): boolean {
   return option.custom
 }
 
 /**
- * @relayField AttributeOption.swatches: [String!]
+ * @relayField AttributeOption.swatches: [String!]!
  */
 export function swatches(option: AttributeOption): string[] {
   return option.swatches

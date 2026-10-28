@@ -1,7 +1,7 @@
 import type { DataID } from 'relay-runtime'
 
 import { catalog } from '../domain/catalog/index'
-import { applyAttributeEdits, isEditable, isEdited, listOptions } from '../domain/edits'
+import { applyAttributeEdits, isEdited, listOptions, type Edits } from '../domain/edits'
 import type { Attribute as AttributeRecord } from '../domain/schema'
 import { dependsOnSpecies as speciesDependent, rangesBySpecies } from '../domain/preview'
 import { editsCell } from '../state/edits'
@@ -14,38 +14,24 @@ import { selectionCell } from '../state/selection'
  * Exported names must match field names; the compiler imports them by name.
  */
 
-/**
- * @relayType Attribute
- */
-export function Attribute(id: DataID): AttributeRecord | null {
-  return catalog.byId.get(id) ?? null
-}
+export const record = (id: DataID): AttributeRecord | null => catalog.byId.get(id) ?? null
+
 
 /**
  * The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
- * @relayField Attribute.key: String
  */
 export function key(attribute: AttributeRecord): string {
   return attribute.id
 }
 
-/**
- * @relayField Attribute.label: String
- */
 export function label(attribute: AttributeRecord): string {
   return attribute.label
 }
 
-/**
- * @relayField Attribute.color: String
- */
 export function color(attribute: AttributeRecord): string {
   return attribute.color
 }
 
-/**
- * @relayField Attribute.description: String
- */
 export function description(attribute: AttributeRecord): string {
   return attribute.description
 }
@@ -53,8 +39,6 @@ export function description(attribute: AttributeRecord): string {
 /**
  * One line on what the attribute can become: "9가지 중 하나", "12–72세" —
  * counted after the player's edits, so switching a value off shows here.
- * @relayField Attribute.summary: String
- * @live
  */
 export function summary(attribute: AttributeRecord) {
   return editsCell.live((edits) => summaryOf(applyAttributeEdits(attribute, edits[attribute.id])))
@@ -84,7 +68,6 @@ function summaryOf(attribute: AttributeRecord): string {
 
 /**
  * A handful of values to tease with — swatches for colours, labels otherwise.
- * @relayField Attribute.preview: [String!]
  */
 export function preview(attribute: AttributeRecord): string[] {
   switch (attribute.kind) {
@@ -102,10 +85,6 @@ export function preview(attribute: AttributeRecord): string[] {
   }
 }
 
-/**
- * @relayField Attribute.swatches: [String!]
- * @live
- */
 export function swatches(attribute: AttributeRecord) {
   return editsCell.live((edits) => {
     const edited = applyAttributeEdits(attribute, edits[attribute.id])
@@ -114,104 +93,68 @@ export function swatches(attribute: AttributeRecord) {
 }
 
 /**
- * @relayField Attribute.kind: String
- */
-export function kind(attribute: AttributeRecord): string {
-  return attribute.kind
-}
-
-/**
- * Whether there is a value list to edit — a numeric range has none.
- * @relayField Attribute.editable: Boolean
- */
-export function editable(attribute: AttributeRecord): boolean {
-  return isEditable(attribute)
-}
-
-/**
  * Names of a compose kind's parts, for grouping its value list.
- * @relayField Attribute.partLabels: [String!]
  */
 export function partLabels(attribute: AttributeRecord): string[] {
   return attribute.kind === 'compose' ? attribute.parts.map((_, i) => attribute.partLabels[i] ?? `${i + 1}번째 마디`) : []
 }
 
-/**
- * @relayField Attribute.edited: Boolean
- * @live
- */
 export function edited(attribute: AttributeRecord) {
   return editsCell.live((edits) => isEdited(edits[attribute.id]))
 }
 
 /**
  * Every value in the editor, with the player's switches and additions.
- * @relayField Attribute.options: [AttributeOption!]
- * @live
  */
 export function options(attribute: AttributeRecord) {
   return editsCell.live((edits) => listOptions(attribute, edits[attribute.id]))
 }
 
-/**
- * @relayField Attribute.selected: Boolean
- * @live
- */
 export function selected(attribute: AttributeRecord) {
   return selectionCell.live((ids) => ids.includes(attribute.id))
 }
 
 /**
  * Kept as it is through re-rolls.
- * @relayField Attribute.locked: Boolean
- * @live
  */
 export function locked(attribute: AttributeRecord) {
   return locksCell.live((locks) => attribute.id in locks)
 }
 
+/** Only range and stats implement BoundedAttribute; anything else is a wiring bug. */
+function bounded(attribute: AttributeRecord, edits: Edits): Extract<AttributeRecord, { kind: 'range' | 'stats' }> {
+  const edited = applyAttributeEdits(attribute, edits[attribute.id])
+  if (edited.kind !== 'range' && edited.kind !== 'stats') throw new Error(`${attribute.id} has no bounds`)
+  return edited
+}
+
 /**
- * Range attributes: the lower bound rolls draw from, after the player's edits.
- * @relayField Attribute.rangeMin: Float
- * @live
+ * The lower bound rolls draw from, after the player's edits.
  */
 export function rangeMin(attribute: AttributeRecord) {
-  return editsCell.live((edits) => {
-    const edited = applyAttributeEdits(attribute, edits[attribute.id])
-    return edited.kind === 'range' || edited.kind === 'stats' ? edited.min : null
-  })
+  return editsCell.live((edits) => bounded(attribute, edits).min)
 }
 
-/**
- * @relayField Attribute.rangeMax: Float
- * @live
- */
 export function rangeMax(attribute: AttributeRecord) {
-  return editsCell.live((edits) => {
-    const edited = applyAttributeEdits(attribute, edits[attribute.id])
-    return edited.kind === 'range' || edited.kind === 'stats' ? edited.max : null
-  })
+  return editsCell.live((edits) => bounded(attribute, edits).max)
 }
 
-/**
- * @relayField Attribute.unit: String
- */
-export function unit(attribute: AttributeRecord): string | null {
-  return attribute.kind === 'range' ? attribute.unit : null
+export function unit(attribute: AttributeRecord): string {
+  if (attribute.kind !== 'range') throw new Error(`${attribute.id} is not a range`)
+  return attribute.unit
 }
 
 /**
  * The attribute this one's values are listed under in the editor — 직업 →
  * 세계관.
- * @relayField Attribute.groupBy: Attribute
  */
 export function groupBy(attribute: AttributeRecord): { id: string } | null {
+  // defineCatalog checked that a groupBy names a pick attribute.
   return attribute.kind === 'pick' && attribute.groupBy ? { id: attribute.groupBy } : null
 }
 
 /**
  * Whether this range changes with 종족 — 키, 나이.
- * @relayField Attribute.dependsOnSpecies: Boolean
  */
 export function dependsOnSpecies(attribute: AttributeRecord): boolean {
   return speciesDependent(catalog, attribute.id)
@@ -219,8 +162,6 @@ export function dependsOnSpecies(attribute: AttributeRecord): boolean {
 
 /**
  * This range as each enabled species would roll it, edits applied.
- * @relayField Attribute.speciesRanges: [SpeciesRange!]
- * @live
  */
 export function speciesRanges(attribute: AttributeRecord) {
   return editsCell.live((edits) => rangesBySpecies(catalog, edits, attribute.id))
@@ -228,7 +169,6 @@ export function speciesRanges(attribute: AttributeRecord) {
 
 /**
  * Whether species (or another attribute) change this range by default.
- * @relayField Attribute.hasCases: Boolean
  */
 export function hasCases(attribute: AttributeRecord): boolean {
   return attribute.kind === 'range' && attribute.cases.length > 0

@@ -901,6 +901,38 @@
 - 스키마: stats에 `min`(기본 1) 추가, 범위 편집(min/max)을 stats에도 적용, 요약·"나올 수 있던 값"도 편집 반영
 - 확인: 운 끄기 + 마력 추가 + 50–100 → "힘 69 · 지능 75 · 민첩 84 · 매력 62 · 마력 75" / 테스트 100회: 운 없음, 마력 있음, 모든 수치 50–100, roll key 왕복 후 동일
 
-## #109 — 2026-10-29 · 스키마에서 attribute를 union으로 재구성 🔄
+## #109 — 2026-10-29 · 스키마에서 attribute를 union으로 재구성 ✅ (#111 형태로)
 
 > 스키마에서 attribute를 union으로 재구성해봐
+
+- GraphQL `Attribute`가 종류별 타입 7개의 union: `union Attribute = PickAttribute | ColorAttribute | RangeAttribute | DateAttribute | StatsAttribute | TraitsAttribute | ComposeAttribute` (클라이언트 스키마 확장 `src/graph/schema/attribute.graphql`)
+- 종류마다 resolver 파일 하나(`src/graph/kinds/*.ts`): 자기 필드만 선언하고 구현은 `attributeFields.ts`를 재수출. 유니온으로 가는 edge는 `{ id, __typename }`(`refs.ts`)
+- 쿼리: 모든 종류에 있는 필드는 `@inline` 프래그먼트 `attributeHead_attribute` 하나로(멤버마다 묻는 걸 한 곳에), 종류 필드는 `... on RangeAttribute { … }`처럼 필요한 곳에서만
+
+## #110 — 2026-10-29 · 불가능한 상태를 표현할 수 없도록 스키마 재설계 ✅
+
+> 불가능한 상태를 표현 가능하지 않도록 스키마를 재설계해
+
+- 종류별 필드는 그 종류에만: 세계관(PickAttribute)엔 범위가 없고, 키(RangeAttribute)엔 값 목록이 없음 — 물을 수조차 없음
+  - Pick: options·groupBy / Color: options / Compose: options·partLabels / Stats: options·rangeMin·rangeMax / Range: rangeMin·rangeMax·unit·hasCases·dependsOnSpecies·speciesRanges / Date·Traits: 공통만
+  - `kind: String`, `editable: Boolean` 필드 제거 — 종류는 `__typename`, 편집 가능 여부는 options가 있는 타입인지로
+  - `groupBy`는 아무 Attribute가 아니라 `PickAttribute`
+- 늘 있는 값은 진짜 non-null(`String!`): relay.config에 `allow_resolver_non_nullable_return_type` 켬 → 생성 타입도 `string`(null 아님). null은 의미 있을 때만 남김: 없는 roll key, 설명 줄 없는 값, 이름 없는 캐릭터, groupBy 없는 속성
+- 스테이지 상태는 닫힌 집합: `enum StageMode { idle armed mixing glowing revealed }`, `enum MotionAccess { … }` (`schema/stage.graphql`)
+- 범위 필드는 범위가 없는 종류에서 불리면 null 대신 오류(배선 버그를 숨기지 않음)
+- docs/schema.graphql 생성기가 하위 폴더와 확장 파일(유니온·enum)까지 읽도록 → 16타입 125필드
+- 확인: 타입체크·테스트 23개·빌드 통과, 브라우저 회귀(라벨 28칩, 잠금, URL, 직업 2단, 능력치, 종족 미리보기, 이명 추가, 말투) 모두 동일하게 동작
+
+## #111 — 2026-10-29 · interface 말고 union으로 ✅
+
+> 아니 interface 말고 union으로
+
+- 공유 interface(AttributeBase 등)로 가던 중 정정 → interface 없이 union만. 멤버 타입이 각자 공통 필드까지 직접 선언
+
+## #112 — 2026-10-29 · 각 속성들을 interface로도 묶기 🔄
+
+> 각 속성들 interface로도 묶어
+
+## #113 — 2026-10-29 · iOS: 결과 화면 창이 두 번 뜸 / 결과에서 속성 열었다 닫으면 여전히 사라짐 / 진동 여전히 없음 🔄
+
+> ios에서 결과화면 창이 두번 떠. 결과에서 속성 열었다 닫으면 아직도 사라져. 진동 아직도 없어.

@@ -10,6 +10,7 @@ import { currentName, NAME_MAX, setName } from '../../state/name'
 import { selectAll, selectionCell, toggleAttribute } from '../../state/selection'
 import { requestMotionAccess } from '../../stage/motion'
 import { patchStage } from '../../stage/store'
+import { attributeHead } from '../attributeHead'
 import { Aura, AuraTint } from '../Aura'
 import { releaseTextInput } from '../releaseTextInput'
 import { haptic } from '../../stage/haptics'
@@ -34,17 +35,13 @@ export function Picker() {
           motion
         }
         attributes {
-          key
-          label
-          color
-          selected
-          locked
+          ...attributeHead_attribute
         }
       }
     `,
     {},
   )
-  const attributes = data.attributes ?? []
+  const attributes = (data.attributes ?? []).flatMap((ref) => attributeHead(ref) ?? [])
   const count = attributes.filter((a) => a.selected).length
   const auraColors = attributes.filter((a) => a.selected).map((a) => a.color ?? '#7c7a85')
   const allOn = count === attributes.length

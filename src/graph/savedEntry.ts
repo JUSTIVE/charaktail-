@@ -8,7 +8,7 @@ export function roll(entry: SavedEntry): Edge {
 }
 
 /**
- * @relayField SavedEntry.savedAt: String
+ * @relayField SavedEntry.savedAt: String!
  */
 export function savedAt(entry: SavedEntry): string {
   return new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(
