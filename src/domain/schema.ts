@@ -83,6 +83,17 @@ const RangeSpec = z.object({
   prefix: z.string().optional(),
 })
 
+/** RangeSpec with every field optional and no defaults — a case's overrides. */
+const CaseSpec = z.object({
+  min: z.number().optional(),
+  max: z.number().optional(),
+  step: z.number().positive().optional(),
+  unit: z.string().optional(),
+  distribution: z.enum(['uniform', 'normal']).optional(),
+  bands: z.array(Band).optional(),
+  prefix: z.string().optional(),
+})
+
 const Base = {
   id: Key.regex(/^[a-z][a-zA-Z0-9]*$/, 'camelCase 영문 id여야 합니다'),
   /**
@@ -117,8 +128,12 @@ const RangeAttribute = z.object({
   ...Base,
   kind: z.literal('range'),
   ...RangeSpec.shape,
-  /** Overrides chosen by condition, first match wins: 엘프의 나이는 사람과 다르다. */
-  cases: z.array(z.object({ when: Condition, ...RangeSpec.partial().shape })).default([]),
+  /**
+   * Overrides chosen by condition, first match wins: 엘프의 나이는 사람과 다르다.
+   * A case sets only what differs — no defaults here, or an unset unit would
+   * blank the attribute's 'cm' and an unset distribution flatten its bell.
+   */
+  cases: z.array(z.object({ when: Condition, ...CaseSpec.shape })).default([]),
 })
 
 /** A day of the year — 생일. With `zodiac`, the detail names its star sign. */

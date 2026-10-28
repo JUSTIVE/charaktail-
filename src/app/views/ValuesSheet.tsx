@@ -42,6 +42,15 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
           rangeMax
           unit
           hasCases
+          dependsOnSpecies
+          locked
+          speciesRanges {
+            speciesKey
+            speciesLabel
+            speciesHint
+            span
+            bands
+          }
           partLabels
           options {
             key
@@ -98,13 +107,21 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
           </p>
         </div>
       ) : !attribute.editable ? (
-        <RangeEditor
-          attributeId={attributeId}
-          min={attribute.rangeMin ?? 0}
-          max={attribute.rangeMax ?? 0}
-          unit={attribute.unit ?? ''}
-          note={attribute.hasCases ? (attribute.edited ? '종족별 범위 대신 이 범위로 뽑아요.' : '지금은 종족마다 범위가 달라요. 입력하면 모두 이 범위로 뽑아요.') : null}
-        />
+        <>
+          <RangeEditor
+            attributeId={attributeId}
+            min={attribute.rangeMin ?? 0}
+            max={attribute.rangeMax ?? 0}
+            unit={attribute.unit ?? ''}
+            note={attribute.hasCases ? (attribute.edited ? '종족별 범위 대신 이 범위로 뽑아요.' : '지금은 종족마다 범위가 달라요. 입력하면 모두 이 범위로 뽑아요.') : null}
+          />
+          {/* Only while this range is locked: its value stays put through
+              re-rolls while 종족 may change, so the player can see which
+              species it suits and preview another. */}
+          {attribute.dependsOnSpecies && attribute.locked ? (
+            <SpeciesPreview label={attribute.label ?? ''} color={attribute.color ?? '#888'} ranges={attribute.speciesRanges ?? []} />
+          ) : null}
+        </>
       ) : (
         <ul className="ms-seq values-list" style={seq(1)}>
           {options.map((option, index) => {
@@ -176,6 +193,71 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
           </Button>
         ) : null}
       </div>
+    </div>
+  )
+}
+
+type SpeciesRangeView = {
+  readonly speciesKey: string | null | undefined
+  readonly speciesLabel: string | null | undefined
+  readonly speciesHint: string | null | undefined
+  readonly span: string | null | undefined
+  readonly bands: ReadonlyArray<string> | null | undefined
+}
+
+/**
+ * What this range turns out to be for one species — 드워프의 키는 110–150cm —
+ * with a button that opens the species list to preview another.
+ */
+function SpeciesPreview({ label, color, ranges }: { label: string; color: string; ranges: ReadonlyArray<SpeciesRangeView> }) {
+  const [key, setKey] = useState<string | null>(null)
+  const [choosing, setChoosing] = useState(false)
+  const current = ranges.find((r) => r.speciesKey === key) ?? ranges[0]
+  if (!current) return null
+  return (
+    <div className="ms-seq species-preview space-y-2" style={{ ...seq(2), '--accent': color } as CSSProperties}>
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="eyebrow">종족 미리보기</p>
+          <p className="mt-1 text-[14px] font-semibold">
+            {current.speciesLabel}의 {label}
+          </p>
+          {current.speciesHint ? <p className="tnum text-[11.5px] text-faint">{current.speciesHint}</p> : null}
+        </div>
+        <Button
+          variant="ghost"
+          aria-expanded={choosing}
+          className="shrink-0 px-2.5 py-1.5 text-[12.5px]"
+          onClick={() => {
+            haptic.select()
+            setChoosing((v) => !v)
+          }}
+        >
+          종족 변경
+        </Button>
+      </div>
+      <p className="tnum text-[22px] font-bold tracking-[-0.02em]">{current.span}</p>
+      {(current.bands?.length ?? 0) > 0 ? <p className="text-[12px] text-muted">{current.bands?.join(' · ')}</p> : null}
+      {choosing ? (
+        <div className="species-choices" role="radiogroup" aria-label="미리볼 종족">
+          {ranges.map((r) => (
+            <button
+              key={r.speciesKey}
+              type="button"
+              role="radio"
+              aria-checked={r.speciesKey === current.speciesKey}
+              onClick={() => {
+                haptic.select()
+                setKey(r.speciesKey ?? null)
+                setChoosing(false)
+              }}
+              className="press-soft"
+            >
+              {r.speciesLabel}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }

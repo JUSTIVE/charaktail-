@@ -3,6 +3,7 @@ import type { DataID } from 'relay-runtime'
 import { catalog } from '../domain/catalog/index'
 import { applyAttributeEdits, isEditable, isEdited, listOptions } from '../domain/edits'
 import type { Attribute as AttributeRecord } from '../domain/schema'
+import { dependsOnSpecies as speciesDependent, rangesBySpecies } from '../domain/preview'
 import { editsCell } from '../state/edits'
 import { locksCell } from '../state/locks'
 import { selectionCell } from '../state/selection'
@@ -197,6 +198,23 @@ export function rangeMax(attribute: AttributeRecord) {
  */
 export function unit(attribute: AttributeRecord): string | null {
   return attribute.kind === 'range' ? attribute.unit : null
+}
+
+/**
+ * Whether this range changes with 종족 — 키, 나이.
+ * @relayField Attribute.dependsOnSpecies: Boolean
+ */
+export function dependsOnSpecies(attribute: AttributeRecord): boolean {
+  return speciesDependent(catalog, attribute.id)
+}
+
+/**
+ * This range as each enabled species would roll it, edits applied.
+ * @relayField Attribute.speciesRanges: [SpeciesRange!]
+ * @live
+ */
+export function speciesRanges(attribute: AttributeRecord) {
+  return editsCell.live((edits) => rangesBySpecies(catalog, edits, attribute.id))
 }
 
 /**

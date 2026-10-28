@@ -87,6 +87,14 @@ type Attribute {
   rangeMax: Float @live
   unit: String
   """
+  Whether this range changes with 종족 — 키, 나이.
+  """
+  dependsOnSpecies: Boolean
+  """
+  This range as each enabled species would roll it, edits applied.
+  """
+  speciesRanges: [SpeciesRange!] @live
+  """
   Whether species (or another attribute) change this range by default.
   """
   hasCases: Boolean
@@ -151,6 +159,23 @@ type RollEntry @weak {
 type SavedEntry @weak {
   roll: Roll
   savedAt: String
+}
+
+"""
+A range attribute as one species would roll it.
+"""
+type SpeciesRange @weak {
+  speciesKey: String
+  speciesLabel: String
+  """
+  The species' own line — its lifespan.
+  """
+  speciesHint: String
+  """
+  The span as it reads: `110–150cm`, `제조 후 1–40년`.
+  """
+  span: String
+  bands: [String!]
 }
 
 type StageStatus {
