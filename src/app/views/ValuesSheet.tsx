@@ -209,8 +209,6 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
             const own = all.filter((o) => (o.groups ?? []).includes(g.key ?? ''))
             const ownOn = own.filter((o) => o.enabled)
             const on = ownOn.length > 0
-            const enabledTotal = (attribute.options ?? []).filter((o) => o.enabled).length
-            const wouldEmpty = on && enabledTotal - ownOn.length < 1
             return (
               <li key={g.key} className="values-row" data-off={!on || undefined}>
                 <button
@@ -236,8 +234,6 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
                     role="switch"
                     aria-checked={on}
                     aria-label={`${g.label} 직업 ${on ? '모두 끄기' : '모두 켜기'}`}
-                    title={wouldEmpty ? '최소 하나는 켜져 있어야 해요' : undefined}
-                    disabled={wouldEmpty}
                     onClick={() => {
                       haptic.select()
                       setOptionsEnabled(attributeId, own.map((o) => o.key ?? ''), !on)
@@ -259,7 +255,9 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
             // value per part stays on, or the phrase could not be built.
             const part = option.part ?? 0
             const inPart = partLabels.length ? options.filter((o) => (o.part ?? 0) === part) : options
-            const last = !!option.enabled && inPart.filter((o) => o.enabled).length <= 1
+            // At least one value stays on — except in a grouped list (직업),
+            // which may be emptied; the attribute then switches off instead.
+            const last = !groupBy && !!option.enabled && inPart.filter((o) => o.enabled).length <= 1
             const heading = partLabels.length > 0 && (index === 0 || (options[index - 1]?.part ?? 0) !== part)
             return (
               <Fragment key={option.key}>
