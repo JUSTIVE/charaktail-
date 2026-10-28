@@ -7,6 +7,7 @@ import { addOption, removeOption, resetAttribute, setRange, toggleOption } from 
 import { router } from '../../router'
 import { haptic } from '../../stage/haptics'
 import { BackIcon, PlusIcon, TrashIcon } from '../icons'
+import { HairArt, hasHairArt } from '../hairArt'
 import { Button, Dot, seq, Swatches } from '../ui'
 import type { AddValueSheetQuery } from '../../__generated__/AddValueSheetQuery.graphql'
 import type { ValuesSheetQuery } from '../../__generated__/ValuesSheetQuery.graphql'
@@ -137,6 +138,8 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
                 <li className="values-row" data-off={!option.enabled || undefined}>
                   {(option.swatches?.length ?? 0) > 0 ? (
                     <Swatches colors={option.swatches ?? []} />
+                  ) : hasHairArt(option.key ?? '') ? (
+                    <HairArt id={option.key ?? ''} className="-my-1 shrink-0" style={{ color: attribute.color ?? undefined }} />
                   ) : (
                     <Dot color={attribute.color ?? '#888'} size={7} />
                   )}
