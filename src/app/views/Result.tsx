@@ -152,7 +152,7 @@ export function Result() {
                   <span className="tnum line-clamp-2 text-[15px] leading-tight font-bold tracking-[-0.01em]">{value}</span>
                   <Swatches colors={entry.swatches ?? []} />
                 </span>
-                {entry.detail ? <span className="mt-0.5 block truncate text-[11px] text-faint">{entry.detail}</span> : null}
+                {entry.detail ? <span className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-faint">{entry.detail}</span> : null}
               </button>
               <span className="-mt-1 -mr-1 flex shrink-0 flex-col items-center">
                 <button
