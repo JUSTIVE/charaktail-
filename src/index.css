@@ -275,35 +275,59 @@ body {
   isolation: isolate;
   overflow: hidden;
 }
-.chip::before {
+.chip::before,
+.chip::after {
   content: '';
   position: absolute;
-  inset: -40%;
   z-index: -1;
+  width: 70%;
+  height: 160%;
   pointer-events: none;
-  background:
-    radial-gradient(closest-side, color-mix(in oklab, var(--chip) 38%, transparent), transparent) 0 0 / 55% 70% no-repeat,
-    radial-gradient(closest-side, color-mix(in oklab, var(--chip) 26%, transparent), transparent) 100% 100% / 60% 75% no-repeat;
+  border-radius: 999px;
   opacity: 0;
   transition: opacity 400ms ease;
-  animation: chip-drift 11s ease-in-out infinite alternate;
-  animation-play-state: paused;
+  /* Moved by transform only, so the compositor runs it — no style or paint
+     work per frame, even with every chip on (#115). */
+  will-change: transform;
+  animation: chip-drift-a 11s ease-in-out infinite alternate paused;
 }
-.chip[aria-pressed='true']::before {
+.chip::before {
+  left: -20%;
+  top: -60%;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--chip) 38%, transparent), transparent);
+}
+.chip::after {
+  right: -20%;
+  top: -20%;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--chip) 26%, transparent), transparent);
+  animation-name: chip-drift-b;
+}
+.chip[aria-pressed='true']::before,
+.chip[aria-pressed='true']::after {
   opacity: 1;
   animation-play-state: running;
 }
-li:nth-child(3n + 1) > .chip::before { animation-duration: 13s; animation-delay: -4s; }
-li:nth-child(3n + 2) > .chip::before { animation-duration: 9.5s; animation-delay: -7s; }
-li:nth-child(4n) > .chip::before { animation-direction: alternate-reverse; }
-@keyframes chip-drift {
-  0% { background-position: 0% 0%, 100% 100%; }
-  33% { background-position: 70% 20%, 20% 80%; }
-  66% { background-position: 30% 90%, 85% 15%; }
-  100% { background-position: 100% 60%, 0% 40%; }
+li:nth-child(3n + 1) > .chip::before,
+li:nth-child(3n + 1) > .chip::after { animation-duration: 13s; animation-delay: -4s; }
+li:nth-child(3n + 2) > .chip::before,
+li:nth-child(3n + 2) > .chip::after { animation-duration: 9.5s; animation-delay: -7s; }
+li:nth-child(4n) > .chip::before,
+li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
+@keyframes chip-drift-a {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(55%, 25%) scale(1.15); }
+  66% { transform: translate(20%, 45%) scale(0.9); }
+  100% { transform: translate(75%, 15%) scale(1.05); }
+}
+@keyframes chip-drift-b {
+  0% { transform: translate(0, 0) scale(1.05); }
+  33% { transform: translate(-50%, -20%) scale(0.9); }
+  66% { transform: translate(-15%, -35%) scale(1.2); }
+  100% { transform: translate(-70%, 5%) scale(1); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .chip::before { animation: none; }
+  .chip::before,
+  .chip::after { animation: none; }
 }
 
 .chip[aria-pressed='false'] > span:first-child > span:first-child {

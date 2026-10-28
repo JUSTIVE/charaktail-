@@ -39,6 +39,8 @@ const REARM_AFTER = 1.5
 const REARM_QUIET = 0.8
 /** The lowest pixel ratio adaptive resolution will drop to. */
 const MIN_DPR = 0.75
+/** Seconds between reads of the page's geometry (top bar, sheet edge). */
+const LAYOUT_EVERY = 0.15
 /** px/s² of slosh per deg/s of gyro turn, and of swirl per deg/s of spin. */
 const SLOSH = 7
 const SWIRL = 3
@@ -108,6 +110,13 @@ export class Stage {
   private resolution = 1
   private frameAvg = 1 / 60
   private adaptedAt = 0
+  /** When each resolution last failed to hold the frame rate — not retried for a while. */
+  private failedAt = new Map<number, number>()
+  private layoutAt = 0
+  private barBottom = 52
+  private floorTop = 0
+  /** Whether the canvas holds the current picture — a still frame need not be redrawn. */
+  private drawnStill = false
   private time = 0
   private last = 0
   private frame = 0
@@ -314,24 +323,31 @@ export class Stage {
     this.dpr = Math.max(MIN_DPR, this.maxDpr * this.resolution)
     this.renderer.setPixelRatio(this.dpr)
     this.renderer.setSize(this.width, this.height, false)
+    // Resizing clears the canvas: the next frame must draw, still or not.
+    this.drawnStill = false
   }
 
   /**
-   * Adaptive resolution. The shader is per-pixel heavy; on a phone that
-   * can't hold the frame rate the drawing buffer steps down a quarter at a
-   * time (to MIN_DPR at worst), and steps back up after a few smooth seconds.
+   * Adaptive resolution, aiming at 60fps. The shader is per-pixel heavy; when
+   * frames average slower than ~52fps the drawing buffer steps down an eighth
+   * at a time (to MIN_DPR at worst). It steps back up only after five smooth
+   * seconds, and never straight back to a level that just failed — that
+   * would see-saw between two sizes.
    */
   private adapt(real: number): void {
-    this.frameAvg += (real - this.frameAvg) * 0.06
+    this.frameAvg += (real - this.frameAvg) * 0.08
     if (this.time - this.adaptedAt < 1) return
-    const slow = this.frameAvg > 1 / 40
-    const smooth = this.frameAvg < 1 / 54
+    const slow = this.frameAvg > 1 / 52
+    const smooth = this.frameAvg < 1 / 58
     if (slow && this.maxDpr * this.resolution > MIN_DPR) {
-      this.resolution = Math.max(MIN_DPR / this.maxDpr, this.resolution - 0.25)
+      this.failedAt.set(this.resolution, this.time)
+      this.resolution = Math.max(MIN_DPR / this.maxDpr, this.resolution - 0.125)
       this.adaptedAt = this.time
       this.applyResolution()
-    } else if (smooth && this.resolution < 1 && this.time - this.adaptedAt > 4) {
-      this.resolution = Math.min(1, this.resolution + 0.25)
+    } else if (smooth && this.resolution < 1 && this.time - this.adaptedAt > 5) {
+      const next = Math.min(1, this.resolution + 0.125)
+      if (this.time - (this.failedAt.get(next) ?? -Infinity) < 30) return
+      this.resolution = next
       this.adaptedAt = this.time
       this.applyResolution()
     }
@@ -392,9 +408,15 @@ export class Stage {
     const t = world.tuning
     const inset = 10
     // Start under the top bar — its padding already carries the notch inset.
-    const bar = document.querySelector('.topbar')?.getBoundingClientRect().bottom ?? 52
-    const top = Math.max(inset, bar + 10)
-    world.targetArea = { left: inset, top, right: this.width - inset, bottom: this.floor() }
+    // Reading the DOM's geometry can force a layout, so it is read a few
+    // times a second, not every frame; the walls are soft and glide anyway.
+    if (this.time - this.layoutAt > LAYOUT_EVERY || this.layoutAt === 0) {
+      this.layoutAt = this.time
+      this.barBottom = document.querySelector('.topbar')?.getBoundingClientRect().bottom ?? 52
+      this.floorTop = this.floor()
+    }
+    const top = Math.max(inset, this.barBottom + 10)
+    world.targetArea = { left: inset, top, right: this.width - inset, bottom: this.floorTop }
     if (world.area.right === 0) world.area = { ...world.targetArea }
     const zone = world.targetArea
     t.center = { x: (zone.left + zone.right) / 2, y: (zone.top + zone.bottom) / 2 }
@@ -530,6 +552,15 @@ export class Stage {
 
   private render(): void {
     const bodies = this.world.bodies
+    // Nothing visible on stage — after the reveal every drop has shrunk below
+    // the half pixel the shader skips — and every effect faded: the picture
+    // is the backdrop, which doesn't move. Draw it once and leave the GPU (and
+    // the sheet's blur over it) alone until something changes. (The flow adds
+    // at most 0.18 × flow to a channel: under 0.02 it is below one 8-bit step.)
+    const looks = this.looks
+    const still = bodies.every((b) => b.r * this.dpr < 0.5) && looks.glow < 0.002 && looks.flash < 0.002 && looks.flow < 0.02 && looks.shaka < 0.002
+    if (still && this.drawnStill) return
+    this.drawnStill = still
     const signature = bodies.map((b) => b.id).join('|')
     if (signature !== this.signature) {
       this.signature = signature
