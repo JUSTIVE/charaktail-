@@ -1,5 +1,6 @@
 import { hue } from '../palette'
 import { defineAttribute } from '../schema'
+import { type Lifespan, speciesTable } from './species'
 
 const humanBands = [
   { upTo: 13, label: '어린이' },
@@ -9,6 +10,44 @@ const humanBands = [
   { upTo: 999, label: '노년' },
 ]
 
+type Band = { upTo: number; label: string }
+
+/**
+ * How a species reads at each age, as fractions of its expected lifespan;
+ * the last band always runs to the end. Species without one get the human
+ * stages stretched to their lifespan.
+ */
+const stages: Record<string, readonly [number, string][]> = {
+  elf: [[0.12, '어린 엘프'], [0.6, '성숙한 엘프'], [1, '고대 엘프']],
+  dwarf: [[0.15, '수염도 안 난'], [0.6, '한창인 드워프'], [1, '원로 드워프']],
+  dragonkin: [[0.1, '갓 깨어난'], [0.5, '성룡'], [1, '고룡']],
+  vampire: [[0.05, '갓 태어난 흡혈귀'], [0.3, '밤의 귀족'], [1, '시조에 가까운']],
+  yokai: [[0.1, '어린 요괴'], [0.5, '이름난 요괴'], [1, '천년 묵은']],
+  immortal: [[0.05, '갓 득도한'], [0.4, '선인'], [1, '대선인']],
+  angel: [[0.05, '어린 천사'], [0.4, '천사'], [1, '대천사']],
+  demon: [[0.05, '하급 악마'], [0.4, '상급 악마'], [1, '마왕급']],
+  fairy: [[0.15, '갓 피어난'], [1, '숲의 어른']],
+  mermaid: [[0.15, '어린 인어'], [0.7, '바다의 숙녀'], [1, '심해의 노인']],
+}
+
+const HUMAN_LIFE = 90
+const humanStages = humanBands.slice(0, -1).map((b): [number, string] => [b.upTo / HUMAN_LIFE, b.label])
+
+/**
+ * A species' age range follows its lifespan: rolled from childhood to the
+ * edge of its longest expected life, banded by its life stages.
+ */
+function byLifespan(id: string, { min, max }: Lifespan) {
+  const span = (min + max) / 2
+  const step = max >= 1000 ? 10 : 1
+  const round = (n: number) => Math.max(step, Math.round(n / step) * step)
+  const fractions = stages[id] ?? [...humanStages, [1, '노년'] as [number, string]]
+  const bands: Band[] = fractions.map(([f, label], i) => ({ upTo: i === fractions.length - 1 ? Number.MAX_SAFE_INTEGER : Math.round(span * f), label }))
+  return { when: { species: [id] }, min: round(span * 0.13), max: round(max * 0.95), step, unit: '세', bands }
+}
+
+const human = speciesTable.find((s) => s.id === 'human')!.lifespan
+
 export default defineAttribute({
   id: 'age',
   label: '나이',
@@ -16,17 +55,15 @@ export default defineAttribute({
   defaultSelected: true,
   kind: 'range',
   min: 12,
-  max: 72,
+  max: Math.round(human.max * 0.8),
   unit: '세',
   distribution: 'normal',
   bands: humanBands,
   cases: [
     { when: { world: ['academy'], species: ['human', 'beastkin'] }, min: 15, max: 19 },
-    { when: { species: ['elf'] }, min: 60, max: 900, bands: [{ upTo: 120, label: '어린 엘프' }, { upTo: 600, label: '성숙한 엘프' }, { upTo: 9999, label: '고대 엘프' }] },
-    { when: { species: ['dragonkin', 'vampire', 'immortal', 'angel', 'demon'] }, min: 80, max: 1200, step: 10, bands: [{ upTo: 9999, label: '불멸에 가까운' }] },
+    // Counted differently from a life: age at death, years since assembly.
     { when: { species: ['ghost'] }, min: 9, max: 80, prefix: '사망 당시', bands: [{ upTo: 19, label: '어린 유령' }, { upTo: 999, label: '오래 떠돈' }] },
-    { when: { species: ['fairy'] }, min: 10, max: 300, bands: [{ upTo: 50, label: '갓 피어난' }, { upTo: 999, label: '숲의 어른' }] },
     { when: { species: ['android'] }, min: 1, max: 40, prefix: '제조 후', unit: '년', bands: [{ upTo: 3, label: '신형' }, { upTo: 15, label: '현역' }, { upTo: 99, label: '구형' }] },
-    { when: { species: ['yokai'] }, min: 100, max: 999, bands: [{ upTo: 9999, label: '천년을 바라보는' }] },
+    ...speciesTable.filter((s) => s.id !== 'human' && s.id !== 'ghost' && s.id !== 'android').map((s) => byLifespan(s.id, s.lifespan)),
   ],
 })

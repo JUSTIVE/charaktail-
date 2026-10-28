@@ -3,7 +3,8 @@ import { describe, expect, test } from 'bun:test'
 import { defineCatalog } from './catalog'
 import { catalog } from './catalog/index'
 import { decodeRollKey, encodeRollKey, rollCharacter } from './roll'
-import { defineAttribute } from './schema'
+import { type AttributeOf, defineAttribute } from './schema'
+import { speciesTable } from './catalog/species'
 
 const all = catalog.attributes.map((a) => a.id)
 
@@ -101,6 +102,21 @@ describe('edits', () => {
     expect(decodeRollKey(encodeRollKey(request))).toEqual(request)
     const plain = { seed: 's', attributeIds: ['gender'], nonces: {}, name: 'e:x' }
     expect(decodeRollKey(encodeRollKey(plain))).toEqual(plain)
+  })
+})
+
+describe('lifespan', () => {
+  test('every species says its lifespan and no one outlives it', () => {
+    for (const s of speciesTable) {
+      const option = (catalog.byId.get('species') as AttributeOf<'pick'>).options.find((o) => o.id === s.id)!
+      expect(option.hint).toContain('년')
+    }
+    for (let i = 0; i < 600; i++) {
+      const values = rollCharacter(catalog, { seed: `l${i}`, attributeIds: ['world', 'species', 'age'] })
+      const species = speciesTable.find((s) => s.id === values.find((v) => v.attributeId === 'species')!.valueIds[0])!
+      const age = Number(values.find((v) => v.attributeId === 'age')!.label.replace(/[^0-9]/g, ''))
+      expect(age).toBeLessThanOrEqual(species.lifespan.max)
+    }
   })
 })
 
