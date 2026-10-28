@@ -938,9 +938,9 @@
   - `ValueListAttribute`(pick·color·compose·stats): options
   - `BoundedAttribute`(range·stats): rangeMin·rangeMax
   - 예: `type StatsAttribute implements AttributeBase & ValueListAttribute & BoundedAttribute`
-- 공통 필드 프래그먼트가 멤버 7개를 하나씩 묻던 것 → `... on AttributeBase { … }` 한 번
 - docs 생성기가 `implements`를 읽도록 수정
-- 확인: 타입체크·테스트·빌드, 브라우저(라벨·잠금·직업 2단·종족 미리보기) 동일
+- 수정(abfa3c8 이후): 쿼리에서 `... on AttributeBase`로 interface를 걸러 읽게 했더니 Relay 런타임이 resolver 타입의 타입 정보 레코드를 두 번 만들다 오류(`client:__type:ColorAttribute` already exists) → 앱이 뜨지 않음. 첫 커밋 때 브라우저 회귀 결과를 확인하지 않고 커밋함. 스키마의 interface는 유지하고, 쿼리는 멤버별로 묻는 방식으로 되돌려 해결
+- 확인: 앱 정상 로드(칩 28), 브라우저 회귀(라벨·잠금·직업 2단·종족 미리보기·URL·능력치·추가) 모두 통과, 타입체크·테스트·빌드
 
 ## #113 — 2026-10-29 · iOS: 결과 화면 창이 두 번 뜸 / 결과에서 속성 열었다 닫으면 여전히 사라짐 / 진동 여전히 없음 🔄
 
@@ -949,3 +949,7 @@
 ## #114 — 2026-10-29 · 직업에서 한 세계관의 직업들을 통째로 켜고 끄기 (세계관 자체는 그대로) 🔄
 
 > 직업에서 한 세계관 통째로 켜고 끌 수 있도록 수정. 세계관을 수정하는건 아니고 하위의 직업들을 한꺼번에 토글하는거야
+
+## #115 — 2026-10-29 · 늘 60fps를 유지하도록 퍼포먼스 최적화 🔄
+
+> 늘 60fps를 유지할 수 있도록 퍼포먼스 최적화
