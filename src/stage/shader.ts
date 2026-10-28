@@ -42,13 +42,23 @@ export const vertexShader = /* glsl */ `
   }
 `
 
+/**
+ * How many ripple modes round each rim — the outline's "polygon count". A few
+ * big bubbles get all 14; as the selection grows the bubbles shrink and the
+ * count falls off with √(5/n) — 6 bubbles 13, 13 bubbles 9, 28 bubbles 6 —
+ * so small drops stay smooth instead of fizzing, and the shader stays cheap.
+ */
+export function rippleModes(count: number): number {
+  return Math.min(14, Math.max(4, Math.round(14 * Math.sqrt(5 / Math.max(count, 1)))))
+}
+
 export function fragmentShader(count: number): string {
   return /* glsl */ `
   precision highp float;
   #define N ${Math.max(count, 1)}
   #define FLOW_SLOTS ${FLOW_SLOTS}
   #define DROP_OPACITY 0.62
-  #define RIPPLE_MODES 14
+  #define RIPPLE_MODES ${rippleModes(count)}
 
   uniform vec4 uBalls[N];      // x, y (device px, y down), radius, angle
   uniform vec4 uDeform[N];     // squash axis x, y, squash amount, ripple amplitude
@@ -143,7 +153,7 @@ export function fragmentShader(count: number): string {
     // keeps that cut seamless.
     if (q2 > 3.0) return q;
     float reach = smoothstep(3.0, 2.2, q2) * smoothstep(0.02, 0.3, q2);
-    // Ripples round the rim: RIPPLE_MODES odd modes (3, 5, … 29), each
+    // Ripples round the rim: RIPPLE_MODES odd modes (3, 5, … up to 29), each
     // travelling at its own speed and direction, amplitude falling off
     // gently. Low modes stay weak — mode 3 alone draws a rounded triangle,
     // mode 5 a pentagon — so the outline reads as a circle that shivers.
