@@ -539,7 +539,9 @@ export class Stage {
     const shown = this.mode === 'mixing' || this.mode === 'glowing' ? 1 : this.charge
     if (Math.abs(shown - this.shownCharge) > 0.002) {
       this.shownCharge = shown
-      for (const meter of this.meters) meter.style.transform = `scaleX(${shown.toFixed(3)})`
+      // A reveal, not a stretch: the gauge's colours stay where they are and
+      // the fill uncovers them left to right.
+      for (const meter of this.meters) meter.style.clipPath = `inset(0 ${((1 - shown) * 100).toFixed(1)}% 0 0 round 999px)`
     }
   }
 

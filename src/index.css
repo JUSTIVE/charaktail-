@@ -359,14 +359,13 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   overflow: hidden;
   background: oklch(1 0 0 / 0.07);
 }
-/* The stage writes this bar's transform every frame (see Stage.meters). */
+/* The stage writes this bar's clip as the charge changes (see Stage.meters);
+   its colours are the selection's, in rainbow order (ShakeHud). */
 .charge > span {
   position: absolute;
   inset: 0;
-  transform-origin: left;
-  transform: scaleX(0);
+  clip-path: inset(0 100% 0 0 round 999px);
   border-radius: inherit;
-  background: linear-gradient(90deg, #6e56cf, #e93d82, #ffc53d, #00a2c7);
   transition: opacity 200ms ease;
 }
 .charge[data-mode='mixing'] > span,

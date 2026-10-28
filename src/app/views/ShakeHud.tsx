@@ -8,7 +8,9 @@ import { useLocalQuery } from '../../graph/useLocalQuery'
 import { patchStage, type StageMode } from '../../stage/store'
 import type { ShakeHudQuery } from '../../__generated__/ShakeHudQuery.graphql'
 import { stageHandle } from '../StageCanvas'
+import { attributeHead } from '../attributeHead'
 import { BackIcon, ShakeIcon } from '../icons'
+import { rainbowGradient } from '../rainbow'
 import { Button, seq } from '../ui'
 
 const COPY: Record<StageMode, { title: string; body: string }> = {
@@ -31,6 +33,9 @@ export function ShakeHud() {
           mode
           motion
         }
+        selectedAttributes {
+          ...attributeHead_attribute
+        }
       }
     `,
     {},
@@ -39,6 +44,8 @@ export function ShakeHud() {
   const motion = data.stage?.motion ?? 'unknown'
   const copy = COPY[mode]
   const busy = mode === 'mixing' || mode === 'glowing'
+  // The gauge fills with the colours going into this roll, in rainbow order.
+  const gauge = rainbowGradient((data.selectedAttributes ?? []).flatMap((ref) => attributeHead(ref)?.color ?? []))
 
   // Leaving mid-hold must not leave the stage shaking.
   useEffect(() => () => stageHandle.current?.setManualShake(false), [])
@@ -88,7 +95,7 @@ export function ShakeHud() {
       </div>
 
       <div className="ms-seq charge" style={seq(1)} data-mode={mode}>
-        <span ref={meter} />
+        <span ref={meter} style={{ background: gauge }} />
       </div>
 
       <div className="ms-seq flex items-center gap-2" style={seq(2)} hidden={busy}>
