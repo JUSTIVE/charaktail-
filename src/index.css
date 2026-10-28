@@ -123,6 +123,19 @@ html,
 body {
   height: 100%;
 }
+
+/* No scrollbars anywhere (#91): lists still scroll by touch, wheel and
+   keyboard, and their edge fades say there is more. The sheet's own overlay
+   thumb goes too. */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+.ms-scrollbar {
+  display: none;
+}
 .ms-viewport {
   position: absolute;
 }
@@ -371,8 +384,6 @@ li:nth-child(4n) > .chip::before { animation-direction: alternate-reverse; }
   margin-inline: -4px;
   padding: 2px 4px;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: oklch(1 0 0 / 0.18) transparent;
 }
 .result-card {
   display: flex;
