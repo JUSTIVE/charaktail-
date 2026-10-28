@@ -929,10 +929,23 @@
 
 - 공유 interface(AttributeBase 등)로 가던 중 정정 → interface 없이 union만. 멤버 타입이 각자 공통 필드까지 직접 선언
 
-## #112 — 2026-10-29 · 각 속성들을 interface로도 묶기 🔄
+## #112 — 2026-10-29 · 각 속성들을 interface로도 묶기 ✅
 
 > 각 속성들 interface로도 묶어
+
+- union은 그대로 두고, 종류들이 공통점을 interface로도 구현:
+  - `AttributeBase`(7종 전부): key·label·color·description·summary·preview·swatches·edited·selected·locked
+  - `ValueListAttribute`(pick·color·compose·stats): options
+  - `BoundedAttribute`(range·stats): rangeMin·rangeMax
+  - 예: `type StatsAttribute implements AttributeBase & ValueListAttribute & BoundedAttribute`
+- 공통 필드 프래그먼트가 멤버 7개를 하나씩 묻던 것 → `... on AttributeBase { … }` 한 번
+- docs 생성기가 `implements`를 읽도록 수정
+- 확인: 타입체크·테스트·빌드, 브라우저(라벨·잠금·직업 2단·종족 미리보기) 동일
 
 ## #113 — 2026-10-29 · iOS: 결과 화면 창이 두 번 뜸 / 결과에서 속성 열었다 닫으면 여전히 사라짐 / 진동 여전히 없음 🔄
 
 > ios에서 결과화면 창이 두번 떠. 결과에서 속성 열었다 닫으면 아직도 사라져. 진동 아직도 없어.
+
+## #114 — 2026-10-29 · 직업에서 한 세계관의 직업들을 통째로 켜고 끄기 (세계관 자체는 그대로) 🔄
+
+> 직업에서 한 세계관 통째로 켜고 끌 수 있도록 수정. 세계관을 수정하는건 아니고 하위의 직업들을 한꺼번에 토글하는거야

@@ -1,70 +1,15 @@
 import { graphql, readInlineData } from 'relay-runtime'
 
-import type { attributeHead_attribute$data, attributeHead_attribute$key } from '../__generated__/attributeHead_attribute.graphql'
+import type { attributeHead_attribute$key } from '../__generated__/attributeHead_attribute.graphql'
 
 /*
- * `Attribute` is a union — one member per kind, no shared interface — so the
- * fields every kind has are asked of each member by name. This one fragment
- * does that once; views spread it and read it through `attributeHead`.
+ * `Attribute` is a union of kinds; what they all have is the AttributeBase
+ * interface. Views spread this fragment and read it through `attributeHead`.
  */
 const fragment = graphql`
   fragment attributeHead_attribute on Attribute @inline {
     __typename
-    ... on PickAttribute {
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-    }
-    ... on ColorAttribute {
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-    }
-    ... on ComposeAttribute {
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-    }
-    ... on StatsAttribute {
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-    }
-    ... on RangeAttribute {
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-    }
-    ... on DateAttribute {
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-    }
-    ... on TraitsAttribute {
+    ... on AttributeBase {
       key
       label
       color
@@ -77,7 +22,9 @@ const fragment = graphql`
 `
 
 /** The union's members — what `__typename` can be. */
-export type AttributeKindName = Exclude<attributeHead_attribute$data['__typename'], '%other'>
+const KINDS = ['PickAttribute', 'ColorAttribute', 'RangeAttribute', 'DateAttribute', 'StatsAttribute', 'TraitsAttribute', 'ComposeAttribute'] as const
+export type AttributeKindName = (typeof KINDS)[number]
+const isKind = (name: string): name is AttributeKindName => (KINDS as readonly string[]).includes(name)
 
 export interface AttributeHead {
   kind: AttributeKindName
@@ -93,7 +40,10 @@ export interface AttributeHead {
 /** The fields every kind has, or null for a member this build doesn't know. */
 export function attributeHead(ref: attributeHead_attribute$key): AttributeHead | null {
   const data = readInlineData(fragment, ref)
-  if (data.__typename === '%other') return null
   const { __typename: kind, key, label, color, summary, edited, selected, locked } = data
+  // Every member implements AttributeBase, but a spread on a union is typed as
+  // optional — a member without it would be one this build doesn't know.
+  if (!isKind(kind) || key === undefined || label === undefined || color === undefined || summary === undefined) return null
+  if (edited === undefined || selected === undefined || locked === undefined) return null
   return { kind, key, label, color, summary, edited, selected, locked }
 }

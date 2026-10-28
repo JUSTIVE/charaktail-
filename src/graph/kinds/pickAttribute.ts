@@ -6,12 +6,13 @@ import { record } from '../attributeFields'
 /*
  * PickAttribute: one member of `union Attribute`. It carries only the fields its kind
  * has — implementations are shared in ../attributeFields.ts and re-exported
- * here under the field names the compiler imports.
+ * here under the field names the compiler imports. It also implements the
+ * interfaces in ../schema/attribute.graphql for what kinds share.
  */
 
 /**
  * Drawn from a list — 성격, 직업.
- * @relayType PickAttribute
+ * @relayType PickAttribute implements AttributeBase & ValueListAttribute
  */
 export function PickAttribute(id: DataID): AttributeRecord | null {
   const attribute = record(id)

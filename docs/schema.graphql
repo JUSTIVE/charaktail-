@@ -14,16 +14,45 @@
 directive @live on FIELD_DEFINITION
 directive @weak on OBJECT
 
-# The attribute graph's one abstract type. Members and their fields are
-# declared by @relayType / @relayField docblocks in src/graph/kinds/; this file
-# only names what Relay resolvers cannot declare themselves.
+# The attribute graph's abstract types. Members and their fields are declared
+# by @relayType / @relayField docblocks in src/graph/kinds/; this file only
+# names what Relay resolvers cannot declare themselves.
 #
-# An attribute is exactly one kind, and each kind carries only the fields that
-# make sense for it — a 세계관 has no bounds, a 키 has no value list. What
-# could not happen cannot be asked for.
+# An attribute is exactly one kind (the union), and each kind carries only the
+# fields that make sense for it — a 세계관 has no bounds, a 키 has no value
+# list. What could not happen cannot be asked for. The interfaces name what
+# kinds have in common, so a query can ask once instead of once per kind.
 
 """One attribute, as exactly one of its kinds."""
 union Attribute = PickAttribute | ColorAttribute | RangeAttribute | DateAttribute | StatsAttribute | TraitsAttribute | ComposeAttribute
+
+"""What every kind has: what the picker, the stage and a result card need."""
+interface AttributeBase {
+  id: ID!
+  key: String!
+  label: String!
+  color: String!
+  description: String!
+  summary: String!
+  preview: [String!]!
+  swatches: [String!]!
+  edited: Boolean!
+  selected: Boolean!
+  locked: Boolean!
+}
+
+"""A kind whose values the player switches, deletes and adds — pick, color, compose, stats."""
+interface ValueListAttribute {
+  id: ID!
+  options: [AttributeOption!]!
+}
+
+"""A kind rolled as whole numbers within bounds the player can set — range, stats."""
+interface BoundedAttribute {
+  id: ID!
+  rangeMin: Float!
+  rangeMax: Float!
+}
 
 # The stage's state, as closed sets — a mode or a motion permission that is
 # not one of these cannot be stored, sent or asked about.
@@ -107,7 +136,7 @@ type AttributeOption @weak {
 """
 Named colours, one or two swatches each — 눈 색상.
 """
-type ColorAttribute {
+type ColorAttribute implements AttributeBase & ValueListAttribute {
   id: ID!
   """
   The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
@@ -152,7 +181,7 @@ type ColorAttribute {
 """
 A phrase built one part at a time — 이명.
 """
-type ComposeAttribute {
+type ComposeAttribute implements AttributeBase & ValueListAttribute {
   id: ID!
   """
   The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
@@ -201,7 +230,7 @@ type ComposeAttribute {
 """
 A day of the year — 생일.
 """
-type DateAttribute {
+type DateAttribute implements AttributeBase {
   id: ID!
   """
   The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
@@ -252,7 +281,7 @@ type Draft {
 """
 Drawn from a list — 성격, 직업.
 """
-type PickAttribute {
+type PickAttribute implements AttributeBase & ValueListAttribute {
   id: ID!
   """
   The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
@@ -301,7 +330,7 @@ type PickAttribute {
 """
 One number within bounds, which species may change — 키, 나이.
 """
-type RangeAttribute {
+type RangeAttribute implements AttributeBase & BoundedAttribute {
   id: ID!
   """
   The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
@@ -421,7 +450,7 @@ type StageStatus {
 """
 Several numbers rolled at once, within bounds — 능력치.
 """
-type StatsAttribute {
+type StatsAttribute implements AttributeBase & ValueListAttribute & BoundedAttribute {
   id: ID!
   """
   The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
@@ -474,7 +503,7 @@ type StatsAttribute {
 """
 Features each rolled on their own odds — 외형 특징.
 """
-type TraitsAttribute {
+type TraitsAttribute implements AttributeBase {
   id: ID!
   """
   The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.

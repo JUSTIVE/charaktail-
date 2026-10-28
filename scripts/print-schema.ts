@@ -21,6 +21,7 @@ interface Field {
 interface TypeDef {
   name: string
   weak: boolean
+  implements: string
   description: string
   fields: Field[]
 }
@@ -31,7 +32,7 @@ const types = new Map<string, TypeDef>()
 const typeOf = (name: string): TypeDef => {
   let def = types.get(name)
   if (!def) {
-    def = { name, weak: false, description: '', fields: [] }
+    def = { name, weak: false, implements: '', description: '', fields: [] }
     types.set(name, def)
   }
   return def
@@ -55,7 +56,9 @@ for (const file of files) {
 
     const typeTag = tags.find((t) => t.startsWith('@relayType'))
     if (typeTag) {
-      const def = typeOf(typeTag.replace('@relayType', '').trim())
+      const [name = '', implementsList = ''] = typeTag.replace('@relayType', '').trim().split(/\s+implements\s+/)
+      const def = typeOf(name)
+      def.implements = implementsList
       def.weak = tags.some((t) => t.startsWith('@weak'))
       if (description) def.description = description
       continue
@@ -106,7 +109,7 @@ for (const name of order) {
   const def = types.get(name)
   if (!def) continue
   out.push(block(def.description).trimEnd())
-  out.push(`type ${name}${def.weak ? ' @weak' : ''} {`)
+  out.push(`type ${name}${def.implements ? ` implements ${def.implements}` : ''}${def.weak ? ' @weak' : ''} {`)
   if (!def.weak && name !== 'Query') out.push('  id: ID!')
   for (const field of def.fields) {
     if (field.description) out.push(block(field.description, '  ').trimEnd())

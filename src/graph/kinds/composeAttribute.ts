@@ -6,12 +6,13 @@ import { record } from '../attributeFields'
 /*
  * ComposeAttribute: one member of `union Attribute`. It carries only the fields its kind
  * has — implementations are shared in ../attributeFields.ts and re-exported
- * here under the field names the compiler imports.
+ * here under the field names the compiler imports. It also implements the
+ * interfaces in ../schema/attribute.graphql for what kinds share.
  */
 
 /**
  * A phrase built one part at a time — 이명.
- * @relayType ComposeAttribute
+ * @relayType ComposeAttribute implements AttributeBase & ValueListAttribute
  */
 export function ComposeAttribute(id: DataID): AttributeRecord | null {
   const attribute = record(id)

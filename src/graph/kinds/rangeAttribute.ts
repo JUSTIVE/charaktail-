@@ -6,12 +6,13 @@ import { record } from '../attributeFields'
 /*
  * RangeAttribute: one member of `union Attribute`. It carries only the fields its kind
  * has — implementations are shared in ../attributeFields.ts and re-exported
- * here under the field names the compiler imports.
+ * here under the field names the compiler imports. It also implements the
+ * interfaces in ../schema/attribute.graphql for what kinds share.
  */
 
 /**
  * One number within bounds, which species may change — 키, 나이.
- * @relayType RangeAttribute
+ * @relayType RangeAttribute implements AttributeBase & BoundedAttribute
  */
 export function RangeAttribute(id: DataID): AttributeRecord | null {
   const attribute = record(id)

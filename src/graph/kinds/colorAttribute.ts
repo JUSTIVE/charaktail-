@@ -6,12 +6,13 @@ import { record } from '../attributeFields'
 /*
  * ColorAttribute: one member of `union Attribute`. It carries only the fields its kind
  * has — implementations are shared in ../attributeFields.ts and re-exported
- * here under the field names the compiler imports.
+ * here under the field names the compiler imports. It also implements the
+ * interfaces in ../schema/attribute.graphql for what kinds share.
  */
 
 /**
  * Named colours, one or two swatches each — 눈 색상.
- * @relayType ColorAttribute
+ * @relayType ColorAttribute implements AttributeBase & ValueListAttribute
  */
 export function ColorAttribute(id: DataID): AttributeRecord | null {
   const attribute = record(id)

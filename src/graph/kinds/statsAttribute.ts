@@ -6,12 +6,13 @@ import { record } from '../attributeFields'
 /*
  * StatsAttribute: one member of `union Attribute`. It carries only the fields its kind
  * has — implementations are shared in ../attributeFields.ts and re-exported
- * here under the field names the compiler imports.
+ * here under the field names the compiler imports. It also implements the
+ * interfaces in ../schema/attribute.graphql for what kinds share.
  */
 
 /**
  * Several numbers rolled at once, within bounds — 능력치.
- * @relayType StatsAttribute
+ * @relayType StatsAttribute implements AttributeBase & ValueListAttribute & BoundedAttribute
  */
 export function StatsAttribute(id: DataID): AttributeRecord | null {
   const attribute = record(id)

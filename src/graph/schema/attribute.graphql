@@ -1,10 +1,39 @@
-# The attribute graph's one abstract type. Members and their fields are
-# declared by @relayType / @relayField docblocks in src/graph/kinds/; this file
-# only names what Relay resolvers cannot declare themselves.
+# The attribute graph's abstract types. Members and their fields are declared
+# by @relayType / @relayField docblocks in src/graph/kinds/; this file only
+# names what Relay resolvers cannot declare themselves.
 #
-# An attribute is exactly one kind, and each kind carries only the fields that
-# make sense for it — a 세계관 has no bounds, a 키 has no value list. What
-# could not happen cannot be asked for.
+# An attribute is exactly one kind (the union), and each kind carries only the
+# fields that make sense for it — a 세계관 has no bounds, a 키 has no value
+# list. What could not happen cannot be asked for. The interfaces name what
+# kinds have in common, so a query can ask once instead of once per kind.
 
 """One attribute, as exactly one of its kinds."""
 union Attribute = PickAttribute | ColorAttribute | RangeAttribute | DateAttribute | StatsAttribute | TraitsAttribute | ComposeAttribute
+
+"""What every kind has: what the picker, the stage and a result card need."""
+interface AttributeBase {
+  id: ID!
+  key: String!
+  label: String!
+  color: String!
+  description: String!
+  summary: String!
+  preview: [String!]!
+  swatches: [String!]!
+  edited: Boolean!
+  selected: Boolean!
+  locked: Boolean!
+}
+
+"""A kind whose values the player switches, deletes and adds — pick, color, compose, stats."""
+interface ValueListAttribute {
+  id: ID!
+  options: [AttributeOption!]!
+}
+
+"""A kind rolled as whole numbers within bounds the player can set — range, stats."""
+interface BoundedAttribute {
+  id: ID!
+  rangeMin: Float!
+  rangeMax: Float!
+}

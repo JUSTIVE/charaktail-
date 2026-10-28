@@ -6,12 +6,13 @@ import { record } from '../attributeFields'
 /*
  * TraitsAttribute: one member of `union Attribute`. It carries only the fields its kind
  * has — implementations are shared in ../attributeFields.ts and re-exported
- * here under the field names the compiler imports.
+ * here under the field names the compiler imports. It also implements the
+ * interfaces in ../schema/attribute.graphql for what kinds share.
  */
 
 /**
  * Features each rolled on their own odds — 외형 특징.
- * @relayType TraitsAttribute
+ * @relayType TraitsAttribute implements AttributeBase
  */
 export function TraitsAttribute(id: DataID): AttributeRecord | null {
   const attribute = record(id)

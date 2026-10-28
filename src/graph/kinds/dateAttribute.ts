@@ -6,12 +6,13 @@ import { record } from '../attributeFields'
 /*
  * DateAttribute: one member of `union Attribute`. It carries only the fields its kind
  * has — implementations are shared in ../attributeFields.ts and re-exported
- * here under the field names the compiler imports.
+ * here under the field names the compiler imports. It also implements the
+ * interfaces in ../schema/attribute.graphql for what kinds share.
  */
 
 /**
  * A day of the year — 생일.
- * @relayType DateAttribute
+ * @relayType DateAttribute implements AttributeBase
  */
 export function DateAttribute(id: DataID): AttributeRecord | null {
   const attribute = record(id)
