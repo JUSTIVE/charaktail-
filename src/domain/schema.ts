@@ -85,6 +85,12 @@ const RangeSpec = z.object({
 
 const Base = {
   id: Key.regex(/^[a-z][a-zA-Z0-9]*$/, 'camelCase 영문 id여야 합니다'),
+  /**
+   * Two lowercase letters that stand for the attribute in URLs and roll keys
+   * — 'wd' for world, 'ey' for eyeColor. Fixed width, so a list of them needs
+   * no separators. Unique across the catalogue.
+   */
+  code: z.string().regex(/^[a-z]{2}$/, '영문 소문자 두 글자 코드여야 합니다'),
   label: Key,
   /** The metaball's colour. */
   color: Hex,

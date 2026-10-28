@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'hairColor',
+  code: 'hc',
   label: '머리 색',
   color: hue.tomato,
   kind: 'color',

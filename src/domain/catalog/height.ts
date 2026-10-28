@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'height',
+  code: 'ht',
   label: '키',
   color: hue.cyan,
   defaultSelected: true,

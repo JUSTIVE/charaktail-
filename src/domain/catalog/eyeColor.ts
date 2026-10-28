@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'eyeColor',
+  code: 'ey',
   label: '눈 색상',
   color: hue.indigo,
   defaultSelected: true,

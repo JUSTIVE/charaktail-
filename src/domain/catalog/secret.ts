@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'secret',
+  code: 'sk',
   label: '비밀',
   color: hue.bronze,
   description: '아무에게도 말하지 않은 것',

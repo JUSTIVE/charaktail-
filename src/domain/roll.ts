@@ -1,3 +1,4 @@
+import { codeOf, decodeAttributeIds, encodeAttributeIds, idOf } from './codes'
 import { applyEdits, packEdits, unpackEdits, type Edits } from './edits'
 import { generators, possibilities, type RollContext } from './generators'
 import { createRng } from './rng'
@@ -83,8 +84,9 @@ function packLocks(locked: Readonly<Record<string, RolledValue>>, attributeIds: 
   const packed: PackedLocks = {}
   for (const id of attributeIds) {
     const v = locked[id]
-    if (!v) continue
-    packed[id] = v.swatches.length ? [v.label, v.valueIds, v.detail ?? '', v.swatches] : v.detail ? [v.label, v.valueIds, v.detail] : [v.label, v.valueIds]
+    const code = codeOf(id)
+    if (!v || !code) continue
+    packed[code] = v.swatches.length ? [v.label, v.valueIds, v.detail ?? '', v.swatches] : v.detail ? [v.label, v.valueIds, v.detail] : [v.label, v.valueIds]
   }
   return Object.keys(packed).length ? toBase64Url(JSON.stringify(packed)) : ''
 }
@@ -94,7 +96,9 @@ function unpackLocks(text: string): Record<string, RolledValue> | undefined {
   try {
     const packed = JSON.parse(fromBase64Url(text)) as PackedLocks
     const out: Record<string, RolledValue> = {}
-    for (const [id, [label, valueIds, detail, swatches]] of Object.entries(packed)) {
+    for (const [key, [label, valueIds, detail, swatches]] of Object.entries(packed)) {
+      const id = idOf(key)
+      if (!id) continue
       const parsed = RolledValue.safeParse({ attributeId: id, label, valueIds, swatches: swatches ?? [], ...(detail ? { detail } : {}) })
       if (parsed.success) out[id] = parsed.data
     }
@@ -106,18 +110,19 @@ function unpackLocks(text: string): Record<string, RolledValue> | undefined {
 
 /*
  * The roll key is the whole request in one string — it is the Relay record id
- * of a roll and the thing a URL carries.
- * `seed~a.b.c~b:2~e:<edits>~l:<locked>~이름`. The edits and locked segments
- * are optional and marked; the name goes last, so a `~` inside it cannot
- * shift the other fields.
+ * of a roll and the thing a URL carries, so it is kept short:
+ * `seed~wdspag~ag2~e:<edits>~l:<locked>~이름`. Attributes go by their
+ * two-letter codes, run together; a re-rolled one is its code and count
+ * (`ag2`). The edits and locked segments are optional and marked; the name
+ * goes last, so a `~` inside it cannot shift the other fields.
  */
 export function encodeRollKey({ seed, attributeIds, nonces = {}, name, edits, locked }: RollRequest): string {
   const bumps = Object.entries(nonces)
-    .filter(([, n]) => n > 0)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([id, n]) => `${id}:${n}`)
-  const parts = [seed, attributeIds.join('.'), bumps.join('.')]
-  const packed = edits ? packEdits(edits, attributeIds) : ''
+    .filter(([id, n]) => n > 0 && codeOf(id))
+    .map(([id, n]) => `${codeOf(id)}${n}`)
+    .sort()
+  const parts = [seed, encodeAttributeIds(attributeIds), bumps.join('')]
+  const packed = edits ? packEdits(edits, attributeIds, (id) => codeOf(id) ?? id) : ''
   const locks = locked ? packLocks(locked, attributeIds) : ''
   // Empty markers keep a name that itself starts with "e:" or "l:" unambiguous.
   const ambiguous = !!name && (name.startsWith('e:') || name.startsWith('l:'))
@@ -130,13 +135,15 @@ export function encodeRollKey({ seed, attributeIds, nonces = {}, name, edits, lo
 export function decodeRollKey(key: string): RollRequest | null {
   const [seed, ids, bumps = '', ...rest] = key.split('~')
   if (!seed || ids === undefined) return null
-  const edits = rest[0]?.startsWith('e:') ? unpackEdits(rest.shift()!.slice(2)) : undefined
+  const edits = rest[0]?.startsWith('e:') ? unpackEdits(rest.shift()!.slice(2), (key) => idOf(key) ?? key) : undefined
   const locked = rest[0]?.startsWith('l:') ? unpackLocks(rest.shift()!.slice(2)) : undefined
   const name = rest.join('~')
   const nonces: Record<string, number> = {}
-  for (const bump of bumps.split('.').filter(Boolean)) {
-    const [id, n] = bump.split(':')
+  // `ag2sp1`, or the legacy `age:2.species:1`.
+  const pairs = bumps.includes(':') ? bumps.split('.').map((b) => b.split(':')) : [...bumps.matchAll(/([a-z]{2})(\d+)/g)].map((m) => [m[1], m[2]])
+  for (const [key, n] of pairs) {
+    const id = key && idOf(key)
     if (id && Number(n) > 0) nonces[id] = Number(n)
   }
-  return { seed, attributeIds: ids.split('.').filter(Boolean), nonces, ...(name ? { name } : {}), ...(edits ? { edits } : {}), ...(locked && Object.keys(locked).length ? { locked } : {}) }
+  return { seed, attributeIds: decodeAttributeIds(ids), nonces, ...(name ? { name } : {}), ...(edits ? { edits } : {}), ...(locked && Object.keys(locked).length ? { locked } : {}) }
 }

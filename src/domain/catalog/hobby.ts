@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'hobby',
+  code: 'hy',
   label: '취미',
   color: hue.jade,
   kind: 'pick',

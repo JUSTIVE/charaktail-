@@ -4,6 +4,7 @@ import { defineAttribute } from '../schema'
 /** 문자열 하나가 곧 값 하나 — 키워드는 그냥 추가하면 된다. */
 export default defineAttribute({
   id: 'personality',
+  code: 'ps',
   label: '성격',
   color: hue.plum,
   description: '키워드 두 개를 뽑는다',

@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'speech',
+  code: 'sc',
   label: '말투',
   color: hue.mint,
   kind: 'pick',

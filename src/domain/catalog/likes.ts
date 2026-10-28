@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'likes',
+  code: 'lk',
   label: '좋아하는 것',
   color: hue.sky,
   description: '두 가지를 뽑는다',

@@ -16,14 +16,20 @@ describe('catalog', () => {
   })
 
   test('rejects a condition on an unknown value', () => {
-    const world = defineAttribute({ id: 'world', label: 'w', color: '#000000', kind: 'pick', options: ['a'] })
-    const bad = defineAttribute({ id: 'x', label: 'x', color: '#000000', kind: 'pick', options: [{ label: 'y', when: { world: ['b'] } }] })
+    const world = defineAttribute({ id: 'world', code: 'wd', label: 'w', color: '#000000', kind: 'pick', options: ['a'] })
+    const bad = defineAttribute({ id: 'x', code: 'xx', label: 'x', color: '#000000', kind: 'pick', options: [{ label: 'y', when: { world: ['b'] } }] })
     expect(() => defineCatalog([world, bad])).toThrow(/없는 값 "b"/)
   })
 
+  test('rejects a duplicate URL code', () => {
+    const a = defineAttribute({ id: 'a', code: 'zz', label: 'a', color: '#000000', kind: 'pick', options: ['1'] })
+    const b = defineAttribute({ id: 'b', code: 'zz', label: 'b', color: '#000000', kind: 'pick', options: ['1'] })
+    expect(() => defineCatalog([a, b])).toThrow(/코드 "zz"/)
+  })
+
   test('rejects a dependency cycle', () => {
-    const a = defineAttribute({ id: 'a', label: 'a', color: '#000000', kind: 'pick', options: [{ label: '1', when: { b: ['1'] } }] })
-    const b = defineAttribute({ id: 'b', label: 'b', color: '#000000', kind: 'pick', options: [{ label: '1', when: { a: ['1'] } }] })
+    const a = defineAttribute({ id: 'a', code: 'aa', label: 'a', color: '#000000', kind: 'pick', options: [{ label: '1', when: { b: ['1'] } }] })
+    const b = defineAttribute({ id: 'b', code: 'bb', label: 'b', color: '#000000', kind: 'pick', options: [{ label: '1', when: { a: ['1'] } }] })
     expect(() => defineCatalog([a, b])).toThrow(/순환/)
   })
 })
@@ -148,6 +154,16 @@ describe('compose edits', () => {
       const values = rollCharacter(catalog, decodeRollKey(encodeRollKey(request))!)
       expect(values[0]!.label.endsWith(' 고양이')).toBe(true)
     }
+  })
+})
+
+describe('compact keys', () => {
+  test('attributes go by two-letter codes, and old full-name keys still read', () => {
+    const request = { seed: 's1', attributeIds: ['world', 'species', 'age'], nonces: { age: 2 }, name: '이름' }
+    const key = encodeRollKey(request)
+    expect(key).toBe('s1~wdspag~ag2~이름')
+    expect(decodeRollKey(key)).toEqual(request)
+    expect(decodeRollKey('s1~world.species.age~age:2~이름')).toEqual(request)
   })
 })
 

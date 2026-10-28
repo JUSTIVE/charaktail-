@@ -3,6 +3,8 @@ import { Suspense, useEffect, type ReactNode } from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { graphql } from 'relay-runtime'
 
+import { decodeAttributeIds } from '../domain/codes'
+
 import { useLocalQuery } from '../graph/useLocalQuery'
 import { SheetStackProvider, useSheetStackActions, type SheetDescriptor } from 'morphing-sheet/react'
 
@@ -119,7 +121,7 @@ function SceneSync() {
   // The URL carries the attribute set on /shake and /result; the stage's balls
   // come from the selection, so the selection follows the URL there.
   useEffect(() => {
-    if (scene === 'shake' && search.a) setSelection(search.a.split('.'))
+    if (scene === 'shake' && search.a) setSelection(decodeAttributeIds(search.a))
     if (scene === 'shake' && search.n) setName(search.n)
     if (scene === 'result' && search.k) {
       const request = decodeRollKey(search.k)

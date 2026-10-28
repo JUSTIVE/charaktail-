@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'dislikes',
+  code: 'dl',
   label: '싫어하는 것',
   color: hue.ruby,
   kind: 'pick',

@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'ability',
+  code: 'ab',
   label: '특기',
   color: hue.lime,
   kind: 'pick',

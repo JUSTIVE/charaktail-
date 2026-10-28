@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { encodeAttributeIds } from '../domain/codes'
 import { graphql } from 'relay-runtime'
 
 import { useLocalQuery } from '../graph/useLocalQuery'
@@ -50,7 +51,7 @@ export function StageCanvas() {
     }
     stage.onReshake = () => {
       // The stage is already mixing; the route catches up and the HUD shows it.
-      void router.navigate({ to: '/shake', search: { a: selectionCell.read().join('.'), n: currentName() }, replace: true })
+      void router.navigate({ to: '/shake', search: { a: encodeAttributeIds(selectionCell.read()), n: currentName() }, replace: true })
     }
     stageHandle.current = stage
     // Dev only: lets a test harness inspect the stage.

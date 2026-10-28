@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'goal',
+  code: 'gl',
   label: '목표',
   color: hue.blue,
   kind: 'pick',

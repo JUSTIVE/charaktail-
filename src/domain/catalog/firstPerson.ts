@@ -4,6 +4,7 @@ import { defineAttribute } from '../schema'
 /** 자캐 프로필 단골 항목: 자기를 부르는 말. */
 export default defineAttribute({
   id: 'firstPerson',
+  code: 'fp',
   label: '1인칭',
   color: hue.purple,
   kind: 'pick',

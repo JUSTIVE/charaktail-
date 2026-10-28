@@ -29,6 +29,7 @@ const human = speciesTable.find((s) => s.id === 'human')!.lifespan
 
 export default defineAttribute({
   id: 'age',
+  code: 'ag',
   label: '나이',
   color: hue.amber,
   defaultSelected: true,

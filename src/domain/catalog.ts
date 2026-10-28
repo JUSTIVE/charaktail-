@@ -7,6 +7,8 @@ export interface Catalog {
   /** Display order — the order catalogue files are listed in. */
   attributes: readonly Attribute[]
   byId: ReadonlyMap<string, Attribute>
+  /** Two-letter URL code → attribute. */
+  byCode: ReadonlyMap<string, Attribute>
   /** Dependencies before dependents, derived from every `when` in the data. */
   rollOrder: readonly Attribute[]
   /** attribute id → attributes its conditions read. */
@@ -71,9 +73,13 @@ export function defineCatalog(inputs: readonly AttributeInput[]): Catalog {
   })
 
   const byId = new Map<string, Attribute>()
+  const byCode = new Map<string, Attribute>()
   for (const attribute of attributes) {
     if (byId.has(attribute.id)) throw new Error(`속성 id "${attribute.id}"가 중복됩니다`)
+    const clash = byCode.get(attribute.code)
+    if (clash) throw new Error(`속성 코드 "${attribute.code}"가 ${clash.id}와 ${attribute.id}에 중복됩니다`)
     byId.set(attribute.id, attribute)
+    byCode.set(attribute.code, attribute)
   }
 
   const dependencies = new Map<string, Set<string>>()
@@ -104,5 +110,5 @@ export function defineCatalog(inputs: readonly AttributeInput[]): Catalog {
   }
   for (const attribute of attributes) visit(attribute.id, [])
 
-  return { attributes, byId, rollOrder, dependencies }
+  return { attributes, byId, byCode, rollOrder, dependencies }
 }

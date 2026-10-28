@@ -1,5 +1,6 @@
 import NumberFlow from '@number-flow/react'
 import { useState, type CSSProperties } from 'react'
+import { encodeAttributeIds } from '../../domain/codes'
 import { graphql } from 'relay-runtime'
 
 import { useLocalQuery } from '../../graph/useLocalQuery'
@@ -60,7 +61,7 @@ export function Picker() {
     haptic.press()
     // iOS only grants motion from inside the tap that asked for it.
     if (data.stage?.motion === 'prompt') patchStage({ motion: await requestMotionAccess() })
-    void router.navigate({ to: '/shake', search: { a: selectionCell.read().join('.'), n: currentName() } })
+    void router.navigate({ to: '/shake', search: { a: encodeAttributeIds(selectionCell.read()), n: currentName() } })
   }
 
   return (

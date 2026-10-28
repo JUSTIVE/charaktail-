@@ -16,6 +16,7 @@ const abo = [
 
 export default defineAttribute({
   id: 'bloodType',
+  code: 'bl',
   label: '혈액형',
   color: hue.red,
   description: 'ABO와 Rh, 드문 혈액형, 종족마다 다른 피까지',

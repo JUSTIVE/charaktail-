@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'bodyType',
+  code: 'bt',
   label: '체형',
   color: hue.brown,
   kind: 'pick',

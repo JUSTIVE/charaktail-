@@ -176,12 +176,13 @@ type Packed = Record<
   }
 >
 
-export function packEdits(edits: Edits, attributeIds: readonly string[]): string {
+/** `keyOf` names each attribute in the packed form — the roll key uses its two-letter code. */
+export function packEdits(edits: Edits, attributeIds: readonly string[], keyOf: (id: string) => string = (id) => id): string {
   const packed: Packed = {}
   for (const id of attributeIds) {
     const e = edits[id]
     if (!isEdited(e)) continue
-    packed[id] = {
+    packed[keyOf(id)] = {
       ...(e!.disabled.length ? { d: e!.disabled } : {}),
       ...(e!.removed.length ? { r: e!.removed } : {}),
       ...(e!.added.length
@@ -202,14 +203,14 @@ export function packEdits(edits: Edits, attributeIds: readonly string[]): string
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
-export function unpackEdits(text: string): Edits | undefined {
+export function unpackEdits(text: string, idOf: (key: string) => string = (key) => key): Edits | undefined {
   if (!text) return undefined
   try {
     const binary = atob(text.replace(/-/g, '+').replace(/_/g, '/'))
     const packed = JSON.parse(new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0)))) as Packed
     const edits = Object.fromEntries(
-      Object.entries(packed).map(([id, p]) => [
-        id,
+      Object.entries(packed).map(([key, p]) => [
+        idOf(key),
         {
           disabled: p.d ?? [],
           removed: p.r ?? [],

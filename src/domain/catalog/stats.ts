@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'stats',
+  code: 'st',
   label: '능력치',
   color: hue.lavender,
   description: '여러 수치를 한 번에',

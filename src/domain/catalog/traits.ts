@@ -4,6 +4,7 @@ import { defineAttribute } from '../schema'
 /** Each one rolled on its own odds — none, one, or several. */
 export default defineAttribute({
   id: 'traits',
+  code: 'tr',
   label: '외형 특징',
   color: hue.coral,
   kind: 'traits',

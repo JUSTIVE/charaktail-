@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'birthday',
+  code: 'bd',
   label: '생일',
   color: hue.green,
   description: '별자리도 함께',

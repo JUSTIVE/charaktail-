@@ -4,6 +4,7 @@ import { defineAttribute } from '../schema'
 /** 이명 — a phrase built one part at a time. */
 export default defineAttribute({
   id: 'epithet',
+  code: 'ep',
   label: '이명',
   color: hue.periwinkle,
   description: '두 마디를 조합',

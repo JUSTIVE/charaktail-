@@ -38,6 +38,7 @@ export const speciesTable: readonly Species[] = [
 
 export default defineAttribute({
   id: 'species',
+  code: 'sp',
   label: '종족',
   color: hue.grass,
   description: '세계관에 따라 등장하는 종족이 달라진다',

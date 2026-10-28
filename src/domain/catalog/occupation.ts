@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'occupation',
+  code: 'oc',
   label: '직업',
   color: hue.teal,
   kind: 'pick',

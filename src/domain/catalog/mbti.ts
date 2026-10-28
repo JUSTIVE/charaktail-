@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'mbti',
+  code: 'mb',
   label: 'MBTI',
   color: hue.iris,
   kind: 'pick',

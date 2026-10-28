@@ -4,6 +4,7 @@ import { defineAttribute } from '../schema'
 /** The character's image colour — the one an artist would reach for first. */
 export default defineAttribute({
   id: 'themeColor',
+  code: 'tc',
   label: '테마 컬러',
   color: hue.yellow,
   kind: 'color',

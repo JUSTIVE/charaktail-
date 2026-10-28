@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'weakness',
+  code: 'wk',
   label: '약점',
   color: hue.gold,
   kind: 'pick',

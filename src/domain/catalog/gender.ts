@@ -3,6 +3,7 @@ import { defineAttribute } from '../schema'
 
 export default defineAttribute({
   id: 'gender',
+  code: 'gd',
   label: '성별',
   color: hue.crimson,
   defaultSelected: true,
