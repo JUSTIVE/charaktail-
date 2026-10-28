@@ -1,9 +1,11 @@
 /*
  * Vibration. Android exposes `navigator.vibrate`; iOS Safari does not, but
  * since 17.4 toggling a native `<input type="checkbox" switch>` plays a system
- * haptic tick — so a pattern on iOS becomes a few ticks spaced to match. That
- * tick only plays inside a user gesture, so on iOS the moments the stage
- * plays on its own (mixing, glow, reveal) are silent.
+ * haptic tick. That tick only plays while the tap that caused it is still
+ * being handled — a `setTimeout`, even of 0ms, is already too late — so the
+ * first tick of a pattern fires synchronously and later ones are best effort.
+ * The moments the stage plays on its own (mixing, glow, reveal) have no tap
+ * behind them and stay silent on iOS.
  */
 
 let switchLabel: HTMLLabelElement | null = null
@@ -27,9 +29,10 @@ function iosTick(): void {
 /** `pattern`: on/off durations in ms, like `navigator.vibrate`. */
 export function vibrate(pattern: number[]): void {
   if (typeof navigator.vibrate === 'function' && navigator.vibrate(pattern)) return
+  iosTick()
   let at = 0
   pattern.forEach((duration, index) => {
-    if (index % 2 === 0) setTimeout(iosTick, at)
+    if (index > 0 && index % 2 === 0) setTimeout(iosTick, at)
     at += duration
   })
 }
