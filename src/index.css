@@ -252,6 +252,47 @@ body {
   background: color-mix(in oklab, var(--chip) 16%, transparent);
   box-shadow: inset 0 0 22px -10px var(--chip);
 }
+/*
+ * An active chip carries its attribute's colour as a slow drift inside it:
+ * two soft blobs of --chip wandering on loops of different lengths, so no
+ * two chips — and no two moments — line up. Behind the label, never over it.
+ */
+.chip {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.chip::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(closest-side, color-mix(in oklab, var(--chip) 38%, transparent), transparent) 0 0 / 55% 70% no-repeat,
+    radial-gradient(closest-side, color-mix(in oklab, var(--chip) 26%, transparent), transparent) 100% 100% / 60% 75% no-repeat;
+  opacity: 0;
+  transition: opacity 400ms ease;
+  animation: chip-drift 11s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+.chip[aria-pressed='true']::before {
+  opacity: 1;
+  animation-play-state: running;
+}
+li:nth-child(3n + 1) > .chip::before { animation-duration: 13s; animation-delay: -4s; }
+li:nth-child(3n + 2) > .chip::before { animation-duration: 9.5s; animation-delay: -7s; }
+li:nth-child(4n) > .chip::before { animation-direction: alternate-reverse; }
+@keyframes chip-drift {
+  0% { background-position: 0% 0%, 100% 100%; }
+  33% { background-position: 70% 20%, 20% 80%; }
+  66% { background-position: 30% 90%, 85% 15%; }
+  100% { background-position: 100% 60%, 0% 40%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chip::before { animation: none; }
+}
+
 .chip[aria-pressed='false'] > span:first-child > span:first-child {
   opacity: 0.35;
   box-shadow: none !important;
