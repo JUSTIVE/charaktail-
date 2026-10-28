@@ -1,3 +1,4 @@
+import NumberFlow from '@number-flow/react'
 import { Suspense, useEffect, type ReactNode } from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { graphql } from 'relay-runtime'
@@ -178,7 +179,8 @@ function SavedLink() {
       className="press glass flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold text-muted transition-opacity hover:text-ink data-[hidden]:opacity-0"
     >
       <ArchiveIcon width={16} height={16} />
-      <span className="tnum">{count}</span>
+      {/* Saving or removing rolls the digits, like the shake CTA's count. */}
+      <NumberFlow value={count} className="tnum" />
     </Link>
   )
 }
