@@ -473,49 +473,6 @@ body {
   background: rgb(186 167 255 / 0.12);
 }
 
-/*
- * 종족 추가: the button's surface becomes the dialog's. The surface eases its
- * corners and fill; whichever body is mounted comes in from slightly smaller,
- * blurred and transparent — the blur hides the swap, so it reads as one
- * thing changing shape. The sheet itself glides to the new height.
- */
-.add-morph {
-  border: 1px solid var(--color-line);
-  border-radius: 14px;
-  background: rgb(255 255 255 / 0.04);
-  transition: border-radius 260ms var(--ease-out), background-color 200ms ease, border-color 200ms ease, padding 260ms var(--ease-out);
-}
-.add-morph[data-open] {
-  padding: 14px;
-  border-radius: 20px;
-  border-color: color-mix(in oklab, var(--add-accent) 35%, transparent);
-  background: color-mix(in oklab, var(--add-accent) 7%, rgb(255 255 255 / 0.03));
-}
-/* While the dialog is open the list steps back so the dialog fits. */
-.values-list {
-  transition: max-height 280ms var(--ease-out);
-}
-[data-stage-floor]:has(.add-morph[data-open]) .values-list {
-  max-height: 16svh;
-}
-.add-morph-body {
-  transform-origin: 50% 100%;
-  transition: opacity 220ms ease, transform 280ms var(--ease-out), filter 220ms ease;
-  @starting-style {
-    opacity: 0;
-    transform: scale(0.96);
-    filter: blur(4px);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .add-morph-body {
-    @starting-style {
-      transform: none;
-      filter: none;
-    }
-  }
-}
-
 /* Switch: the knob slides on the strong ease-out; the track's colour eases. */
 .switch {
   position: relative;

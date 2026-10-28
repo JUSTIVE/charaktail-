@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import { graphql } from 'relay-runtime'
+import { useSheetStack, useSheetStackActions } from 'morphing-sheet/react'
 
 import { useLocalQuery } from '../../graph/useLocalQuery'
 
@@ -163,7 +164,7 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
           </ul>
 
           {attributeId === 'species' ? (
-            <AddSpecies color={attribute.color ?? '#888'} />
+            <AddSpecies />
           ) : (
             <>
             {isColor ? (
@@ -293,29 +294,42 @@ function RangeEditor({
 }
 
 /**
- * 종족 추가: a full-width button that morphs into a small dialog — a species
+ * 종족 추가: a full-width button the add dialog grows out of — the dialogs
+ * region morphs it from the button and folds it back on close. A species
  * needs a name and its expected lifespan, more than an inline row can hold.
- * One surface throughout (`.add-morph`); the sheet glides to its new height.
  */
-function AddSpecies({ color }: { color: string }) {
-  const [open, setOpen] = useState(false)
+function AddSpecies() {
+  const dialogs = useSheetStackActions('dialogs')
+  return (
+    <div className="ms-seq" style={seq(2)}>
+      <Button
+        className="w-full py-3"
+        onClick={(event) => {
+          haptic.select()
+          void dialogs.push({ id: 'add-species', title: '새 종족', width: '440px', content: <AddSpeciesSheet /> }, { from: event.currentTarget })
+        }}
+      >
+        <PlusIcon width={16} height={16} />
+        종족 추가하기
+      </Button>
+    </div>
+  )
+}
+
+function AddSpeciesSheet() {
+  const sheet = useSheetStack()
   const [name, setName] = useState('')
   const [low, setLow] = useState('70')
   const [high, setHigh] = useState('100')
   const [error, setError] = useState<string | null>(null)
 
-  const close = () => {
-    setOpen(false)
-    setName('')
-    setError(null)
-  }
   const submit = (event: FormEvent) => {
     event.preventDefault()
     const problem = addOption('species', name, { lifespan: { min: Number(low), max: Number(high) } })
     setError(problem)
     if (problem) return
     haptic.select()
-    close()
+    void sheet.pop()
   }
   const years = (label: string, value: string, set: (v: string) => void) => (
     <label className="name-field min-w-0 flex-1 gap-2 px-3">
@@ -336,58 +350,40 @@ function AddSpecies({ color }: { color: string }) {
   )
 
   return (
-    <div className="ms-seq add-morph" data-open={open || undefined} style={{ ...seq(2), '--add-accent': color } as CSSProperties}>
-      {open ? (
-        <form className="add-morph-body space-y-2.5" onSubmit={submit}>
-          <p className="text-[14px] font-semibold">새 종족</p>
-          <input
-            value={name}
-            onChange={(event) => {
-              setName(event.target.value)
-              setError(null)
-            }}
-            // Opened by a tap, so the keyboard may come up with it.
-            autoFocus
-            maxLength={24}
-            placeholder="종족 이름"
-            aria-label="종족 이름"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck={false}
-            enterKeyHint="next"
-            className="name-field w-full py-2.5 text-[16px] outline-none placeholder:text-faint"
-          />
-          <div>
-            <p className="eyebrow mb-1.5">기대 수명</p>
-            <div className="flex items-center gap-2">
-              {years('최소', low, setLow)}
-              <span aria-hidden className="text-faint">–</span>
-              {years('최대', high, setHigh)}
-            </div>
-          </div>
-          {error ? <p className="text-[12px] text-[#ff977d]">{error}</p> : <p className="text-[12px] text-faint">나이는 이 수명 안에서 뽑혀요.</p>}
-          <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1" onClick={close}>
-              취소
-            </Button>
-            <Button type="submit" variant="primary" className="flex-1" disabled={name.trim() === '' || low === '' || high === ''}>
-              추가
-            </Button>
-          </div>
-        </form>
-      ) : (
-        <button
-          type="button"
-          className="add-morph-body press flex w-full items-center justify-center gap-1.5 py-3 text-[14px] font-semibold"
-          onClick={() => {
-            haptic.select()
-            setOpen(true)
-          }}
-        >
-          <PlusIcon width={16} height={16} />
-          종족 추가하기
-        </button>
-      )}
-    </div>
+    <form className="space-y-3" onSubmit={submit}>
+      <input
+        value={name}
+        onChange={(event) => {
+          setName(event.target.value)
+          setError(null)
+        }}
+        maxLength={24}
+        placeholder="종족 이름"
+        aria-label="종족 이름"
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
+        enterKeyHint="next"
+        className="ms-seq name-field w-full py-2.5 text-[16px] outline-none placeholder:text-faint"
+        style={seq(0)}
+      />
+      <div className="ms-seq" style={seq(1)}>
+        <p className="eyebrow mb-1.5">기대 수명</p>
+        <div className="flex items-center gap-2">
+          {years('최소', low, setLow)}
+          <span aria-hidden className="text-faint">–</span>
+          {years('최대', high, setHigh)}
+        </div>
+        {error ? <p className="mt-2 text-[12px] text-[#ff977d]">{error}</p> : <p className="mt-2 text-[12px] text-faint">나이는 이 수명 안에서 뽑혀요.</p>}
+      </div>
+      <div className="ms-seq flex gap-2" style={seq(2)}>
+        <Button variant="ghost" className="flex-1" onClick={() => void sheet.pop()}>
+          취소
+        </Button>
+        <Button type="submit" variant="primary" className="flex-1" disabled={name.trim() === '' || low === '' || high === ''}>
+          추가
+        </Button>
+      </div>
+    </form>
   )
 }
