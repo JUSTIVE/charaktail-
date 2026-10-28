@@ -3,7 +3,7 @@ import { graphql } from 'relay-runtime'
 
 import { useLocalQuery } from '../../graph/useLocalQuery'
 
-import { addOption, removeOption, resetAttribute, setRange, toggleOption } from '../../state/edits'
+import { addOption, removeOption, resetAttribute, setOptionsEnabled, setRange, toggleOption } from '../../state/edits'
 import { router } from '../../router'
 import { haptic } from '../../stage/haptics'
 import { BackIcon, PlusIcon, TrashIcon } from '../icons'
@@ -204,11 +204,18 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
         <ul className="ms-seq values-list" style={seq(1)}>
           {groups.map((g) => {
             const all = (attribute.options ?? []).filter((o) => (o.groups?.length ?? 0) === 0 || (o.groups ?? []).includes(g.key ?? ''))
+            // The switch moves this world's own 직업; ones shared by every
+            // world stay put, or turning one world off would empty the rest.
+            const own = all.filter((o) => (o.groups ?? []).includes(g.key ?? ''))
+            const ownOn = own.filter((o) => o.enabled)
+            const on = ownOn.length > 0
+            const enabledTotal = (attribute.options ?? []).filter((o) => o.enabled).length
+            const wouldEmpty = on && enabledTotal - ownOn.length < 1
             return (
-              <li key={g.key}>
+              <li key={g.key} className="values-row" data-off={!on || undefined}>
                 <button
                   type="button"
-                  className="values-row press-soft w-full text-left"
+                  className="press-soft flex min-w-0 flex-1 items-center gap-2 text-left"
                   onClick={() => {
                     haptic.select()
                     void router.navigate({ to: '/', search: { values: attributeId, group: g.key ?? undefined } })
@@ -223,6 +230,24 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
                   </span>
                   <BackIcon width={16} height={16} className="shrink-0 rotate-180 text-faint" />
                 </button>
+                {own.length > 0 ? (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={on}
+                    aria-label={`${g.label} 직업 ${on ? '모두 끄기' : '모두 켜기'}`}
+                    title={wouldEmpty ? '최소 하나는 켜져 있어야 해요' : undefined}
+                    disabled={wouldEmpty}
+                    onClick={() => {
+                      haptic.select()
+                      setOptionsEnabled(attributeId, own.map((o) => o.key ?? ''), !on)
+                    }}
+                    className="switch"
+                    style={{ '--switch-on': attribute.color } as CSSProperties}
+                  >
+                    <span />
+                  </button>
+                ) : null}
               </li>
             )
           })}

@@ -19,6 +19,15 @@ export function toggleOption(attributeId: string, optionId: string): void {
   }))
 }
 
+/** Switches several values at once — a 세계관's 직업 together. */
+export function setOptionsEnabled(attributeId: string, optionIds: readonly string[], enabled: boolean): void {
+  const ids = new Set(optionIds)
+  patch(attributeId, (e) => ({
+    ...e,
+    disabled: enabled ? e.disabled.filter((id) => !ids.has(id)) : [...new Set([...e.disabled, ...optionIds])],
+  }))
+}
+
 export function removeOption(attributeId: string, optionId: string): void {
   patch(attributeId, (e) => {
     const own = e.added.some((o) => o.id === optionId)
