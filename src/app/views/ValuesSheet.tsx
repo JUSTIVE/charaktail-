@@ -160,6 +160,9 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
         </ul>
       )}
       <div className="ms-seq flex gap-2" style={seq(3)}>
+        <Button variant="primary" className="flex-1 py-3" onClick={back}>
+          완료
+        </Button>
         {attribute.editable ? (
           <Button
             aria-label={`${attribute.label} 값 추가하기`}
@@ -172,9 +175,6 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
             <PlusIcon width={18} height={18} />
           </Button>
         ) : null}
-        <Button variant="primary" className="flex-1 py-3" onClick={back}>
-          완료
-        </Button>
       </div>
     </div>
   )
