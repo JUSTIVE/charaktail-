@@ -201,6 +201,15 @@ export function unit(attribute: AttributeRecord): string | null {
 }
 
 /**
+ * The attribute this one's values are listed under in the editor — 직업 →
+ * 세계관.
+ * @relayField Attribute.groupBy: Attribute
+ */
+export function groupBy(attribute: AttributeRecord): { id: string } | null {
+  return attribute.kind === 'pick' && attribute.groupBy ? { id: attribute.groupBy } : null
+}
+
+/**
  * Whether this range changes with 종족 — 키, 나이.
  * @relayField Attribute.dependsOnSpecies: Boolean
  */

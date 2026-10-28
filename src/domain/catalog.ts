@@ -82,6 +82,12 @@ export function defineCatalog(inputs: readonly AttributeInput[]): Catalog {
     byCode.set(attribute.code, attribute)
   }
 
+  for (const attribute of attributes) {
+    if (attribute.kind !== 'pick' || !attribute.groupBy) continue
+    const group = byId.get(attribute.groupBy)
+    if (!group || group.kind !== 'pick') throw new Error(`${attribute.id}의 groupBy가 목록형 속성이 아닌 "${attribute.groupBy}"를 가리킵니다`)
+  }
+
   const dependencies = new Map<string, Set<string>>()
   for (const attribute of attributes) {
     const targets = conditionTargets(attribute)

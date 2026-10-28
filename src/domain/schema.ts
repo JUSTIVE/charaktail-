@@ -116,6 +116,12 @@ const PickAttribute = z.object({
   options: z.array(PickOption).min(1),
   /** How many distinct values to draw — 성격 키워드 두 개 같은 경우. */
   count: z.number().int().positive().default(1),
+  /**
+   * Lists values under another attribute's values in the editor — 직업 by
+   * 세계관: a value whose condition names that attribute sits under each
+   * value it names, one with no such condition under all of them.
+   */
+  groupBy: Key.optional(),
 })
 
 const ColorAttribute = z.object({

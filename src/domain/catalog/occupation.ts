@@ -7,6 +7,8 @@ export default defineAttribute({
   label: '직업',
   color: hue.teal,
   kind: 'pick',
+  // The editor lists 직업 under each 세계관 they belong to.
+  groupBy: 'world',
   options: [
     { label: '떠돌이 용병' },
     { label: '견습 마법사', when: { world: ['fantasy', 'darkFantasy', 'academy'] } },

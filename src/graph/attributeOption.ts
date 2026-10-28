@@ -41,6 +41,14 @@ export function part(option: AttributeOption): number {
 }
 
 /**
+ * Grouped kinds: the group values it is listed under; empty means all.
+ * @relayField AttributeOption.groups: [String!]
+ */
+export function groups(option: AttributeOption): string[] {
+  return option.groups
+}
+
+/**
  * @relayField AttributeOption.enabled: Boolean
  */
 export function enabled(option: AttributeOption): boolean {

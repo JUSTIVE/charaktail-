@@ -53,6 +53,7 @@ export function Shell() {
             readScene(location.pathname),
             new URLSearchParams(location.search).get('values') ?? undefined,
             new URLSearchParams(location.search).get('add') === 'true',
+            new URLSearchParams(location.search).get('group') ?? undefined,
           ),
         ]}
       >
@@ -83,15 +84,15 @@ const STAGE_MODE: Record<Scene, StageMode> = { pick: 'idle', shake: 'armed', res
  * one. An attribute's value list is a view of its own on the same panel — the
  * picker morphs into it and back, and the URL (`?values=`) owns which.
  */
-function viewFor(scene: Scene, values?: string, add?: boolean): SheetDescriptor {
+function viewFor(scene: Scene, values?: string, add?: boolean, group?: string): SheetDescriptor {
   const body = (content: ReactNode) => (
     <Suspense fallback={<div className="h-40" data-stage-floor />}>{content}</Suspense>
   )
   switch (scene) {
     case 'pick':
-      if (values && add) return { id: `add-${values}`, width: '520px', content: body(<AddValueSheet attributeId={values} />) }
+      if (values && add) return { id: `add-${values}-${group ?? ''}`, width: '520px', content: body(<AddValueSheet attributeId={values} group={group} />) }
       return values
-        ? { id: `values-${values}`, width: '520px', content: body(<ValuesSheet attributeId={values} />) }
+        ? { id: `values-${values}-${group ?? ''}`, width: '520px', content: body(<ValuesSheet attributeId={values} group={group} />) }
         : { id: 'pick', width: '560px', content: body(<Picker />) }
     case 'shake':
       return { id: 'shake', width: '400px', content: body(<ShakeHud />) }
@@ -106,17 +107,18 @@ function SceneSync() {
   const panel = useSheetStackActions('panel')
   const dialogs = useSheetStackActions('dialogs')
   const scene = useScene()
-  const search = useRouterState({ select: (s) => s.location.search as { a?: string; n?: string; k?: string; values?: string; add?: boolean } })
+  const search = useRouterState({ select: (s) => s.location.search as { a?: string; n?: string; k?: string; values?: string; add?: boolean; group?: string } })
   const values = scene === 'pick' ? search.values : undefined
   const add = scene === 'pick' && search.add === true
+  const group = scene === 'pick' ? search.group : undefined
 
   useEffect(() => {
     // Screens that listen for shakes must not leave Safari an undo to offer —
     // also when reached by a link or the back button, not only by the CTA.
     if (scene === 'shake' || scene === 'result') releaseTextInput()
-    void panel.replace(viewFor(scene, values, add))
+    void panel.replace(viewFor(scene, values, add, group))
     if (dialogs.getDepth() > 0) void dialogs.reset()
-  }, [panel, dialogs, scene, values, add])
+  }, [panel, dialogs, scene, values, add, group])
 
   // The URL carries the attribute set on /shake and /result; the stage's balls
   // come from the selection, so the selection follows the URL there.

@@ -87,6 +87,10 @@ type Attribute {
   rangeMax: Float @live
   unit: String
   """
+  The attribute this one's values are listed under in the editor — 직업 → 세계관.
+  """
+  groupBy: Attribute
+  """
   Whether this range changes with 종족 — 키, 나이.
   """
   dependsOnSpecies: Boolean
@@ -114,6 +118,10 @@ type AttributeOption @weak {
   Compose kinds: which part the value belongs to.
   """
   part: Int
+  """
+  Grouped kinds: the group values it is listed under; empty means all.
+  """
+  groups: [String!]
   enabled: Boolean
   """
   Added by the player rather than shipped in the catalogue.

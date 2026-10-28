@@ -40,6 +40,8 @@ export function addOption(
     lifespan?: { min: number; max: number } | undefined
     /** Compose kinds: the part the value joins. */
     part?: number | undefined
+    /** Grouped kinds: the group value it is added under. */
+    group?: string | undefined
   } = {},
 ): string | null {
   const attribute = catalog.byId.get(attributeId)
@@ -47,7 +49,7 @@ export function addOption(
   if (!attribute || attribute.kind === 'range') return '이 속성에는 값을 추가할 수 없어요.'
   if (name === '') return '값을 입력해 주세요.'
   if (listOptions(attribute, editsCell.read()[attributeId]).some((o) => o.label === name)) return '이미 있는 값이에요.'
-  const { lifespan, part } = extras
+  const { lifespan, part, group } = extras
   if (part !== undefined && (attribute.kind !== 'compose' || part < 0 || part >= attribute.parts.length)) return '없는 마디예요.'
   if (lifespan) {
     if (!Number.isInteger(lifespan.min) || !Number.isInteger(lifespan.max) || lifespan.min < 1) return '수명을 1년 이상으로 입력해 주세요.'
@@ -56,7 +58,7 @@ export function addOption(
   }
   const id = `u${Date.now().toString(36)}${Math.floor(Math.random() * 36 ** 2).toString(36)}`
   const colours = attribute.kind === 'color' ? { hex: extras.hex ?? '#7c7a85', ...(extras.hex2 ? { hex2: extras.hex2 } : {}) } : {}
-  patch(attributeId, (e) => ({ ...e, added: [...e.added, { id, label: name.slice(0, 24), ...colours, ...(lifespan ? { lifespan } : {}), ...(part ? { part } : {}) }] }))
+  patch(attributeId, (e) => ({ ...e, added: [...e.added, { id, label: name.slice(0, 24), ...colours, ...(lifespan ? { lifespan } : {}), ...(part ? { part } : {}), ...(group ? { group } : {}) }] }))
   return null
 }
 

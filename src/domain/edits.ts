@@ -20,6 +20,8 @@ export const AddedOption = z.object({
   hex: Hex.optional(),
   /** A second colour — 오드아이, 투톤. */
   hex2: Hex.optional(),
+  /** Grouped kinds (직업 by 세계관): the group value it was added under. */
+  group: z.string().min(1).optional(),
   /** Compose kinds: which part the value joins (0-based). */
   part: z.number().int().min(0).optional(),
   /** 종족 only: its expected lifespan, which 나이 is then rolled within. */
@@ -64,6 +66,8 @@ export interface ListedOption {
   hint: string | null
   /** Compose kinds: the part it belongs to; 0 otherwise. */
   part: number
+  /** Grouped kinds: the group values it is listed under; empty means all of them. */
+  groups: string[]
   enabled: boolean
   custom: boolean
   swatches: string[]
@@ -74,23 +78,26 @@ export function listOptions(attribute: Attribute, edits: AttributeEdits | undefi
   if (!isEditable(attribute)) return []
   const removed = new Set(edits?.removed ?? [])
   const disabled = new Set(edits?.disabled ?? [])
-  const shipped: { id: string; label: string; hint?: string | undefined; swatches: string[]; part: number }[] =
+  const groupBy = attribute.kind === 'pick' ? attribute.groupBy : undefined
+  const groupsOf = (when: Record<string, string[]> | undefined) => (groupBy && when?.[groupBy]) || []
+  const shipped: { id: string; label: string; hint?: string | undefined; swatches: string[]; part: number; groups: string[] }[] =
     attribute.kind === 'color'
-      ? attribute.options.map((o) => ({ ...o, part: 0 }))
+      ? attribute.options.map((o) => ({ ...o, part: 0, groups: [] }))
       : attribute.kind === 'compose'
-        ? attribute.parts.flatMap((options, part) => options.map((o) => ({ ...o, swatches: [], part })))
+        ? attribute.parts.flatMap((options, part) => options.map((o) => ({ ...o, swatches: [], part, groups: [] })))
         : attribute.kind === 'pick'
-          ? attribute.options.map((o) => ({ ...o, swatches: [], part: 0 }))
+          ? attribute.options.map((o) => ({ ...o, swatches: [], part: 0, groups: groupsOf(o.when) }))
           : []
   const builtIn = shipped
     .filter((o) => !removed.has(o.id))
-    .map((o) => ({ id: o.id, label: o.label, hint: o.hint ?? null, part: o.part, enabled: !disabled.has(o.id), custom: false, swatches: o.swatches }))
+    .map((o) => ({ id: o.id, label: o.label, hint: o.hint ?? null, part: o.part, groups: o.groups, enabled: !disabled.has(o.id), custom: false, swatches: o.swatches }))
   // Within a part, values are listed together: the player's own after the shipped ones.
   const own = (edits?.added ?? []).map((o) => ({
     id: o.id,
     label: o.label,
     hint: o.lifespan ? describeLifespan(o.lifespan) : null,
     part: o.part ?? 0,
+    groups: o.group ? [o.group] : [],
     enabled: !disabled.has(o.id),
     custom: true,
     swatches: swatchesOf(o),
@@ -133,7 +140,14 @@ export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits 
   }
   const options = [
     ...attribute.options.filter((o) => !drop.has(o.id)),
-    ...added.map((o) => ({ id: o.id, label: o.label, hint: o.lifespan ? describeLifespan(o.lifespan) : undefined, weight: 1, when: undefined })),
+    ...added.map((o) => ({
+      id: o.id,
+      label: o.label,
+      hint: o.lifespan ? describeLifespan(o.lifespan) : undefined,
+      weight: 1,
+      // Added under a group, it belongs there — 하이 판타지에 추가한 직업은 하이 판타지의 것.
+      when: o.group && attribute.groupBy ? { [attribute.groupBy]: [o.group] } : undefined,
+    })),
   ]
   return options.length > 0 ? { ...attribute, options } : attribute
 }
@@ -169,6 +183,8 @@ type Packed = Record<
     a?: [string, string, string?, string?][] | undefined
     n?: number | undefined
     x?: number | undefined
+    /** Added option id → the group it was added under. */
+    g?: Record<string, string> | undefined
     /** Added option id → compose part, when not the first. */
     p?: Record<string, number> | undefined
     /** Added option id → [min, max] lifespan. */
@@ -190,6 +206,9 @@ export function packEdits(edits: Edits, attributeIds: readonly string[], keyOf: 
         : {}),
       ...(e!.min !== undefined ? { n: e!.min } : {}),
       ...(e!.max !== undefined ? { x: e!.max } : {}),
+      ...(e!.added.some((o) => o.group)
+        ? { g: Object.fromEntries(e!.added.flatMap((o) => (o.group ? [[o.id, o.group]] : []))) }
+        : {}),
       ...(e!.added.some((o) => o.part)
         ? { p: Object.fromEntries(e!.added.flatMap((o) => (o.part ? [[o.id, o.part]] : []))) }
         : {}),
@@ -217,12 +236,14 @@ export function unpackEdits(text: string, idOf: (key: string) => string = (key) 
           added: (p.a ?? []).map(([oid, label, hex, hex2]) => {
             const life = p.l?.[oid]
             const part = p.p?.[oid]
+            const group = p.g?.[oid]
             return {
               id: oid,
               label,
               ...(hex ? { hex } : {}),
               ...(hex2 ? { hex2 } : {}),
               ...(part ? { part } : {}),
+              ...(group ? { group } : {}),
               ...(life ? { lifespan: { min: life[0], max: life[1] } } : {}),
             }
           }),

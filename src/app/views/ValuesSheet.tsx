@@ -27,7 +27,7 @@ const GENERATED_NOTE: Record<string, string> = {
   traits: '특징마다 나올 확률이 따로 있어서, 하나도 없거나 여러 개가 함께 나올 수 있어요.',
 }
 
-export function ValuesSheet({ attributeId }: { attributeId: string }) {
+export function ValuesSheet({ attributeId, group }: { attributeId: string; group?: string | undefined }) {
   const data = useLocalQuery<ValuesSheetQuery>(
     graphql`
       query ValuesSheetQuery($id: ID!) {
@@ -53,10 +53,21 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
             bands
           }
           partLabels
+          groupBy {
+            key
+            label
+            options {
+              key
+              label
+              hint
+              enabled
+            }
+          }
           options {
             key
             label
             hint
+            groups
             part
             enabled
             custom
@@ -77,21 +88,38 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
     )
   }
 
-  const options = attribute.options ?? []
+  // Grouped kinds (직업 by 세계관) open on the list of groups — the enabled
+  // values of the attribute they are grouped by — and each group morphs into
+  // the values that belong to it (`&group=`).
+  const groupBy = attribute.groupBy
+  const groups = (groupBy?.options ?? []).filter((o) => o.enabled)
+  const atGroups = !!groupBy && !group
+  const groupLabel = group ? (groupBy?.options?.find((o) => o.key === group)?.label ?? group) : null
+  const inGroup = (groupsOfValue: ReadonlyArray<string> | null | undefined) =>
+    !group || (groupsOfValue?.length ?? 0) === 0 || (groupsOfValue ?? []).includes(group)
+  const options = (attribute.options ?? []).filter((o) => inGroup(o.groups))
   const partLabels = attribute.partLabels ?? []
+  const toGroups = () => void router.navigate({ to: '/', search: { values: attributeId } })
 
   return (
     <div data-stage-floor className="space-y-3">
       <div className="ms-seq flex items-center gap-2" style={seq(0)}>
-        <button type="button" onClick={back} aria-label="속성 목록으로" className="press -ml-2 grid size-9 shrink-0 place-items-center rounded-full text-muted hover:text-ink">
+        <button
+          type="button"
+          onClick={group ? toGroups : back}
+          aria-label={group ? `${groupBy?.label ?? ''} 목록으로` : '속성 목록으로'}
+          className="press -ml-2 grid size-9 shrink-0 place-items-center rounded-full text-muted hover:text-ink"
+        >
           <BackIcon />
         </button>
         <div className="min-w-0 flex-1">
-          <h2 className="display flex items-center gap-2">
+          <h2 className="display flex min-w-0 items-center gap-2">
             <Dot color={attribute.color ?? '#888'} size={10} />
-            {attribute.label}
+            <span className="truncate">{groupLabel ? `${attribute.label} · ${groupLabel}` : attribute.label}</span>
           </h2>
-          <p className="text-[12.5px] text-muted">{attribute.summary}</p>
+          <p className="text-[12.5px] text-muted">
+            {atGroups ? `${groupBy?.label ?? ''}별로 골라 보세요` : group ? `이 ${groupBy?.label ?? ''}의 ${attribute.label} ${options.length}가지` : attribute.summary}
+          </p>
         </div>
         {attribute.edited ? (
           <Button variant="ghost" className="px-2.5 py-1.5 text-[12.5px]" onClick={() => resetAttribute(attributeId)}>
@@ -123,6 +151,33 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
             <SpeciesPreview label={attribute.label ?? ''} color={attribute.color ?? '#888'} ranges={attribute.speciesRanges ?? []} />
           ) : null}
         </>
+      ) : atGroups ? (
+        <ul className="ms-seq values-list" style={seq(1)}>
+          {groups.map((g) => {
+            const all = (attribute.options ?? []).filter((o) => (o.groups?.length ?? 0) === 0 || (o.groups ?? []).includes(g.key ?? ''))
+            return (
+              <li key={g.key}>
+                <button
+                  type="button"
+                  className="values-row press-soft w-full text-left"
+                  onClick={() => {
+                    haptic.select()
+                    void router.navigate({ to: '/', search: { values: attributeId, group: g.key ?? undefined } })
+                  }}
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[14px] font-medium">{g.label}</span>
+                    {g.hint ? <span className="block truncate text-[11.5px] text-faint">{g.hint}</span> : null}
+                  </span>
+                  <span className="tnum shrink-0 text-[12.5px] text-muted">
+                    {all.filter((o) => o.enabled).length}/{all.length}
+                  </span>
+                  <BackIcon width={16} height={16} className="shrink-0 rotate-180 text-faint" />
+                </button>
+              </li>
+            )
+          })}
+        </ul>
       ) : (
         <ul className="ms-seq values-list" style={seq(1)}>
           {options.map((option, index) => {
@@ -183,13 +238,13 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
         <Button variant="primary" className="flex-1 py-3" onClick={back}>
           완료
         </Button>
-        {attribute.editable ? (
+        {attribute.editable && !atGroups ? (
           <Button
             aria-label={`${attribute.label} 값 추가하기`}
             className="aspect-square shrink-0 px-0 py-3"
             onClick={() => {
               haptic.select()
-              void router.navigate({ to: '/', search: { values: attributeId, add: true } })
+              void router.navigate({ to: '/', search: { values: attributeId, group, add: true } })
             }}
           >
             <PlusIcon width={18} height={18} />
@@ -334,7 +389,7 @@ function RangeEditor({
  * back. What it asks for follows the kind — a colour (or two) for colours,
  * the part for a phrase, the expected lifespan for a species.
  */
-export function AddValueSheet({ attributeId }: { attributeId: string }) {
+export function AddValueSheet({ attributeId, group }: { attributeId: string; group?: string | undefined }) {
   const data = useLocalQuery<AddValueSheetQuery>(
     graphql`
       query AddValueSheetQuery($id: ID!) {
@@ -358,7 +413,7 @@ export function AddValueSheet({ attributeId }: { attributeId: string }) {
   const [error, setError] = useState<string | null>(null)
 
   const attribute = data.attribute
-  const toList = () => void router.navigate({ to: '/', search: { values: attributeId } })
+  const toList = () => void router.navigate({ to: '/', search: { values: attributeId, group } })
   if (!attribute) return null
   const color = attribute.color ?? '#888'
   const isColor = attribute.kind === 'color'
@@ -371,6 +426,7 @@ export function AddValueSheet({ attributeId }: { attributeId: string }) {
       hex: isColor ? hex : undefined,
       hex2: isColor && twoTone ? hex2 : undefined,
       part: partLabels.length ? part : undefined,
+      group,
       lifespan: isSpecies ? { min: Number(low), max: Number(high) } : undefined,
     })
     setError(problem)
