@@ -113,7 +113,23 @@ body {
 }
 
 /*
- * Nothing here is `position: fixed` (#88). Since iOS 26, Safari treats a
+ * iOS 26 Safari blurs and tints the strip under the status bar unless a
+ * fixed, full-width box at least ~10px tall paints one solid colour there
+ * (#117). This is that box, in the backdrop's own colour at the top centre
+ * (the shader's violet-2 sky under its vignette), so it reads as nothing.
+ * The bubbles never reach this high; they start below the top bar.
+ */
+.status-strip {
+  position: fixed;
+  inset: 0 0 auto;
+  height: max(12px, env(safe-area-inset-top));
+  background: #15101d;
+  z-index: 20;
+  pointer-events: none;
+}
+
+/*
+ * Nothing else here is `position: fixed` (#88). Since iOS 26, Safari treats a
  * fixed element touching the top edge as a toolbar under its status bar and
  * paints a blurred, tinted edge effect over it. The page never scrolls, so
  * absolute against the page-sized root looks the same and Safari leaves the
@@ -541,6 +557,8 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
 
 /* Kebab on a chip: a sibling pinned to the chip's corner. */
 .chip-kebab {
+  /* Above the chip's tap layer (HapticTap). */
+  z-index: 2;
   position: absolute;
   top: 7px;
   right: 6px;
@@ -653,6 +671,40 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
 }
 @media (prefers-reduced-motion: reduce) {
   .species-choices { animation: none; }
+}
+
+/*
+ * HapticTap: a transparent label over the control takes the tap (so the
+ * browser toggles the hidden switch and the phone ticks), and the control
+ * underneath still shows it was pressed.
+ */
+.haptic-host {
+  position: relative;
+  display: block;
+}
+.haptic-host.haptic-inline {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.haptic-switch {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.haptic-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.haptic-host:has(> .haptic-hit:active) > .press:not(:disabled) {
+  transform: scale(0.97);
+}
+.haptic-host:has(> .haptic-hit:active) > .press-soft:not(:disabled) {
+  transform: scale(0.985);
 }
 
 /* Switch: the knob slides on the strong ease-out; the track's colour eases. */

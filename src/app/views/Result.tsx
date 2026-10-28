@@ -12,6 +12,7 @@ import { toggleSaved } from '../../state/saved'
 import { haptic } from '../../stage/haptics'
 import { LockIcon, ShareIcon, ShakeIcon, ShuffleIcon, StarIcon } from '../icons'
 import { attributeHead } from '../attributeHead'
+import { HapticTap } from '../HapticTap'
 import { HairArt } from '../hairArt'
 import { Button, Dot, seq, Swatches } from '../ui'
 import { PoolSheet } from './PoolSheet'
@@ -72,6 +73,11 @@ export function Result() {
     void router.navigate({ to: '/result', search: { k: encodeRollKey({ ...request, nonces }) }, replace: true })
   }
 
+  const save = () => {
+    if (!roll.saved) haptic.save()
+    toggleSaved(roll.key ?? key)
+  }
+
   const share = async () => {
     const url = location.href
     const lines = (roll.entries ?? []).map((e) => `${(e.attribute && attributeHead(e.attribute)?.label) ?? ''}: ${e.value}`)
@@ -92,18 +98,17 @@ export function Result() {
           <h2 className="display truncate">{roll.name ?? '이름 없는 캐릭터'}</h2>
           {data.stage?.motion === 'granted' ? <p className="mt-0.5 text-[11.5px] text-faint">한 번 더 세게 흔들면 새로 뽑아요</p> : null}
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            if (!roll.saved) haptic.save()
-            toggleSaved(roll.key ?? key)
-          }}
-          aria-pressed={roll.saved ?? false}
-          aria-label={roll.saved ? '보관함에서 빼기' : '보관함에 담기'}
-          className="press star grid size-10 shrink-0 place-items-center rounded-full text-muted hover:text-ink aria-pressed:text-star"
-        >
-          <StarIcon filled={roll.saved ?? false} />
-        </button>
+        <HapticTap className="haptic-inline" onTap={save}>
+          <button
+            type="button"
+            onClick={save}
+            aria-pressed={roll.saved ?? false}
+            aria-label={roll.saved ? '보관함에서 빼기' : '보관함에 담기'}
+            className="press star grid size-10 shrink-0 place-items-center rounded-full text-muted hover:text-ink aria-pressed:text-star"
+          >
+            <StarIcon filled={roll.saved ?? false} />
+          </button>
+        </HapticTap>
       </div>
 
       {/* Only the cards scroll; the header and the actions always fit. */}
@@ -113,6 +118,11 @@ export function Result() {
           const value = entry.value ?? ''
           const locked = attribute?.locked ?? false
           const wide = value.length + (entry.swatches?.length ?? 0) * 2 > 10
+          const rerollThis = () => reroll(attribute?.key ?? '')
+          const lockThis = () => {
+            haptic.select()
+            toggleLock(attribute?.key ?? '', roll.key ?? key)
+          }
           return (
             <li
               key={attribute?.key}
@@ -156,28 +166,29 @@ export function Result() {
                 {entry.detail ? <span className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-faint">{entry.detail}</span> : null}
               </button>
               <span className="-mt-1 -mr-1 flex shrink-0 flex-col items-center">
-                <button
-                  type="button"
-                  aria-label={`${attribute?.label} 다시 뽑기`}
-                  // A locked value stays as it is — unlock it to re-roll.
-                  disabled={locked}
-                  onClick={() => reroll(attribute?.key ?? '')}
-                  className="press grid size-8 place-items-center rounded-full text-faint hover:bg-white/5 hover:text-ink disabled:opacity-25"
-                >
-                  <ShuffleIcon width={15} height={15} />
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={locked}
-                  aria-label={locked ? `${attribute?.label} 잠금 풀기` : `${attribute?.label} 잠그기 — 다시 흔들어도 유지`}
-                  onClick={() => {
-                    haptic.select()
-                    toggleLock(attribute?.key ?? '', roll.key ?? key)
-                  }}
-                  className="lock-toggle press grid size-8 place-items-center rounded-full text-faint hover:bg-white/5 hover:text-ink"
-                >
-                  <LockIcon locked={locked} width={15} height={15} />
-                </button>
+                <HapticTap className="haptic-inline" onTap={rerollThis} disabled={locked}>
+                  <button
+                    type="button"
+                    aria-label={`${attribute?.label} 다시 뽑기`}
+                    // A locked value stays as it is — unlock it to re-roll.
+                    disabled={locked}
+                    onClick={rerollThis}
+                    className="press grid size-8 place-items-center rounded-full text-faint hover:bg-white/5 hover:text-ink disabled:opacity-25"
+                  >
+                    <ShuffleIcon width={15} height={15} />
+                  </button>
+                </HapticTap>
+                <HapticTap className="haptic-inline" onTap={lockThis}>
+                  <button
+                    type="button"
+                    aria-pressed={locked}
+                    aria-label={locked ? `${attribute?.label} 잠금 풀기` : `${attribute?.label} 잠그기 — 다시 흔들어도 유지`}
+                    onClick={lockThis}
+                    className="lock-toggle press grid size-8 place-items-center rounded-full text-faint hover:bg-white/5 hover:text-ink"
+                  >
+                    <LockIcon locked={locked} width={15} height={15} />
+                  </button>
+                </HapticTap>
               </span>
             </li>
           )

@@ -35,6 +35,8 @@ export function Shell() {
       <Suspense fallback={null}>
         <StageCanvas />
       </Suspense>
+      {/* iOS 26 Safari leaves the status bar alone only above a solid fixed strip. */}
+      <div className="status-strip" aria-hidden="true" />
       <TopBar />
       <Suspense fallback={null}>
         <UpdateToast />

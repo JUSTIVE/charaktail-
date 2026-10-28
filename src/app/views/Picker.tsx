@@ -12,6 +12,7 @@ import { requestMotionAccess } from '../../stage/motion'
 import { patchStage } from '../../stage/store'
 import { attributeHead } from '../attributeHead'
 import { Aura, AuraTint } from '../Aura'
+import { HapticTap } from '../HapticTap'
 import { releaseTextInput } from '../releaseTextInput'
 import { haptic } from '../../stage/haptics'
 import { KebabIcon, LockIcon, ShakeIcon } from '../icons'
@@ -103,22 +104,29 @@ export function Picker() {
       <ul className="ms-seq picker-list grid grid-cols-2 gap-2 sm:grid-cols-3" style={seq(2)}>
         {attributes.map((attribute) => (
           <li key={attribute.key} className="ms-item relative">
-            <button
-              type="button"
-              aria-pressed={attribute.selected ?? false}
-              onClick={() => {
+            <HapticTap
+              onTap={() => {
                 haptic.select()
-                toggleAttribute(attribute.key ?? '')
+                toggleAttribute(attribute.key)
               }}
-              className="chip press-soft"
-              style={{ '--chip': attribute.color } as CSSProperties}
             >
-              <span className="flex items-center gap-2 pr-6">
-                <Dot color={attribute.color ?? '#888'} size={9} />
-                <span className="text-[14px] font-semibold">{attribute.label}</span>
-                {attribute.locked ? <LockIcon locked aria-label="잠김" width={12} height={12} className="-ml-0.5 shrink-0 opacity-70" /> : null}
-              </span>
-            </button>
+              <button
+                type="button"
+                aria-pressed={attribute.selected}
+                onClick={() => {
+                  haptic.select()
+                  toggleAttribute(attribute.key)
+                }}
+                className="chip press-soft"
+                style={{ '--chip': attribute.color } as CSSProperties}
+              >
+                <span className="flex items-center gap-2 pr-6">
+                  <Dot color={attribute.color} size={9} />
+                  <span className="text-[14px] font-semibold">{attribute.label}</span>
+                  {attribute.locked ? <LockIcon locked aria-label="잠김" width={12} height={12} className="-ml-0.5 shrink-0 opacity-70" /> : null}
+                </span>
+              </button>
+            </HapticTap>
             {/* A sibling, not a child: buttons cannot nest. */}
             <button
               type="button"
@@ -138,16 +146,18 @@ export function Picker() {
       <div className="ms-seq space-y-2" style={seq(3)}>
         {name.trim() === '' ? <p className="text-center text-[12.5px] text-muted">이름을 지어야 흔들 수 있어요.</p> : null}
         <Aura colors={auraColors} dim={!ready}>
-          <Button variant="primary" className="relative w-full overflow-hidden py-3 text-[15px]" disabled={!ready} onClick={() => void confirm()}>
-            <AuraTint colors={auraColors} />
-            <span className="relative flex items-center gap-1.5">
-              <ShakeIcon width={18} height={18} />
-              {/* The count rolls digit by digit as chips toggle, instead of snapping. */}
-              <span>
-                <NumberFlow value={count ?? 0} className="tnum" />개로 흔들기
+          <HapticTap onTap={() => void confirm()} disabled={!ready}>
+            <Button variant="primary" className="relative w-full overflow-hidden py-3 text-[15px]" disabled={!ready} onClick={() => void confirm()}>
+              <AuraTint colors={auraColors} />
+              <span className="relative flex items-center gap-1.5">
+                <ShakeIcon width={18} height={18} />
+                {/* The count rolls digit by digit as chips toggle, instead of snapping. */}
+                <span>
+                  <NumberFlow value={count ?? 0} className="tnum" />개로 흔들기
+                </span>
               </span>
-            </span>
-          </Button>
+            </Button>
+          </HapticTap>
         </Aura>
       </div>
     </div>

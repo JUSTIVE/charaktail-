@@ -8,6 +8,7 @@ import { router } from '../../router'
 import { haptic } from '../../stage/haptics'
 import { BackIcon, PlusIcon, TrashIcon } from '../icons'
 import { attributeHead } from '../attributeHead'
+import { HapticTap } from '../HapticTap'
 import { HairArt, hasHairArt } from '../hairArt'
 import { Button, Dot, seq, Swatches } from '../ui'
 import type { AddValueSheetQuery } from '../../__generated__/AddValueSheetQuery.graphql'
@@ -209,6 +210,10 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
             const own = all.filter((o) => (o.groups ?? []).includes(g.key ?? ''))
             const ownOn = own.filter((o) => o.enabled)
             const on = ownOn.length > 0
+            const switchGroup = () => {
+              haptic.select()
+              setOptionsEnabled(attributeId, own.map((o) => o.key ?? ''), !on)
+            }
             return (
               <li key={g.key} className="values-row" data-off={!on || undefined}>
                 <button
@@ -229,20 +234,19 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
                   <BackIcon width={16} height={16} className="shrink-0 rotate-180 text-faint" />
                 </button>
                 {own.length > 0 ? (
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={on}
-                    aria-label={`${g.label} 직업 ${on ? '모두 끄기' : '모두 켜기'}`}
-                    onClick={() => {
-                      haptic.select()
-                      setOptionsEnabled(attributeId, own.map((o) => o.key ?? ''), !on)
-                    }}
-                    className="switch"
-                    style={{ '--switch-on': attribute.color } as CSSProperties}
-                  >
-                    <span />
-                  </button>
+                  <HapticTap className="haptic-inline" onTap={switchGroup}>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={on}
+                      aria-label={`${g.label} 직업 ${on ? '모두 끄기' : '모두 켜기'}`}
+                      onClick={switchGroup}
+                      className="switch"
+                      style={{ '--switch-on': attribute.color } as CSSProperties}
+                    >
+                      <span />
+                    </button>
+                  </HapticTap>
                 ) : null}
               </li>
             )
@@ -259,6 +263,10 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
             // which may be emptied; the attribute then switches off instead.
             const last = !groupBy && !!option.enabled && inPart.filter((o) => o.enabled).length <= 1
             const heading = partLabels.length > 0 && (index === 0 || (options[index - 1]?.part ?? 0) !== part)
+            const switchOption = () => {
+              haptic.select()
+              toggleOption(attributeId, option.key ?? '')
+            }
             return (
               <Fragment key={option.key}>
                 {heading ? <li className="values-part eyebrow">{partLabels[part]}</li> : null}
@@ -275,22 +283,21 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
                     {option.hint ? <span className="tnum block truncate text-[11.5px] text-faint">{option.hint}</span> : null}
                   </span>
                   {option.custom ? <span className="values-badge">내 값</span> : null}
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={option.enabled ?? false}
-                    aria-label={`${option.label} ${option.enabled ? '끄기' : '켜기'}`}
-                    title={last ? '최소 하나는 켜져 있어야 해요' : undefined}
-                    disabled={last}
-                    onClick={() => {
-                      haptic.select()
-                      toggleOption(attributeId, option.key ?? '')
-                    }}
-                    className="switch"
-                    style={{ '--switch-on': attribute.color } as CSSProperties}
-                  >
-                    <span />
-                  </button>
+                  <HapticTap className="haptic-inline" onTap={switchOption} disabled={last}>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={option.enabled ?? false}
+                      aria-label={`${option.label} ${option.enabled ? '끄기' : '켜기'}`}
+                      title={last ? '최소 하나는 켜져 있어야 해요' : undefined}
+                      disabled={last}
+                      onClick={switchOption}
+                      className="switch"
+                      style={{ '--switch-on': attribute.color } as CSSProperties}
+                    >
+                      <span />
+                    </button>
+                  </HapticTap>
                   <button
                     type="button"
                     aria-label={`${option.label} 삭제`}
