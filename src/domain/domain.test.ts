@@ -151,6 +151,19 @@ describe('compose edits', () => {
   })
 })
 
+describe('locks', () => {
+  test('a locked value survives every new seed and the roll key, and its dependents follow it', () => {
+    const elf = { attributeId: 'species', valueIds: ['elf'], label: '엘프', detail: '기대 수명 700–1,000년', swatches: [] }
+    for (let i = 0; i < 100; i++) {
+      const request = { seed: `k${i}`, attributeIds: ['world', 'species', 'age'], nonces: {}, locked: { species: elf } }
+      const values = rollCharacter(catalog, decodeRollKey(encodeRollKey(request))!)
+      expect(values.find((v) => v.attributeId === 'species')).toEqual(elf)
+      // 나이 reads the locked species: an elf's span, not a human's.
+      expect(Number(values.find((v) => v.attributeId === 'age')!.label.replace(/[^0-9]/g, ''))).toBeGreaterThan(90)
+    }
+  })
+})
+
 describe('range edits', () => {
   test("the player's bounds win over every species case", () => {
     const edits = { age: { disabled: [], removed: [], added: [], min: 20, max: 25 } }

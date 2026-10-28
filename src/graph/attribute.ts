@@ -4,6 +4,7 @@ import { catalog } from '../domain/catalog/index'
 import { applyAttributeEdits, isEditable, isEdited, listOptions } from '../domain/edits'
 import type { Attribute as AttributeRecord } from '../domain/schema'
 import { editsCell } from '../state/edits'
+import { locksCell } from '../state/locks'
 import { selectionCell } from '../state/selection'
 
 /*
@@ -157,6 +158,15 @@ export function options(attribute: AttributeRecord) {
  */
 export function selected(attribute: AttributeRecord) {
   return selectionCell.live((ids) => ids.includes(attribute.id))
+}
+
+/**
+ * Kept as it is through re-rolls.
+ * @relayField Attribute.locked: Boolean
+ * @live
+ */
+export function locked(attribute: AttributeRecord) {
+  return locksCell.live((locks) => attribute.id in locks)
 }
 
 /**

@@ -12,7 +12,7 @@ import { patchStage } from '../../stage/store'
 import { Aura, AuraTint } from '../Aura'
 import { releaseTextInput } from '../releaseTextInput'
 import { haptic } from '../../stage/haptics'
-import { KebabIcon, ShakeIcon } from '../icons'
+import { KebabIcon, LockIcon, ShakeIcon } from '../icons'
 import { Button, Dot, seq } from '../ui'
 import type { PickerQuery } from '../../__generated__/PickerQuery.graphql'
 
@@ -37,6 +37,7 @@ export function Picker() {
           label
           color
           selected
+          locked
         }
       }
     `,
@@ -117,6 +118,7 @@ export function Picker() {
               <span className="flex items-center gap-2 pr-6">
                 <Dot color={attribute.color ?? '#888'} size={9} />
                 <span className="text-[14px] font-semibold">{attribute.label}</span>
+                {attribute.locked ? <LockIcon locked aria-label="잠김" width={12} height={12} className="-ml-0.5 shrink-0 opacity-70" /> : null}
               </span>
             </button>
             {/* A sibling, not a child: buttons cannot nest. */}

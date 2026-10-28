@@ -5,6 +5,7 @@ import { useLocalQuery } from '../graph/useLocalQuery'
 
 import { freshSeed } from '../domain/rng'
 import { encodeRollKey } from '../domain/roll'
+import { activeLocks } from '../state/locks'
 import { router } from '../router'
 import { editsCell } from '../state/edits'
 import { currentName } from '../state/name'
@@ -37,7 +38,14 @@ export function StageCanvas() {
   useEffect(() => {
     const stage = new Stage(canvasRef.current!)
     stage.onReveal = () => {
-      const key = encodeRollKey({ seed: freshSeed(), attributeIds: selectionCell.read(), name: currentName(), edits: editsCell.read() })
+      const key = encodeRollKey({
+        seed: freshSeed(),
+        attributeIds: selectionCell.read(),
+        name: currentName(),
+        edits: editsCell.read(),
+        // Locked attributes come through the shake unchanged.
+        locked: activeLocks(),
+      })
       void router.navigate({ to: '/result', search: { k: key }, replace: true })
     }
     stage.onReshake = () => {

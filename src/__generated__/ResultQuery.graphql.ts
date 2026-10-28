@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<e774557b7c2dbd16773493a6a7d43817>>
+ * @generated SignedSource<<34f78439ede000fded188c051af7803f>>
  * @lightSyntaxTransform
  */
 
@@ -27,6 +27,12 @@ import { label as attributeLabelResolverType } from "../graph/attribute";
 (attributeLabelResolverType satisfies (
   __relay_model_instance: Attribute____relay_model_instance$data['__relay_model_instance'],
 ) => string | null | undefined);
+import { locked as attributeLockedResolverType } from "../graph/attribute";
+// Type assertion validating that `attributeLockedResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeLockedResolverType satisfies (
+  __relay_model_instance: Attribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<boolean | null | undefined>);
 import { roll as queryRollResolverType } from "../graph/root";
 // Type assertion validating that `queryRollResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -122,6 +128,7 @@ export type ResultQuery$data = {
         readonly color: string | null | undefined;
         readonly key: string | null | undefined;
         readonly label: string | null | undefined;
+        readonly locked: boolean | null | undefined;
       } | null | undefined;
       readonly detail: string | null | undefined;
       readonly possible: ReadonlyArray<string> | null | undefined;
@@ -146,6 +153,7 @@ import {Attribute as attributeRelayModelInstanceResolver} from '../graph/attribu
 import {color as attributeColorResolver} from '../graph/attribute';
 import {key as attributeKeyResolver} from '../graph/attribute';
 import {label as attributeLabelResolver} from '../graph/attribute';
+import {locked as attributeLockedResolver} from '../graph/attribute';
 import {Roll as rollRelayModelInstanceResolver} from '../graph/roll';
 import {entries as rollEntriesResolver} from '../graph/roll';
 import {key as rollKeyResolver} from '../graph/roll';
@@ -434,6 +442,15 @@ return {
                           "name": "color",
                           "resolverModule": resolverDataInjector(Attribute____relay_model_instance_graphql, attributeColorResolver, '__relay_model_instance', true),
                           "path": "roll.entries.attribute.color"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v4/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "locked",
+                          "resolverModule": resolverDataInjector(Attribute____relay_model_instance_graphql, attributeLockedResolver, '__relay_model_instance', true),
+                          "path": "roll.entries.attribute.locked"
                         }
                       ],
                       "storageKey": null
@@ -656,6 +673,14 @@ return {
                           "storageKey": null,
                           "isOutputType": true
                         },
+                        {
+                          "name": "locked",
+                          "args": null,
+                          "fragment": (v9/*:: as any*/),
+                          "kind": "RelayResolver",
+                          "storageKey": null,
+                          "isOutputType": true
+                        },
                         (v5/*:: as any*/)
                       ],
                       "storageKey": null
@@ -765,6 +790,6 @@ return {
 };
 })();
 
-(node as any).hash = "cfaa6eb83a3d22ec83a845b8ba643108";
+(node as any).hash = "12e56df1d13848c133bc33354e5e4d08";
 
 export default node;

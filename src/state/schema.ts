@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { RolledValue } from '../domain/schema'
+
 /*
  * The app's state, as schemas — the same discipline as the catalogue. Every
  * persisted cell revives through one of these, so a stale or hand-edited
@@ -11,6 +13,10 @@ export { Edits } from '../domain/edits'
 
 export const Selection = z.array(z.string().min(1))
 export type Selection = z.infer<typeof Selection>
+
+/** Locked attributes: id → the exact value kept through re-rolls. */
+export const Locks = z.record(z.string().min(1), RolledValue)
+export type Locks = z.infer<typeof Locks>
 
 export const NAME_MAX = 20
 export const Name = z.string().max(NAME_MAX)

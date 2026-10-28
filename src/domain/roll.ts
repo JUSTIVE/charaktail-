@@ -1,7 +1,7 @@
 import { applyEdits, packEdits, unpackEdits, type Edits } from './edits'
 import { generators, possibilities, type RollContext } from './generators'
 import { createRng } from './rng'
-import type { Attribute, AttributeKind, AttributeOf, RolledValue } from './schema'
+import { RolledValue, type Attribute, type AttributeKind, type AttributeOf } from './schema'
 import type { Catalog } from './catalog'
 
 /**
@@ -16,6 +16,11 @@ export interface RollRequest {
   name?: string | undefined
   /** The player's value-list edits the roll was drawn from. */
   edits?: Edits | undefined
+  /**
+   * Locked attributes: kept exactly as they were, not rolled. Their value ids
+   * still feed the conditions of everything rolled after them.
+   */
+  locked?: Readonly<Record<string, RolledValue>> | undefined
 }
 
 function generate<K extends AttributeKind>(attribute: AttributeOf<K>, ctx: RollContext): RolledValue {
@@ -33,6 +38,11 @@ export function rollCharacter(base: Catalog, request: RollRequest): RolledValue[
 
   for (const attribute of catalog.rollOrder) {
     if (!wanted.has(attribute.id)) continue
+    const kept = request.locked?.[attribute.id]
+    if (kept) {
+      rolled.set(attribute.id, { ...kept, attributeId: attribute.id })
+      continue
+    }
     const nonce = request.nonces?.[attribute.id] ?? 0
     const rng = createRng(request.seed, attribute.id, nonce)
     rolled.set(attribute.id, generate(attribute as AttributeOf<Attribute['kind']>, { rng, rolled }))
@@ -61,21 +71,58 @@ export function explainRoll(base: Catalog, request: RollRequest): ExplainedValue
   })
 }
 
+const toBase64Url = (text: string) =>
+  btoa(String.fromCharCode(...new TextEncoder().encode(text))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+const fromBase64Url = (text: string) =>
+  new TextDecoder().decode(Uint8Array.from(atob(text.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)))
+
+/** Locked values, compact: id → [label, valueIds, detail, swatches]. Only the rolled attributes' go in. */
+type PackedLocks = Record<string, [string, string[], string?, string[]?]>
+
+function packLocks(locked: Readonly<Record<string, RolledValue>>, attributeIds: readonly string[]): string {
+  const packed: PackedLocks = {}
+  for (const id of attributeIds) {
+    const v = locked[id]
+    if (!v) continue
+    packed[id] = v.swatches.length ? [v.label, v.valueIds, v.detail ?? '', v.swatches] : v.detail ? [v.label, v.valueIds, v.detail] : [v.label, v.valueIds]
+  }
+  return Object.keys(packed).length ? toBase64Url(JSON.stringify(packed)) : ''
+}
+
+function unpackLocks(text: string): Record<string, RolledValue> | undefined {
+  if (!text) return undefined
+  try {
+    const packed = JSON.parse(fromBase64Url(text)) as PackedLocks
+    const out: Record<string, RolledValue> = {}
+    for (const [id, [label, valueIds, detail, swatches]] of Object.entries(packed)) {
+      const parsed = RolledValue.safeParse({ attributeId: id, label, valueIds, swatches: swatches ?? [], ...(detail ? { detail } : {}) })
+      if (parsed.success) out[id] = parsed.data
+    }
+    return out
+  } catch {
+    return undefined
+  }
+}
+
 /*
  * The roll key is the whole request in one string — it is the Relay record id
- * of a roll and the thing a URL carries. `seed~a.b.c~b:2~e:<edits>~이름`. The
- * edits segment is optional and marked `e:`; the name goes last, so a `~`
- * inside it cannot shift the other fields.
+ * of a roll and the thing a URL carries.
+ * `seed~a.b.c~b:2~e:<edits>~l:<locked>~이름`. The edits and locked segments
+ * are optional and marked; the name goes last, so a `~` inside it cannot
+ * shift the other fields.
  */
-export function encodeRollKey({ seed, attributeIds, nonces = {}, name, edits }: RollRequest): string {
+export function encodeRollKey({ seed, attributeIds, nonces = {}, name, edits, locked }: RollRequest): string {
   const bumps = Object.entries(nonces)
     .filter(([, n]) => n > 0)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([id, n]) => `${id}:${n}`)
   const parts = [seed, attributeIds.join('.'), bumps.join('.')]
   const packed = edits ? packEdits(edits, attributeIds) : ''
-  // An empty marker keeps a name that itself starts with "e:" unambiguous.
-  if (packed || name?.startsWith('e:')) parts.push(`e:${packed}`)
+  const locks = locked ? packLocks(locked, attributeIds) : ''
+  // Empty markers keep a name that itself starts with "e:" or "l:" unambiguous.
+  const ambiguous = !!name && (name.startsWith('e:') || name.startsWith('l:'))
+  if (packed || ambiguous) parts.push(`e:${packed}`)
+  if (locks || ambiguous) parts.push(`l:${locks}`)
   if (name) parts.push(name)
   return parts.join('~')
 }
@@ -84,11 +131,12 @@ export function decodeRollKey(key: string): RollRequest | null {
   const [seed, ids, bumps = '', ...rest] = key.split('~')
   if (!seed || ids === undefined) return null
   const edits = rest[0]?.startsWith('e:') ? unpackEdits(rest.shift()!.slice(2)) : undefined
+  const locked = rest[0]?.startsWith('l:') ? unpackLocks(rest.shift()!.slice(2)) : undefined
   const name = rest.join('~')
   const nonces: Record<string, number> = {}
   for (const bump of bumps.split('.').filter(Boolean)) {
     const [id, n] = bump.split(':')
     if (id && Number(n) > 0) nonces[id] = Number(n)
   }
-  return { seed, attributeIds: ids.split('.').filter(Boolean), nonces, ...(name ? { name } : {}), ...(edits ? { edits } : {}) }
+  return { seed, attributeIds: ids.split('.').filter(Boolean), nonces, ...(name ? { name } : {}), ...(edits ? { edits } : {}), ...(locked && Object.keys(locked).length ? { locked } : {}) }
 }

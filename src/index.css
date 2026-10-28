@@ -404,6 +404,12 @@ li:nth-child(4n) > .chip::before { animation-direction: alternate-reverse; }
   background: linear-gradient(135deg, color-mix(in oklab, var(--row, #fff) 16%, transparent), oklch(1 0 0 / 0.025) 70%);
   border: 1px solid oklch(1 0 0 / 0.06);
 }
+.result-card[data-locked] {
+  border-color: color-mix(in oklab, var(--row, #fff) 55%, transparent);
+}
+.result-card[data-locked] .lock-toggle {
+  color: var(--row);
+}
 .result-card[data-wide] {
   grid-column: span 2;
 }

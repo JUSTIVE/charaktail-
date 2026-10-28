@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<d903a1e4b32d703f9c3b53d27cb902f2>>
+ * @generated SignedSource<<4241ed60cdc26c149de047f277b96738>>
  * @lightSyntaxTransform
  */
 
@@ -27,6 +27,12 @@ import { label as attributeLabelResolverType } from "../graph/attribute";
 (attributeLabelResolverType satisfies (
   __relay_model_instance: Attribute____relay_model_instance$data['__relay_model_instance'],
 ) => string | null | undefined);
+import { locked as attributeLockedResolverType } from "../graph/attribute";
+// Type assertion validating that `attributeLockedResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeLockedResolverType satisfies (
+  __relay_model_instance: Attribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<boolean | null | undefined>);
 import { selected as attributeSelectedResolverType } from "../graph/attribute";
 // Type assertion validating that `attributeSelectedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -81,6 +87,7 @@ export type PickerQuery$data = {
     readonly color: string | null | undefined;
     readonly key: string | null | undefined;
     readonly label: string | null | undefined;
+    readonly locked: boolean | null | undefined;
     readonly selected: boolean | null | undefined;
   }> | null | undefined;
   readonly draft: {
@@ -101,6 +108,7 @@ import {Attribute as attributeRelayModelInstanceResolver} from '../graph/attribu
 import {color as attributeColorResolver} from '../graph/attribute';
 import {key as attributeKeyResolver} from '../graph/attribute';
 import {label as attributeLabelResolver} from '../graph/attribute';
+import {locked as attributeLockedResolver} from '../graph/attribute';
 import {selected as attributeSelectedResolver} from '../graph/attribute';
 import {Draft as draftRelayModelInstanceResolver} from '../graph/draft';
 import {canShake as draftCanShakeResolver} from '../graph/draft';
@@ -380,6 +388,15 @@ return {
               "name": "selected",
               "resolverModule": resolverDataInjector(Attribute____relay_model_instance_graphql, attributeSelectedResolver, '__relay_model_instance', true),
               "path": "attributes.selected"
+            },
+            {
+              "alias": null,
+              "args": null,
+              "fragment": (v1/*:: as any*/),
+              "kind": "RelayLiveResolver",
+              "name": "locked",
+              "resolverModule": resolverDataInjector(Attribute____relay_model_instance_graphql, attributeLockedResolver, '__relay_model_instance', true),
+              "path": "attributes.locked"
             }
           ],
           "storageKey": null
@@ -542,6 +559,14 @@ return {
               "storageKey": null,
               "isOutputType": true
             },
+            {
+              "name": "locked",
+              "args": null,
+              "fragment": (v5/*:: as any*/),
+              "kind": "RelayResolver",
+              "storageKey": null,
+              "isOutputType": true
+            },
             (v2/*:: as any*/)
           ],
           "storageKey": null
@@ -560,6 +585,6 @@ return {
 };
 })();
 
-(node as any).hash = "652294e0daa8c26acf52d5914322921f";
+(node as any).hash = "526de1247e9a2feefc41e577bea2eb09";
 
 export default node;

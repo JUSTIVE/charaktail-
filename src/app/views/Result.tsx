@@ -7,9 +7,10 @@ import { useSheetStackActions } from 'morphing-sheet/react'
 
 import { decodeRollKey, encodeRollKey } from '../../domain/roll'
 import { router } from '../../router'
+import { toggleLock } from '../../state/locks'
 import { toggleSaved } from '../../state/saved'
 import { haptic } from '../../stage/haptics'
-import { ShareIcon, ShakeIcon, ShuffleIcon, StarIcon } from '../icons'
+import { LockIcon, ShareIcon, ShakeIcon, ShuffleIcon, StarIcon } from '../icons'
 import { Button, Dot, seq, Swatches } from '../ui'
 import { PoolSheet } from './PoolSheet'
 import type { ResultQuery } from '../../__generated__/ResultQuery.graphql'
@@ -36,6 +37,7 @@ export function Result() {
               key
               label
               color
+              locked
             }
             value
             detail
@@ -110,11 +112,13 @@ export function Result() {
         {(roll.entries ?? []).map((entry, index) => {
           const attribute = entry.attribute
           const value = entry.value ?? ''
+          const locked = attribute?.locked ?? false
           const wide = value.length + (entry.swatches?.length ?? 0) * 2 > 10
           return (
             <li
               key={attribute?.key}
               data-wide={wide || undefined}
+              data-locked={locked || undefined}
               className="ms-seq result-card"
               style={{ ...seq(index + 1), '--row': attribute?.color } as CSSProperties}
             >
@@ -150,14 +154,30 @@ export function Result() {
                 </span>
                 {entry.detail ? <span className="mt-0.5 block truncate text-[11px] text-faint">{entry.detail}</span> : null}
               </button>
-              <button
-                type="button"
-                aria-label={`${attribute?.label} 다시 뽑기`}
-                onClick={() => reroll(attribute?.key ?? '')}
-                className="press -mt-1 -mr-1 grid size-8 shrink-0 place-items-center rounded-full text-faint hover:bg-white/5 hover:text-ink"
-              >
-                <ShuffleIcon width={15} height={15} />
-              </button>
+              <span className="-mt-1 -mr-1 flex shrink-0 flex-col items-center">
+                <button
+                  type="button"
+                  aria-label={`${attribute?.label} 다시 뽑기`}
+                  // A locked value stays as it is — unlock it to re-roll.
+                  disabled={locked}
+                  onClick={() => reroll(attribute?.key ?? '')}
+                  className="press grid size-8 place-items-center rounded-full text-faint hover:bg-white/5 hover:text-ink disabled:opacity-25"
+                >
+                  <ShuffleIcon width={15} height={15} />
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={locked}
+                  aria-label={locked ? `${attribute?.label} 잠금 풀기` : `${attribute?.label} 잠그기 — 다시 흔들어도 유지`}
+                  onClick={() => {
+                    haptic.select()
+                    toggleLock(attribute?.key ?? '', roll.key ?? key)
+                  }}
+                  className="lock-toggle press grid size-8 place-items-center rounded-full text-faint hover:bg-white/5 hover:text-ink"
+                >
+                  <LockIcon locked={locked} width={15} height={15} />
+                </button>
+              </span>
             </li>
           )
         })}

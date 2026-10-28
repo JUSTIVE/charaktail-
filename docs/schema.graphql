@@ -77,6 +77,10 @@ type Attribute {
   options: [AttributeOption!] @live
   selected: Boolean @live
   """
+  Kept as it is through re-rolls.
+  """
+  locked: Boolean @live
+  """
   Range attributes: the lower bound rolls draw from, after the player's edits.
   """
   rangeMin: Float @live

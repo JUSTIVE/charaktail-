@@ -29,3 +29,10 @@ export const TrashIcon = (p: SVGProps<SVGSVGElement>) => (
 export const PlusIcon = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base} {...p}><path d="M12 5v14" /><path d="M5 12h14" /></svg>
 )
+export const LockIcon = ({ locked, ...p }: SVGProps<SVGSVGElement> & { locked?: boolean }) => (
+  <svg {...base} {...p}>
+    <rect x="5" y="11" width="14" height="10" rx="2.5" fill={locked ? 'currentColor' : 'none'} />
+    {/* The shackle swings open when unlocked. */}
+    <path d={locked ? 'M8 11V8a4 4 0 0 1 8 0v3' : 'M8 11V8a4 4 0 0 1 7.6-1.8'} />
+  </svg>
+)
