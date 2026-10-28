@@ -360,12 +360,20 @@ li:nth-child(4n) > .chip::before { animation-direction: alternate-reverse; }
  * actions take what they need, the card grid takes the rest and scrolls.
  * Nothing is ever pushed below the fold on a short phone.
  */
+/*
+ * The result takes the whole screen (#92): its sheet's ceiling becomes
+ * everything below the top bar, and the result fills it, so the panel morphs
+ * from the shake HUD up to full height. The top bar stays reachable above it.
+ */
+.ms-slot:has(.result-root) {
+  --ms-max-block: calc(100dvh - max(12px, env(safe-area-inset-top)) - 46px - max(var(--ms-inset), env(safe-area-inset-bottom)));
+}
 .result-root {
   display: flex;
   flex-direction: column;
   gap: 12px;
   /* The slot's 1px border on each side is inside its ceiling too. */
-  max-height: calc(var(--ms-max-block) - var(--ms-pad-block) * 2 - 2px - env(safe-area-inset-bottom));
+  height: calc(var(--ms-max-block) - var(--ms-pad-block) * 2 - 2px - env(safe-area-inset-bottom));
 }
 /* The result scrolls inside its card grid only — never the sheet around it,
    which would otherwise show a second scrollbar while cards arrive. */
@@ -380,6 +388,8 @@ li:nth-child(4n) > .chip::before { animation-direction: alternate-reverse; }
   grid-template-columns: repeat(2, minmax(0, 1fr));
   /* A wide card never leaves a hole beside a short one. */
   grid-auto-flow: row dense;
+  /* Full-height sheet: cards keep their own height and stack from the top. */
+  align-content: start;
   gap: 6px;
   margin-inline: -4px;
   padding: 2px 4px;
