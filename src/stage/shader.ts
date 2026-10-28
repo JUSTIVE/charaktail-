@@ -31,6 +31,9 @@
  *            every shake
  */
 
+/** Slots in the flow's palette: the selection's colours repeat to fill them, so a new selection never re-indexes the field. */
+export const FLOW_SLOTS = 8
+
 export const vertexShader = /* glsl */ `
   varying vec2 vUv;
   void main() {
@@ -43,6 +46,7 @@ export function fragmentShader(count: number): string {
   return /* glsl */ `
   precision highp float;
   #define N ${Math.max(count, 1)}
+  #define FLOW_SLOTS ${FLOW_SLOTS}
   #define DROP_OPACITY 0.62
   #define RIPPLE_MODES 14
 
@@ -61,6 +65,7 @@ export function fragmentShader(count: number): string {
   uniform float uGlow;
   uniform float uFlash;
   uniform float uFlow;
+  uniform vec3 uFlowColors[FLOW_SLOTS]; // the flow's own palette — outlives the balls it came from
   uniform sampler2D uShakaTex; // "샤카" twice, one word per half
   uniform float uShakaAspect;  // texture width / height
   uniform float uShaka;
@@ -97,10 +102,10 @@ export function fragmentShader(count: number): string {
     float scale = 1.0 / (uRes.y * 0.32);
     float which = fbm(p * scale + vec2(uTime * 0.045, -uTime * 0.03)) * 0.9 + 0.5;
     float much = fbm(p * scale * 1.3 + vec2(-uTime * 0.035, uTime * 0.05) + 7.3) * 0.9 + 0.5;
-    float idx = fract(which * 1.6) * float(N);
+    float idx = fract(which * 1.6) * float(FLOW_SLOTS);
     int i0 = int(floor(idx));
-    int i1 = i0 + 1 >= N ? 0 : i0 + 1;
-    vec3 col = mix(uColors[i0], uColors[i1], smoothstep(0.0, 1.0, fract(idx)));
+    int i1 = i0 + 1 >= FLOW_SLOTS ? 0 : i0 + 1;
+    vec3 col = mix(uFlowColors[i0], uFlowColors[i1], smoothstep(0.0, 1.0, fract(idx)));
     float feather = uRes.y * 0.06;
     float zone = smoothstep(0.0, feather, p.x - uArea.x) * smoothstep(0.0, feather, uArea.z - p.x)
                * smoothstep(0.0, feather, p.y - uArea.y) * smoothstep(0.0, feather, uArea.w - p.y);

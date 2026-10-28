@@ -17,7 +17,7 @@ import { inkOn } from '../domain/palette'
 import { haptic } from './haptics'
 import { listenMotion } from './motion'
 import { World } from './physics'
-import { fragmentShader, vertexShader } from './shader'
+import { FLOW_SLOTS, fragmentShader, vertexShader } from './shader'
 import { patchStage, stageCell, type StageMode } from './store'
 
 export interface BallSpec {
@@ -80,6 +80,7 @@ export class Stage {
   private mode: StageMode = 'idle'
   private modeAt = 0
   private charge = 0
+  private readonly flowColors = Array.from({ length: FLOW_SLOTS }, () => new Vector3())
   private looks = { text: 1, merge: 0, mix: 0, glow: 0, flash: 0, shaka: 0, flow: 0 }
   private shakaTex: CanvasTexture | null = null
   /** Recent shake strength, 0–1; jolts the 샤카 text. */
@@ -500,8 +501,14 @@ export class Stage {
     this.looks.flash = approach(this.looks.flash, 0, 2.6, real)
     // The colour flow behind the drops: on while there are drops, easing out
     // as they merge, gone once the result clears them.
+    // Fades in over a moment, out slowly (≈3s) — it lingers like a stain.
     const flowTarget = live > 0 && (this.mode === 'idle' || this.mode === 'armed') ? 1 : this.mode === 'mixing' ? 0.6 : 0
-    this.looks.flow = approach(this.looks.flow, flowTarget, 1.5, real)
+    this.looks.flow = approach(this.looks.flow, flowTarget, flowTarget > this.looks.flow ? 1.5 : 0.45, real)
+    // Its palette glides toward the selection's colours and keeps the last
+    // ones once the balls are gone, so the fade-out has something to fade.
+    if (this.colors.length) {
+      this.flowColors.forEach((slot, i) => slot.lerp(this.colors[i % this.colors.length]!, 1 - Math.exp(-3 * real)))
+    }
     // The chant snaps in and leaves as the glow takes over.
     this.looks.shaka = approach(this.looks.shaka, looks.shaka, looks.shaka > this.looks.shaka ? 12 : 7, real)
     // While mixing the chant keeps its own beat even without a hand on the phone.
@@ -550,6 +557,7 @@ export class Stage {
     u.uText.value = this.looks.text
     u.uMerge.value = this.looks.merge
     u.uFlow.value = this.looks.flow
+    u.uFlowColors.value.forEach((slot, i) => slot.copy(this.flowColors[i]!))
     u.uShaka.value = this.shakaTex ? this.looks.shaka : 0
     u.uKick.value = this.kick
     u.uShakaTex.value = this.shakaTex
@@ -615,6 +623,7 @@ function createUniforms(n: number, atlas: CanvasTexture | null, shakaTex: Canvas
     uText: { value: 1 },
     uMerge: { value: 0 },
     uFlow: { value: 0 },
+    uFlowColors: { value: Array.from({ length: FLOW_SLOTS }, () => new Vector3()) },
     uShaka: { value: 0 },
     uKick: { value: 0 },
     uShakaTex: { value: shakaTex },
