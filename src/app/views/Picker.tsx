@@ -1,3 +1,4 @@
+import NumberFlow from '@number-flow/react'
 import { useState, type CSSProperties } from 'react'
 import { graphql } from 'relay-runtime'
 
@@ -141,7 +142,10 @@ export function Picker() {
             <AuraTint colors={auraColors} />
             <span className="relative flex items-center gap-1.5">
               <ShakeIcon width={18} height={18} />
-              {count}개로 흔들기
+              {/* The count rolls digit by digit as chips toggle, instead of snapping. */}
+              <span>
+                <NumberFlow value={count ?? 0} className="tnum" />개로 흔들기
+              </span>
             </span>
           </Button>
         </Aura>
