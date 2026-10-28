@@ -16,7 +16,7 @@ import { StageCanvas, stageHandle } from './StageCanvas'
 import { Picker } from './views/Picker'
 import { Result } from './views/Result'
 import { Saved } from './views/Saved'
-import { ValuesSheet } from './views/ValuesSheet'
+import { AddSpeciesSheet, ValuesSheet } from './views/ValuesSheet'
 import { ShakeHud } from './views/ShakeHud'
 import type { ShellSavedCountQuery } from '../__generated__/ShellSavedCountQuery.graphql'
 
@@ -45,7 +45,13 @@ export function Shell() {
         closeOnScrimClick={false}
         lockScrollWhileOpen={false}
         trapFocusWhileOpen={false}
-        initialViews={[viewFor(readScene(location.pathname), new URLSearchParams(location.search).get('values') ?? undefined)]}
+        initialViews={[
+          viewFor(
+            readScene(location.pathname),
+            new URLSearchParams(location.search).get('values') ?? undefined,
+            new URLSearchParams(location.search).get('add') === 'true',
+          ),
+        ]}
       >
         {null}
       </SheetStackProvider>
@@ -74,12 +80,13 @@ const STAGE_MODE: Record<Scene, StageMode> = { pick: 'idle', shake: 'armed', res
  * one. An attribute's value list is a view of its own on the same panel — the
  * picker morphs into it and back, and the URL (`?values=`) owns which.
  */
-function viewFor(scene: Scene, values?: string): SheetDescriptor {
+function viewFor(scene: Scene, values?: string, add?: boolean): SheetDescriptor {
   const body = (content: ReactNode) => (
     <Suspense fallback={<div className="h-40" data-stage-floor />}>{content}</Suspense>
   )
   switch (scene) {
     case 'pick':
+      if (values === 'species' && add) return { id: 'add-species', width: '520px', content: body(<AddSpeciesSheet />) }
       return values
         ? { id: `values-${values}`, width: '520px', content: body(<ValuesSheet attributeId={values} />) }
         : { id: 'pick', width: '560px', content: body(<Picker />) }
@@ -96,16 +103,17 @@ function SceneSync() {
   const panel = useSheetStackActions('panel')
   const dialogs = useSheetStackActions('dialogs')
   const scene = useScene()
-  const search = useRouterState({ select: (s) => s.location.search as { a?: string; n?: string; k?: string; values?: string } })
+  const search = useRouterState({ select: (s) => s.location.search as { a?: string; n?: string; k?: string; values?: string; add?: boolean } })
   const values = scene === 'pick' ? search.values : undefined
+  const add = scene === 'pick' && search.add === true
 
   useEffect(() => {
     // Screens that listen for shakes must not leave Safari an undo to offer —
     // also when reached by a link or the back button, not only by the CTA.
     if (scene === 'shake' || scene === 'result') releaseTextInput()
-    void panel.replace(viewFor(scene, values))
+    void panel.replace(viewFor(scene, values, add))
     if (dialogs.getDepth() > 0) void dialogs.reset()
-  }, [panel, dialogs, scene, values])
+  }, [panel, dialogs, scene, values, add])
 
   // The URL carries the attribute set on /shake and /result; the stage's balls
   // come from the selection, so the selection follows the URL there.

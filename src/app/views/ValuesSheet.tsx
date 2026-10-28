@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import { graphql } from 'relay-runtime'
-import { useSheetStack, useSheetStackActions } from 'morphing-sheet/react'
 
 import { useLocalQuery } from '../../graph/useLocalQuery'
 
@@ -294,19 +293,18 @@ function RangeEditor({
 }
 
 /**
- * 종족 추가: a full-width button the add dialog grows out of — the dialogs
- * region morphs it from the button and folds it back on close. A species
- * needs a name and its expected lifespan, more than an inline row can hold.
+ * 종족 추가: the whole panel morphs from the species list into the add view
+ * and back (`?values=species&add=true`) — a species needs a name and its
+ * expected lifespan, more than an inline row can hold.
  */
 function AddSpecies() {
-  const dialogs = useSheetStackActions('dialogs')
   return (
     <div className="ms-seq" style={seq(2)}>
       <Button
         className="w-full py-3"
-        onClick={(event) => {
+        onClick={() => {
           haptic.select()
-          void dialogs.push({ id: 'add-species', title: '새 종족', width: '440px', content: <AddSpeciesSheet /> }, { from: event.currentTarget })
+          void router.navigate({ to: '/', search: { values: 'species', add: true } })
         }}
       >
         <PlusIcon width={16} height={16} />
@@ -316,8 +314,9 @@ function AddSpecies() {
   )
 }
 
-function AddSpeciesSheet() {
-  const sheet = useSheetStack()
+const backToSpecies = () => void router.navigate({ to: '/', search: { values: 'species' } })
+
+export function AddSpeciesSheet() {
   const [name, setName] = useState('')
   const [low, setLow] = useState('70')
   const [high, setHigh] = useState('100')
@@ -329,7 +328,7 @@ function AddSpeciesSheet() {
     setError(problem)
     if (problem) return
     haptic.select()
-    void sheet.pop()
+    backToSpecies()
   }
   const years = (label: string, value: string, set: (v: string) => void) => (
     <label className="name-field min-w-0 flex-1 gap-2 px-3">
@@ -350,7 +349,16 @@ function AddSpeciesSheet() {
   )
 
   return (
-    <form className="space-y-3" onSubmit={submit}>
+    <form data-stage-floor className="space-y-3" onSubmit={submit}>
+      <div className="ms-seq flex items-center gap-2" style={seq(0)}>
+        <button type="button" onClick={backToSpecies} aria-label="종족 목록으로" className="press -ml-2 grid size-9 shrink-0 place-items-center rounded-full text-muted hover:text-ink">
+          <BackIcon />
+        </button>
+        <div className="min-w-0 flex-1">
+          <h2 className="display">새 종족</h2>
+          <p className="text-[12.5px] text-muted">이름과 기대 수명을 정해 주세요</p>
+        </div>
+      </div>
       <input
         value={name}
         onChange={(event) => {
@@ -365,9 +373,9 @@ function AddSpeciesSheet() {
         spellCheck={false}
         enterKeyHint="next"
         className="ms-seq name-field w-full py-2.5 text-[16px] outline-none placeholder:text-faint"
-        style={seq(0)}
+        style={seq(1)}
       />
-      <div className="ms-seq" style={seq(1)}>
+      <div className="ms-seq" style={seq(2)}>
         <p className="eyebrow mb-1.5">기대 수명</p>
         <div className="flex items-center gap-2">
           {years('최소', low, setLow)}
@@ -376,11 +384,11 @@ function AddSpeciesSheet() {
         </div>
         {error ? <p className="mt-2 text-[12px] text-[#ff977d]">{error}</p> : <p className="mt-2 text-[12px] text-faint">나이는 이 수명 안에서 뽑혀요.</p>}
       </div>
-      <div className="ms-seq flex gap-2" style={seq(2)}>
-        <Button variant="ghost" className="flex-1" onClick={() => void sheet.pop()}>
+      <div className="ms-seq flex gap-2" style={seq(3)}>
+        <Button variant="ghost" className="flex-1 py-3" onClick={backToSpecies}>
           취소
         </Button>
-        <Button type="submit" variant="primary" className="flex-1" disabled={name.trim() === '' || low === '' || high === ''}>
+        <Button type="submit" variant="primary" className="flex-1 py-3" disabled={name.trim() === '' || low === '' || high === ''}>
           추가
         </Button>
       </div>
