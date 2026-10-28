@@ -68,6 +68,9 @@ export class Stage {
   private camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1)
   private mesh: Mesh<PlaneGeometry, ShaderMaterial>
   private atlas: CanvasTexture | null = null
+  /** One canvas for every atlas — iOS paints new canvases blank past its canvas-memory cap. */
+  private readonly atlasCanvas = document.createElement('canvas')
+  private atlasSpecs: readonly BallSpec[] = []
   private u!: StageUniforms
   private world = new World()
   private specs = new Map<string, BallSpec>()
@@ -148,10 +151,20 @@ export class Stage {
       }),
     )
     this.bindPointer()
-    // The chant is drawn once the web font is in, so it never falls back.
-    void document.fonts.ready.then(() => {
+    // The chant is drawn once its glyphs are in, so it never falls back.
+    void document.fonts.load(SHAKA_FONT, '샤카').finally(() => {
       this.shakaTex = drawShaka()
     })
+    // The web font is a dynamic subset: glyphs arrive in chunks, on demand.
+    // Text drawn before its chunk lands is blank (Safari) or a fallback, and
+    // a canvas never redraws itself — so every landing repaints the labels.
+    const onFonts = () => this.redrawLabels()
+    document.fonts.addEventListener('loadingdone', onFonts)
+    this.disposers.push(() => document.fonts.removeEventListener('loadingdone', onFonts))
+    // A lost GPU context drops every texture; upload them again on return.
+    const onRestored = () => this.redrawLabels()
+    canvas.addEventListener('webglcontextrestored', onRestored)
+    this.disposers.push(() => canvas.removeEventListener('webglcontextrestored', onRestored))
 
     const onVisibility = () => {
       if (document.hidden) cancelAnimationFrame(this.frame)
@@ -547,12 +560,25 @@ export class Stage {
     this.renderer.render(this.scene, this.camera)
   }
 
+  /** Same balls, fresh ink: repaint the label atlas and the chant in place. */
+  private redrawLabels(): void {
+    if (this.atlas && this.atlasSpecs.length) {
+      drawAtlas(this.atlasCanvas, this.atlasSpecs, this.atlas)
+    }
+    if (this.shakaTex) {
+      drawShaka(this.shakaTex)
+    }
+  }
+
   /** New ball set → new atlas and a material compiled for that count. */
   private rebuild(): void {
     const bodies = this.world.bodies
     const specs = bodies.map((b) => this.specs.get(b.id)!)
     this.atlas?.dispose()
-    this.atlas = drawAtlas(specs)
+    this.atlas = drawAtlas(this.atlasCanvas, specs)
+    this.atlasSpecs = specs
+    // Ask for exactly these glyphs; draw again once they are in.
+    void document.fonts.load(labelFont(64), specs.map((s) => s.label).join('')).then(() => this.redrawLabels())
     const old = this.mesh.material
     this.mesh.material = this.material(specs.length)
     old.dispose()
@@ -601,32 +627,43 @@ function createUniforms(n: number, atlas: CanvasTexture | null, shakaTex: Canvas
 }
 type StageUniforms = ReturnType<typeof createUniforms>
 
-/** One row per label; the ink follows the fill, so amber and lime get dark type. */
-function drawAtlas(specs: readonly BallSpec[]): CanvasTexture {
+const labelFont = (px: number) => `700 ${px}px "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif`
+
+/**
+ * One row per label; the ink follows the fill, so amber and lime get dark
+ * type. Draws into `canvas`; with `into`, refreshes that texture in place
+ * (same size) instead of making a new one.
+ */
+function drawAtlas(canvas: HTMLCanvasElement, specs: readonly BallSpec[], into?: CanvasTexture): CanvasTexture {
   const labels = specs.map((s) => s.label)
-  const canvas = document.createElement('canvas')
   const rows = Math.max(labels.length, 1)
+  // Setting the size also clears the canvas.
   canvas.width = ATLAS_CELL
   canvas.height = ATLAS_CELL * rows
-  const ctx = canvas.getContext('2d')!
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  labels.forEach((label, i) => {
-    let size = 64
-    const font = (px: number) => `700 ${px}px "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif`
-    ctx.font = font(size)
-    const width = ctx.measureText(label).width
-    if (width > 188) size = Math.max(30, Math.floor((size * 188) / width))
-    ctx.font = font(size)
-    const cy = i * ATLAS_CELL + ATLAS_CELL / 2
-    const ink = inkOn(specs[i]!.color)
-    const dark = ink !== '#ffffff'
-    ctx.shadowColor = dark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(18, 17, 19, 0.55)'
-    ctx.shadowBlur = dark ? 6 : 10
-    ctx.shadowOffsetY = dark ? 1 : 3
-    ctx.fillStyle = ink
-    ctx.fillText(label, ATLAS_CELL / 2, cy)
-  })
+  const ctx = canvas.getContext('2d')
+  if (ctx) {
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    labels.forEach((label, i) => {
+      let size = 64
+      ctx.font = labelFont(size)
+      const width = ctx.measureText(label).width
+      if (width > 188) size = Math.max(30, Math.floor((size * 188) / width))
+      ctx.font = labelFont(size)
+      const cy = i * ATLAS_CELL + ATLAS_CELL / 2
+      const ink = inkOn(specs[i]!.color)
+      const dark = ink !== '#ffffff'
+      ctx.shadowColor = dark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(18, 17, 19, 0.55)'
+      ctx.shadowBlur = dark ? 6 : 10
+      ctx.shadowOffsetY = dark ? 1 : 3
+      ctx.fillStyle = ink
+      ctx.fillText(label, ATLAS_CELL / 2, cy)
+    })
+  }
+  if (into) {
+    into.needsUpdate = true
+    return into
+  }
   const texture = new CanvasTexture(canvas)
   texture.colorSpace = NoColorSpace
   texture.generateMipmaps = false
@@ -635,19 +672,27 @@ function drawAtlas(specs: readonly BallSpec[]): CanvasTexture {
   return texture
 }
 
-/** "샤카 샤카": one word per half, so the shader can make them hop in turn. */
-function drawShaka(): CanvasTexture {
-  const canvas = document.createElement('canvas')
+const SHAKA_FONT = `900 190px "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif`
+
+/** "샤카 샤카": one word per half, so the shader can make them hop in turn. With `into`, redraws it in place. */
+function drawShaka(into?: CanvasTexture): CanvasTexture {
+  const canvas = (into?.image as HTMLCanvasElement | undefined) ?? document.createElement('canvas')
   canvas.width = SHAKA_W
   canvas.height = SHAKA_H
-  const ctx = canvas.getContext('2d')!
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.font = `900 190px "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif`
-  ctx.fillStyle = '#ffffff'
-  // Words close together: one chant, not two labels.
-  ctx.fillText('샤카', SHAKA_W * 0.3, SHAKA_H / 2)
-  ctx.fillText('샤카', SHAKA_W * 0.7, SHAKA_H / 2)
+  const ctx = canvas.getContext('2d')
+  if (ctx) {
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.font = SHAKA_FONT
+    ctx.fillStyle = '#ffffff'
+    // Words close together: one chant, not two labels.
+    ctx.fillText('샤카', SHAKA_W * 0.3, SHAKA_H / 2)
+    ctx.fillText('샤카', SHAKA_W * 0.7, SHAKA_H / 2)
+  }
+  if (into) {
+    into.needsUpdate = true
+    return into
+  }
   const texture = new CanvasTexture(canvas)
   // The shader samples this in screen order (v grows downward), unlike the
   // label atlas, which keeps three's default bottom-up flip.
