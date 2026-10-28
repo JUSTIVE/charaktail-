@@ -158,6 +158,31 @@ export interface SheetStackProviderProps {
  * always three beats: content out, frame morphs under a view transition,
  * content in. See docs/spec.md §5.
  */
+/*
+ * A trigger that became a sheet steps off stage while the sheet is up. It is
+ * hidden by opacity, not visibility: iOS Safari does not always repaint text
+ * that returns from `visibility: hidden` inside a scrolling container — the
+ * button came back as an empty box. The return also forces one fresh paint.
+ */
+function hideTrigger(trigger: HTMLElement): void {
+  // Instant both ways: a fading trigger would be captured half-visible.
+  trigger.style.transition = 'none'
+  trigger.style.opacity = '0'
+  trigger.style.pointerEvents = 'none'
+}
+
+function showTrigger(trigger: HTMLElement): void {
+  trigger.style.removeProperty('opacity')
+  trigger.style.removeProperty('pointer-events')
+  trigger.style.setProperty('will-change', 'opacity')
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      trigger.style.removeProperty('will-change')
+      trigger.style.removeProperty('transition')
+    }),
+  )
+}
+
 export function SheetStackProvider({
   children,
   id = 'sheets',
@@ -248,7 +273,7 @@ export function SheetStackProvider({
   const restoreTriggersRef = useRef<() => void>(() => {})
   const restoreTriggers = useCallback((): void => {
     for (const trigger of triggersRef.current.values()) {
-      trigger.style.removeProperty('visibility')
+      showTrigger(trigger)
     }
     triggersRef.current.clear()
   }, [])
@@ -335,7 +360,7 @@ export function SheetStackProvider({
       if (!arrived || vtDegraded()) {
         if (arrived) {
           triggersRef.current.set(arrived.id, trigger)
-          trigger.style.visibility = 'hidden'
+          hideTrigger(trigger)
         }
         await runLayerEnter(next)
         return
@@ -357,7 +382,7 @@ export function SheetStackProvider({
           setMorphName(trigger, null)
           setMorphClass(trigger, null)
           // The button became the sheet; it must not linger behind it (#34).
-          trigger.style.visibility = 'hidden'
+          hideTrigger(trigger)
           flushSync(() => {
             setPhase('morphing')
             setMorphing(true)
@@ -400,7 +425,7 @@ export function SheetStackProvider({
     ): Promise<void> => {
       triggersRef.current.delete(leavingId)
       if (!trigger.isConnected || vtDegraded()) {
-        trigger.style.removeProperty('visibility')
+        showTrigger(trigger)
         await runLayerExit(next, [leavingId])
         return
       }
@@ -426,7 +451,7 @@ export function SheetStackProvider({
           // the new state, so the frame lands on the button.
           // Back on stage for the new capture: the sheet folds into a
           // visible button, not an empty slot.
-          trigger.style.removeProperty('visibility')
+          showTrigger(trigger)
           setMorphName(trigger, name)
           setMorphClass(trigger, 'ms-slot')
           flushSync(() => {
