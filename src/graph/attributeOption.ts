@@ -33,6 +33,14 @@ export function hint(option: AttributeOption): string | null {
 }
 
 /**
+ * Compose kinds: which part the value belongs to.
+ * @relayField AttributeOption.part: Int
+ */
+export function part(option: AttributeOption): number {
+  return option.part
+}
+
+/**
  * @relayField AttributeOption.enabled: Boolean
  */
 export function enabled(option: AttributeOption): boolean {

@@ -127,6 +127,14 @@ export function editable(attribute: AttributeRecord): boolean {
 }
 
 /**
+ * Names of a compose kind's parts, for grouping its value list.
+ * @relayField Attribute.partLabels: [String!]
+ */
+export function partLabels(attribute: AttributeRecord): string[] {
+  return attribute.kind === 'compose' ? attribute.parts.map((_, i) => attribute.partLabels[i] ?? `${i + 1}번째 마디`) : []
+}
+
+/**
  * @relayField Attribute.edited: Boolean
  * @live
  */

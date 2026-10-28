@@ -8,6 +8,7 @@ export default defineAttribute({
   color: hue.periwinkle,
   description: '두 마디를 조합',
   kind: 'compose',
+  partLabels: ['수식어', '이름'],
   parts: [
     [
       '은빛의', '붉은', '잿빛', '고요한', '떠도는', '잠들지 않는', '이름 없는', '마지막',

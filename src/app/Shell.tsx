@@ -16,7 +16,7 @@ import { StageCanvas, stageHandle } from './StageCanvas'
 import { Picker } from './views/Picker'
 import { Result } from './views/Result'
 import { Saved } from './views/Saved'
-import { AddSpeciesSheet, ValuesSheet } from './views/ValuesSheet'
+import { AddValueSheet, ValuesSheet } from './views/ValuesSheet'
 import { ShakeHud } from './views/ShakeHud'
 import type { ShellSavedCountQuery } from '../__generated__/ShellSavedCountQuery.graphql'
 
@@ -86,7 +86,7 @@ function viewFor(scene: Scene, values?: string, add?: boolean): SheetDescriptor 
   )
   switch (scene) {
     case 'pick':
-      if (values === 'species' && add) return { id: 'add-species', width: '520px', content: body(<AddSpeciesSheet />) }
+      if (values && add) return { id: `add-${values}`, width: '520px', content: body(<AddValueSheet attributeId={values} />) }
       return values
         ? { id: `values-${values}`, width: '520px', content: body(<ValuesSheet attributeId={values} />) }
         : { id: 'pick', width: '560px', content: body(<Picker />) }

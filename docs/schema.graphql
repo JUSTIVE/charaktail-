@@ -66,6 +66,10 @@ type Attribute {
   Whether there is a value list to edit — a numeric range has none.
   """
   editable: Boolean
+  """
+  Names of a compose kind's parts, for grouping its value list.
+  """
+  partLabels: [String!]
   edited: Boolean @live
   """
   Every value in the editor, with the player's switches and additions.
@@ -94,6 +98,10 @@ type AttributeOption @weak {
   A line under the value, e.g. a species' lifespan.
   """
   hint: String
+  """
+  Compose kinds: which part the value belongs to.
+  """
+  part: Int
   enabled: Boolean
   """
   Added by the player rather than shipped in the catalogue.

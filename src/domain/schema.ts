@@ -160,6 +160,8 @@ const ComposeAttribute = z.object({
   ...Base,
   kind: z.literal('compose'),
   parts: z.array(z.array(PickOption).min(1)).min(1),
+  /** A name per part for the editor — `수식어`, `이름`. */
+  partLabels: z.array(Key).default([]),
   joiner: z.string().default(' '),
 })
 

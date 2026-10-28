@@ -20,6 +20,8 @@ export const AddedOption = z.object({
   hex: Hex.optional(),
   /** A second colour — 오드아이, 투톤. */
   hex2: Hex.optional(),
+  /** Compose kinds: which part the value joins (0-based). */
+  part: z.number().int().min(0).optional(),
   /** 종족 only: its expected lifespan, which 나이 is then rolled within. */
   lifespan: z
     .object({ min: z.number().int().positive(), max: z.number().int().positive() })
@@ -50,7 +52,7 @@ export function isEdited(edits: AttributeEdits | undefined): boolean {
 
 /** Whether this kind has a value list to edit — a range has bounds instead, and the generated kinds have neither. */
 export function isEditable(attribute: Attribute): boolean {
-  return attribute.kind === 'pick' || attribute.kind === 'color'
+  return attribute.kind === 'pick' || attribute.kind === 'color' || attribute.kind === 'compose'
 }
 
 const swatchesOf = (o: AddedOption): string[] => [o.hex, o.hex2].filter((h): h is string => !!h)
@@ -60,6 +62,8 @@ export interface ListedOption {
   label: string
   /** A line under the value, e.g. a species' lifespan. */
   hint: string | null
+  /** Compose kinds: the part it belongs to; 0 otherwise. */
+  part: number
   enabled: boolean
   custom: boolean
   swatches: string[]
@@ -67,23 +71,31 @@ export interface ListedOption {
 
 /** Every value the player sees in the editor: built-ins left, then their own. */
 export function listOptions(attribute: Attribute, edits: AttributeEdits | undefined): ListedOption[] {
-  if (attribute.kind !== 'pick' && attribute.kind !== 'color') return []
+  if (!isEditable(attribute)) return []
   const removed = new Set(edits?.removed ?? [])
   const disabled = new Set(edits?.disabled ?? [])
-  const shipped: { id: string; label: string; hint?: string | undefined; swatches: string[] }[] =
-    attribute.kind === 'color' ? attribute.options : attribute.options.map((o) => ({ ...o, swatches: [] }))
+  const shipped: { id: string; label: string; hint?: string | undefined; swatches: string[]; part: number }[] =
+    attribute.kind === 'color'
+      ? attribute.options.map((o) => ({ ...o, part: 0 }))
+      : attribute.kind === 'compose'
+        ? attribute.parts.flatMap((options, part) => options.map((o) => ({ ...o, swatches: [], part })))
+        : attribute.kind === 'pick'
+          ? attribute.options.map((o) => ({ ...o, swatches: [], part: 0 }))
+          : []
   const builtIn = shipped
     .filter((o) => !removed.has(o.id))
-    .map((o) => ({ id: o.id, label: o.label, hint: o.hint ?? null, enabled: !disabled.has(o.id), custom: false, swatches: o.swatches }))
+    .map((o) => ({ id: o.id, label: o.label, hint: o.hint ?? null, part: o.part, enabled: !disabled.has(o.id), custom: false, swatches: o.swatches }))
+  // Within a part, values are listed together: the player's own after the shipped ones.
   const own = (edits?.added ?? []).map((o) => ({
     id: o.id,
     label: o.label,
     hint: o.lifespan ? describeLifespan(o.lifespan) : null,
+    part: o.part ?? 0,
     enabled: !disabled.has(o.id),
     custom: true,
     swatches: swatchesOf(o),
   }))
-  return [...builtIn, ...own]
+  return [...builtIn, ...own].sort((a, b) => a.part - b.part)
 }
 
 /** One attribute with its edits applied. Never leaves a list empty. */
@@ -98,9 +110,20 @@ export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits 
     const cases = attribute.cases.map(({ min: _min, max: _max, ...rest }) => rest)
     return { ...attribute, min, max, cases }
   }
-  if (attribute.kind !== 'pick' && attribute.kind !== 'color') return attribute
+  if (attribute.kind !== 'pick' && attribute.kind !== 'color' && attribute.kind !== 'compose') return attribute
   const drop = new Set([...edits!.disabled, ...edits!.removed])
   const added = edits!.added.filter((o) => !drop.has(o.id))
+  if (attribute.kind === 'compose') {
+    // Each part keeps at least one value: a part emptied by edits falls back to its shipped list.
+    const parts = attribute.parts.map((options, part) => {
+      const kept = [
+        ...options.filter((o) => !drop.has(o.id)),
+        ...added.filter((o) => (o.part ?? 0) === part).map((o) => ({ id: o.id, label: o.label, hint: undefined, weight: 1, when: undefined })),
+      ]
+      return kept.length > 0 ? kept : options
+    })
+    return { ...attribute, parts }
+  }
   if (attribute.kind === 'color') {
     const options = [
       ...attribute.options.filter((o) => !drop.has(o.id)),
@@ -146,6 +169,8 @@ type Packed = Record<
     a?: [string, string, string?, string?][] | undefined
     n?: number | undefined
     x?: number | undefined
+    /** Added option id → compose part, when not the first. */
+    p?: Record<string, number> | undefined
     /** Added option id → [min, max] lifespan. */
     l?: Record<string, [number, number]> | undefined
   }
@@ -164,6 +189,9 @@ export function packEdits(edits: Edits, attributeIds: readonly string[]): string
         : {}),
       ...(e!.min !== undefined ? { n: e!.min } : {}),
       ...(e!.max !== undefined ? { x: e!.max } : {}),
+      ...(e!.added.some((o) => o.part)
+        ? { p: Object.fromEntries(e!.added.flatMap((o) => (o.part ? [[o.id, o.part]] : []))) }
+        : {}),
       ...(e!.added.some((o) => o.lifespan)
         ? { l: Object.fromEntries(e!.added.flatMap((o) => (o.lifespan ? [[o.id, [o.lifespan.min, o.lifespan.max]]] : []))) }
         : {}),
@@ -187,7 +215,15 @@ export function unpackEdits(text: string): Edits | undefined {
           removed: p.r ?? [],
           added: (p.a ?? []).map(([oid, label, hex, hex2]) => {
             const life = p.l?.[oid]
-            return { id: oid, label, ...(hex ? { hex } : {}), ...(hex2 ? { hex2 } : {}), ...(life ? { lifespan: { min: life[0], max: life[1] } } : {}) }
+            const part = p.p?.[oid]
+            return {
+              id: oid,
+              label,
+              ...(hex ? { hex } : {}),
+              ...(hex2 ? { hex2 } : {}),
+              ...(part ? { part } : {}),
+              ...(life ? { lifespan: { min: life[0], max: life[1] } } : {}),
+            }
           }),
           ...(p.n !== undefined ? { min: p.n } : {}),
           ...(p.x !== undefined ? { max: p.x } : {}),

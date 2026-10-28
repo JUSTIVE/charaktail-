@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<4f2165081d89438453c193edbc72805c>>
+ * @generated SignedSource<<15ddbf6be358a55bbed6086092581bea>>
  * @lightSyntaxTransform
  */
 
@@ -81,6 +81,12 @@ import { label as attributeOptionLabelResolverType } from "../graph/attributeOpt
 (attributeOptionLabelResolverType satisfies (
   __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
 ) => string | null | undefined);
+import { part as attributeOptionPartResolverType } from "../graph/attributeOption";
+// Type assertion validating that `attributeOptionPartResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeOptionPartResolverType satisfies (
+  __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
+) => number | null | undefined);
 import { swatches as attributeOptionSwatchesResolverType } from "../graph/attributeOption";
 // Type assertion validating that `attributeOptionSwatchesResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -93,6 +99,12 @@ import { options as attributeOptionsResolverType } from "../graph/attribute";
 (attributeOptionsResolverType satisfies (
   __relay_model_instance: Attribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<ReadonlyArray<AttributeOption> | null | undefined>);
+import { partLabels as attributePartLabelsResolverType } from "../graph/attribute";
+// Type assertion validating that `attributePartLabelsResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributePartLabelsResolverType satisfies (
+  __relay_model_instance: Attribute____relay_model_instance$data['__relay_model_instance'],
+) => ReadonlyArray<string> | null | undefined);
 import { rangeMax as attributeRangeMaxResolverType } from "../graph/attribute";
 // Type assertion validating that `attributeRangeMaxResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -146,8 +158,10 @@ export type ValuesSheetQuery$data = {
       readonly hint: string | null | undefined;
       readonly key: string | null | undefined;
       readonly label: string | null | undefined;
+      readonly part: number | null | undefined;
       readonly swatches: ReadonlyArray<string> | null | undefined;
     }> | null | undefined;
+    readonly partLabels: ReadonlyArray<string> | null | undefined;
     readonly rangeMax: number | null | undefined;
     readonly rangeMin: number | null | undefined;
     readonly summary: string | null | undefined;
@@ -168,6 +182,7 @@ import {key as attributeKeyResolver} from '../graph/attribute';
 import {kind as attributeKindResolver} from '../graph/attribute';
 import {label as attributeLabelResolver} from '../graph/attribute';
 import {options as attributeOptionsResolver} from '../graph/attribute';
+import {partLabels as attributePartLabelsResolver} from '../graph/attribute';
 import {rangeMax as attributeRangeMaxResolver} from '../graph/attribute';
 import {rangeMin as attributeRangeMinResolver} from '../graph/attribute';
 import {summary as attributeSummaryResolver} from '../graph/attribute';
@@ -177,6 +192,7 @@ import {enabled as attributeOptionEnabledResolver} from '../graph/attributeOptio
 import {hint as attributeOptionHintResolver} from '../graph/attributeOption';
 import {key as attributeOptionKeyResolver} from '../graph/attributeOption';
 import {label as attributeOptionLabelResolver} from '../graph/attributeOption';
+import {part as attributeOptionPartResolver} from '../graph/attributeOption';
 import {swatches as attributeOptionSwatchesResolver} from '../graph/attributeOption';
 import {attribute as queryAttributeResolver} from '../graph/root';
 import AttributeOption____relay_model_instance_graphql from './AttributeOption____relay_model_instance.graphql';
@@ -397,6 +413,15 @@ return {
               "path": "attribute.hasCases"
             },
             {
+              "alias": null,
+              "args": null,
+              "fragment": (v2/*:: as any*/),
+              "kind": "RelayResolver",
+              "name": "partLabels",
+              "resolverModule": resolverDataInjector(Attribute____relay_model_instance_graphql, attributePartLabelsResolver, '__relay_model_instance', true),
+              "path": "attribute.partLabels"
+            },
+            {
               "kind": "ClientEdgeToClientObject",
               "concreteType": "AttributeOption",
               "modelResolvers": null,
@@ -449,6 +474,15 @@ return {
                     "name": "hint",
                     "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionHintResolver, '__relay_model_instance', true),
                     "path": "attribute.options.hint"
+                  },
+                  {
+                    "alias": null,
+                    "args": null,
+                    "fragment": (v3/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "name": "part",
+                    "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionPartResolver, '__relay_model_instance', true),
+                    "path": "attribute.options.part"
                   },
                   {
                     "alias": null,
@@ -602,6 +636,14 @@ return {
               "isOutputType": true
             },
             {
+              "name": "partLabels",
+              "args": null,
+              "fragment": (v5/*:: as any*/),
+              "kind": "RelayResolver",
+              "storageKey": null,
+              "isOutputType": true
+            },
+            {
               "kind": "ClientEdgeToClientObject",
               "backingField": {
                 "name": "options",
@@ -637,6 +679,14 @@ return {
                   },
                   {
                     "name": "hint",
+                    "args": null,
+                    "fragment": (v6/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": true
+                  },
+                  {
+                    "name": "part",
                     "args": null,
                     "fragment": (v6/*:: as any*/),
                     "kind": "RelayResolver",
@@ -689,6 +739,6 @@ return {
 };
 })();
 
-(node as any).hash = "2846310581ef837d75357d4aec55bf92";
+(node as any).hash = "67654b9cdfd91d9138ab5b9027e0bf10";
 
 export default node;

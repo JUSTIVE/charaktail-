@@ -137,6 +137,20 @@ describe('custom species', () => {
   })
 })
 
+describe('compose edits', () => {
+  test('a value added to the second part lands there and survives the roll key', () => {
+    const epithet = catalog.byId.get('epithet') as AttributeOf<'compose'>
+    const edits = {
+      epithet: { disabled: epithet.parts[1]!.map((o) => o.id), removed: [], added: [{ id: 'uN', label: '고양이', part: 1 }] },
+    }
+    for (let i = 0; i < 50; i++) {
+      const request = { seed: `e${i}`, attributeIds: ['epithet'], nonces: {}, edits }
+      const values = rollCharacter(catalog, decodeRollKey(encodeRollKey(request))!)
+      expect(values[0]!.label.endsWith(' 고양이')).toBe(true)
+    }
+  })
+})
+
 describe('range edits', () => {
   test("the player's bounds win over every species case", () => {
     const edits = { age: { disabled: [], removed: [], added: [], min: 20, max: 25 } }
