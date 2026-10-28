@@ -111,6 +111,21 @@ body {
 .ms-viewport {
   grid-template-columns: minmax(0, 1fr);
 }
+
+/*
+ * Nothing here is `position: fixed` (#88). Since iOS 26, Safari treats a
+ * fixed element touching the top edge as a toolbar under its status bar and
+ * paints a blurred, tinted edge effect over it. The page never scrolls, so
+ * absolute against the page-sized root looks the same and Safari leaves the
+ * top of the screen alone.
+ */
+html,
+body {
+  height: 100%;
+}
+.ms-viewport {
+  position: absolute;
+}
 .ms-slot,
 .ms-slot * {
   min-width: 0;
@@ -128,7 +143,7 @@ body {
 }
 
 .stage {
-  position: fixed;
+  position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -142,7 +157,7 @@ body {
 }
 
 .topbar {
-  position: fixed;
+  position: absolute;
   inset: 0 0 auto;
   z-index: 10;
   display: flex;
@@ -676,7 +691,7 @@ body {
  * before the new version loads.
  */
 .update-toast {
-  position: fixed;
+  position: absolute;
   inset: calc(max(12px, env(safe-area-inset-top)) + 46px) 0 auto;
   z-index: 20;
   display: flex;
