@@ -25,6 +25,14 @@ export function label(option: AttributeOption): string {
 }
 
 /**
+ * A line under the value, e.g. a species' lifespan.
+ * @relayField AttributeOption.hint: String
+ */
+export function hint(option: AttributeOption): string | null {
+  return option.hint
+}
+
+/**
  * @relayField AttributeOption.enabled: Boolean
  */
 export function enabled(option: AttributeOption): boolean {

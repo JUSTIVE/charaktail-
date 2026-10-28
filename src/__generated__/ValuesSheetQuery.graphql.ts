@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<900e27ff2be8eab3d5381e4aac747f99>>
+ * @generated SignedSource<<4f2165081d89438453c193edbc72805c>>
  * @lightSyntaxTransform
  */
 
@@ -63,6 +63,12 @@ import { enabled as attributeOptionEnabledResolverType } from "../graph/attribut
 (attributeOptionEnabledResolverType satisfies (
   __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
 ) => boolean | null | undefined);
+import { hint as attributeOptionHintResolverType } from "../graph/attributeOption";
+// Type assertion validating that `attributeOptionHintResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeOptionHintResolverType satisfies (
+  __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
+) => string | null | undefined);
 import { key as attributeOptionKeyResolverType } from "../graph/attributeOption";
 // Type assertion validating that `attributeOptionKeyResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -137,6 +143,7 @@ export type ValuesSheetQuery$data = {
     readonly options: ReadonlyArray<{
       readonly custom: boolean | null | undefined;
       readonly enabled: boolean | null | undefined;
+      readonly hint: string | null | undefined;
       readonly key: string | null | undefined;
       readonly label: string | null | undefined;
       readonly swatches: ReadonlyArray<string> | null | undefined;
@@ -167,6 +174,7 @@ import {summary as attributeSummaryResolver} from '../graph/attribute';
 import {unit as attributeUnitResolver} from '../graph/attribute';
 import {custom as attributeOptionCustomResolver} from '../graph/attributeOption';
 import {enabled as attributeOptionEnabledResolver} from '../graph/attributeOption';
+import {hint as attributeOptionHintResolver} from '../graph/attributeOption';
 import {key as attributeOptionKeyResolver} from '../graph/attributeOption';
 import {label as attributeOptionLabelResolver} from '../graph/attributeOption';
 import {swatches as attributeOptionSwatchesResolver} from '../graph/attributeOption';
@@ -438,6 +446,15 @@ return {
                     "args": null,
                     "fragment": (v3/*:: as any*/),
                     "kind": "RelayResolver",
+                    "name": "hint",
+                    "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionHintResolver, '__relay_model_instance', true),
+                    "path": "attribute.options.hint"
+                  },
+                  {
+                    "alias": null,
+                    "args": null,
+                    "fragment": (v3/*:: as any*/),
+                    "kind": "RelayResolver",
                     "name": "enabled",
                     "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionEnabledResolver, '__relay_model_instance', true),
                     "path": "attribute.options.enabled"
@@ -619,6 +636,14 @@ return {
                     "isOutputType": true
                   },
                   {
+                    "name": "hint",
+                    "args": null,
+                    "fragment": (v6/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": true
+                  },
+                  {
                     "name": "enabled",
                     "args": null,
                     "fragment": (v6/*:: as any*/),
@@ -664,6 +689,6 @@ return {
 };
 })();
 
-(node as any).hash = "155770161ec38221b913155abc67f365";
+(node as any).hash = "2846310581ef837d75357d4aec55bf92";
 
 export default node;

@@ -120,6 +120,23 @@ describe('lifespan', () => {
   })
 })
 
+describe('custom species', () => {
+  test('its lifespan bounds its age and rides in the roll key', () => {
+    const edits = {
+      species: { disabled: speciesTable.map((s) => s.id), removed: [], added: [{ id: 'uX', label: '별사람', lifespan: { min: 20, max: 30 } }] },
+    }
+    for (let i = 0; i < 200; i++) {
+      const request = { seed: `c${i}`, attributeIds: ['species', 'age'], nonces: {}, edits }
+      const key = encodeRollKey(request)
+      const values = rollCharacter(catalog, decodeRollKey(key)!)
+      expect(values.find((v) => v.attributeId === 'species')!.detail).toBe('기대 수명 20–30년')
+      const age = Number(values.find((v) => v.attributeId === 'age')!.label.replace(/[^0-9]/g, ''))
+      expect(age).toBeGreaterThanOrEqual(3)
+      expect(age).toBeLessThanOrEqual(29)
+    }
+  })
+})
+
 describe('range edits', () => {
   test("the player's bounds win over every species case", () => {
     const edits = { age: { disabled: [], removed: [], added: [], min: 20, max: 25 } }

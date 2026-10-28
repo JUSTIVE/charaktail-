@@ -49,6 +49,7 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
           options {
             key
             label
+            hint
             enabled
             custom
             swatches
@@ -74,7 +75,7 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
 
   const add = (event: FormEvent) => {
     event.preventDefault()
-    const problem = addOption(attributeId, draft, isColor ? hex : undefined, isColor && twoTone ? hex2 : undefined)
+    const problem = addOption(attributeId, draft, { hex: isColor ? hex : undefined, hex2: isColor && twoTone ? hex2 : undefined })
     setError(problem)
     if (!problem) setDraft('')
   }
@@ -126,7 +127,10 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
                   ) : (
                     <Dot color={attribute.color ?? '#888'} size={7} />
                   )}
-                  <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{option.label}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[14px] font-medium">{option.label}</span>
+                    {option.hint ? <span className="tnum block truncate text-[11.5px] text-faint">{option.hint}</span> : null}
+                  </span>
                   {option.custom ? <span className="values-badge">내 값</span> : null}
                   <button
                     type="button"
@@ -158,54 +162,60 @@ export function ValuesSheet({ attributeId }: { attributeId: string }) {
             })}
           </ul>
 
-          {isColor ? (
-            // A second colour for the new value: 오드아이 for eyes, 투톤 otherwise.
-            // The whole row is the label, so tapping the words toggles too.
-            <label className="ms-seq flex items-center gap-2" style={seq(2)}>
-              <button type="button" role="switch" aria-checked={twoTone} onClick={() => setTwoTone((v) => !v)} className="switch" style={{ '--switch-on': attribute.color } as CSSProperties}>
-                <span />
-              </button>
-              <span className="text-[13px] text-muted">{attributeId === 'eyeColor' ? '오드아이 (양쪽 눈 색이 달라요)' : '투톤 (두 가지 색)'}</span>
-            </label>
-          ) : null}
-          <form className="ms-seq flex items-center gap-2" style={seq(2)} onSubmit={add}>
+          {attributeId === 'species' ? (
+            <AddSpecies color={attribute.color ?? '#888'} />
+          ) : (
+            <>
             {isColor ? (
-              <span className="flex shrink-0 -space-x-2">
-                <label className="color-pick press" style={{ background: hex }} aria-label={twoTone ? '첫 번째 색' : '색 고르기'}>
-                  <input type="color" value={hex} onChange={(event) => setHex(event.target.value)} />
-                </label>
-                {/* Always mounted, so it can animate out as well as in. */}
-                <label
-                  className="color-pick color-pick-second press"
-                  data-open={twoTone || undefined}
-                  aria-hidden={!twoTone}
-                  style={{ background: hex2 }}
-                  aria-label="두 번째 색"
-                >
-                  <input type="color" value={hex2} tabIndex={twoTone ? 0 : -1} onChange={(event) => setHex2(event.target.value)} />
-                </label>
-              </span>
+              // A second colour for the new value: 오드아이 for eyes, 투톤 otherwise.
+              // The whole row is the label, so tapping the words toggles too.
+              <label className="ms-seq flex items-center gap-2" style={seq(2)}>
+                <button type="button" role="switch" aria-checked={twoTone} onClick={() => setTwoTone((v) => !v)} className="switch" style={{ '--switch-on': attribute.color } as CSSProperties}>
+                  <span />
+                </button>
+                <span className="text-[13px] text-muted">{attributeId === 'eyeColor' ? '오드아이 (양쪽 눈 색이 달라요)' : '투톤 (두 가지 색)'}</span>
+              </label>
             ) : null}
-            <input
-              value={draft}
-              onChange={(event) => {
-                setDraft(event.target.value)
-                setError(null)
-              }}
-              maxLength={24}
-              placeholder={`새 ${attribute.label} 값`}
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck={false}
-              enterKeyHint="done"
-              className="name-field min-w-0 flex-1 py-2.5 text-[16px] outline-none placeholder:text-faint"
-            />
-            <Button type="submit" className="shrink-0 px-3" disabled={draft.trim() === ''}>
-              <PlusIcon width={16} height={16} />
-              추가
-            </Button>
-          </form>
-          {error ? <p className="-mt-1 text-[12px] text-[#ff977d]">{error}</p> : null}
+            <form className="ms-seq flex items-center gap-2" style={seq(2)} onSubmit={add}>
+              {isColor ? (
+                <span className="flex shrink-0 -space-x-2">
+                  <label className="color-pick press" style={{ background: hex }} aria-label={twoTone ? '첫 번째 색' : '색 고르기'}>
+                    <input type="color" value={hex} onChange={(event) => setHex(event.target.value)} />
+                  </label>
+                  {/* Always mounted, so it can animate out as well as in. */}
+                  <label
+                    className="color-pick color-pick-second press"
+                    data-open={twoTone || undefined}
+                    aria-hidden={!twoTone}
+                    style={{ background: hex2 }}
+                    aria-label="두 번째 색"
+                  >
+                    <input type="color" value={hex2} tabIndex={twoTone ? 0 : -1} onChange={(event) => setHex2(event.target.value)} />
+                  </label>
+                </span>
+              ) : null}
+              <input
+                value={draft}
+                onChange={(event) => {
+                  setDraft(event.target.value)
+                  setError(null)
+                }}
+                maxLength={24}
+                placeholder={`새 ${attribute.label} 값`}
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                enterKeyHint="done"
+                className="name-field min-w-0 flex-1 py-2.5 text-[16px] outline-none placeholder:text-faint"
+              />
+              <Button type="submit" className="shrink-0 px-3" disabled={draft.trim() === ''}>
+                <PlusIcon width={16} height={16} />
+                추가
+              </Button>
+            </form>
+            {error ? <p className="-mt-1 text-[12px] text-[#ff977d]">{error}</p> : null}
+            </>
+          )}
         </>
       )}
 
@@ -278,6 +288,106 @@ function RangeEditor({
         {field('최대', high, setHigh)}
       </div>
       {error ? <p className="text-[12px] text-[#ff977d]">{error}</p> : note ? <p className="text-[12px] text-faint">{note}</p> : null}
+    </div>
+  )
+}
+
+/**
+ * 종족 추가: a full-width button that morphs into a small dialog — a species
+ * needs a name and its expected lifespan, more than an inline row can hold.
+ * One surface throughout (`.add-morph`); the sheet glides to its new height.
+ */
+function AddSpecies({ color }: { color: string }) {
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState('')
+  const [low, setLow] = useState('70')
+  const [high, setHigh] = useState('100')
+  const [error, setError] = useState<string | null>(null)
+
+  const close = () => {
+    setOpen(false)
+    setName('')
+    setError(null)
+  }
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const problem = addOption('species', name, { lifespan: { min: Number(low), max: Number(high) } })
+    setError(problem)
+    if (problem) return
+    haptic.select()
+    close()
+  }
+  const years = (label: string, value: string, set: (v: string) => void) => (
+    <label className="name-field min-w-0 flex-1 gap-2 px-3">
+      <span className="eyebrow shrink-0">{label}</span>
+      <input
+        value={value}
+        size={1}
+        inputMode="numeric"
+        enterKeyHint="done"
+        onChange={(event) => {
+          set(event.target.value.replace(/[^0-9]/g, '').slice(0, 5))
+          setError(null)
+        }}
+        className="tnum min-w-0 flex-1 bg-transparent text-[16px] font-semibold outline-none"
+      />
+      <span className="shrink-0 text-[13px] text-faint">년</span>
+    </label>
+  )
+
+  return (
+    <div className="ms-seq add-morph" data-open={open || undefined} style={{ ...seq(2), '--add-accent': color } as CSSProperties}>
+      {open ? (
+        <form className="add-morph-body space-y-2.5" onSubmit={submit}>
+          <p className="text-[14px] font-semibold">새 종족</p>
+          <input
+            value={name}
+            onChange={(event) => {
+              setName(event.target.value)
+              setError(null)
+            }}
+            // Opened by a tap, so the keyboard may come up with it.
+            autoFocus
+            maxLength={24}
+            placeholder="종족 이름"
+            aria-label="종족 이름"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="next"
+            className="name-field w-full py-2.5 text-[16px] outline-none placeholder:text-faint"
+          />
+          <div>
+            <p className="eyebrow mb-1.5">기대 수명</p>
+            <div className="flex items-center gap-2">
+              {years('최소', low, setLow)}
+              <span aria-hidden className="text-faint">–</span>
+              {years('최대', high, setHigh)}
+            </div>
+          </div>
+          {error ? <p className="text-[12px] text-[#ff977d]">{error}</p> : <p className="text-[12px] text-faint">나이는 이 수명 안에서 뽑혀요.</p>}
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={close}>
+              취소
+            </Button>
+            <Button type="submit" variant="primary" className="flex-1" disabled={name.trim() === '' || low === '' || high === ''}>
+              추가
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <button
+          type="button"
+          className="add-morph-body press flex w-full items-center justify-center gap-1.5 py-3 text-[14px] font-semibold"
+          onClick={() => {
+            haptic.select()
+            setOpen(true)
+          }}
+        >
+          <PlusIcon width={16} height={16} />
+          종족 추가하기
+        </button>
+      )}
     </div>
   )
 }

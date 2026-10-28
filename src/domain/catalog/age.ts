@@ -1,6 +1,7 @@
+import { ageCase } from '../lifespan'
 import { hue } from '../palette'
 import { defineAttribute } from '../schema'
-import { type Lifespan, speciesTable } from './species'
+import { speciesTable } from './species'
 
 const humanBands = [
   { upTo: 13, label: '어린이' },
@@ -10,14 +11,8 @@ const humanBands = [
   { upTo: 999, label: '노년' },
 ]
 
-type Band = { upTo: number; label: string }
-
-/**
- * How a species reads at each age, as fractions of its expected lifespan;
- * the last band always runs to the end. Species without one get the human
- * stages stretched to their lifespan.
- */
-const stages: Record<string, readonly [number, string][]> = {
+/** How a species reads at each age, as fractions of its lifespan; others get the human stages. */
+const stages: Record<string, readonly (readonly [number, string])[]> = {
   elf: [[0.12, '어린 엘프'], [0.6, '성숙한 엘프'], [1, '고대 엘프']],
   dwarf: [[0.15, '수염도 안 난'], [0.6, '한창인 드워프'], [1, '원로 드워프']],
   dragonkin: [[0.1, '갓 깨어난'], [0.5, '성룡'], [1, '고룡']],
@@ -28,22 +23,6 @@ const stages: Record<string, readonly [number, string][]> = {
   demon: [[0.05, '하급 악마'], [0.4, '상급 악마'], [1, '마왕급']],
   fairy: [[0.15, '갓 피어난'], [1, '숲의 어른']],
   mermaid: [[0.15, '어린 인어'], [0.7, '바다의 숙녀'], [1, '심해의 노인']],
-}
-
-const HUMAN_LIFE = 90
-const humanStages = humanBands.slice(0, -1).map((b): [number, string] => [b.upTo / HUMAN_LIFE, b.label])
-
-/**
- * A species' age range follows its lifespan: rolled from childhood to the
- * edge of its longest expected life, banded by its life stages.
- */
-function byLifespan(id: string, { min, max }: Lifespan) {
-  const span = (min + max) / 2
-  const step = max >= 1000 ? 10 : 1
-  const round = (n: number) => Math.max(step, Math.round(n / step) * step)
-  const fractions = stages[id] ?? [...humanStages, [1, '노년'] as [number, string]]
-  const bands: Band[] = fractions.map(([f, label], i) => ({ upTo: i === fractions.length - 1 ? Number.MAX_SAFE_INTEGER : Math.round(span * f), label }))
-  return { when: { species: [id] }, min: round(span * 0.13), max: round(max * 0.95), step, unit: '세', bands }
 }
 
 const human = speciesTable.find((s) => s.id === 'human')!.lifespan
@@ -64,6 +43,6 @@ export default defineAttribute({
     // Counted differently from a life: age at death, years since assembly.
     { when: { species: ['ghost'] }, min: 9, max: 80, prefix: '사망 당시', bands: [{ upTo: 19, label: '어린 유령' }, { upTo: 999, label: '오래 떠돈' }] },
     { when: { species: ['android'] }, min: 1, max: 40, prefix: '제조 후', unit: '년', bands: [{ upTo: 3, label: '신형' }, { upTo: 15, label: '현역' }, { upTo: 99, label: '구형' }] },
-    ...speciesTable.filter((s) => s.id !== 'human' && s.id !== 'ghost' && s.id !== 'android').map((s) => byLifespan(s.id, s.lifespan)),
+    ...speciesTable.filter((s) => s.id !== 'human' && s.id !== 'ghost' && s.id !== 'android').map((s) => ageCase(s.id, s.lifespan, stages[s.id])),
   ],
 })

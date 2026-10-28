@@ -1,15 +1,8 @@
+import { describeLifespan, type Lifespan } from '../lifespan'
 import { hue } from '../palette'
 import { defineAttribute } from '../schema'
 
 const magical = ['fantasy', 'darkFantasy']
-
-/** Expected lifespan in years — what 나이 is rolled within and what the value's hint says. */
-export interface Lifespan {
-  min: number
-  max: number
-  /** What the span counts when it isn't a life: 유령은 머무는 기간. */
-  note?: string
-}
 
 /**
  * Every species with its lifespan. A species can't be added without one —
@@ -42,12 +35,6 @@ export const speciesTable: readonly Species[] = [
   { id: 'fairy', label: '요정', weight: 0.6, when: { world: ['fantasy', 'fairytale'] }, lifespan: { min: 200, max: 400 } },
   { id: 'ghost', label: '유령', weight: 0.6, when: { world: ['occult', 'modern', 'academy'] }, lifespan: { min: 50, max: 500, note: '이승에 머무는 기간' } },
 ]
-
-const years = (n: number) => n.toLocaleString('ko-KR')
-
-export function describeLifespan({ min, max, note }: Lifespan): string {
-  return `${note ?? '기대 수명'} ${years(min)}–${years(max)}년`
-}
 
 export default defineAttribute({
   id: 'species',

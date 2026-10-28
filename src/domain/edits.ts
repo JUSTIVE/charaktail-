@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Catalog } from './catalog'
+import { ageCase, describeLifespan } from './lifespan'
 import type { Attribute } from './schema'
 
 /*
@@ -19,6 +20,11 @@ export const AddedOption = z.object({
   hex: Hex.optional(),
   /** A second colour — 오드아이, 투톤. */
   hex2: Hex.optional(),
+  /** 종족 only: its expected lifespan, which 나이 is then rolled within. */
+  lifespan: z
+    .object({ min: z.number().int().positive(), max: z.number().int().positive() })
+    .refine((l) => l.min <= l.max)
+    .optional(),
 })
 export type AddedOption = z.infer<typeof AddedOption>
 
@@ -52,6 +58,8 @@ const swatchesOf = (o: AddedOption): string[] => [o.hex, o.hex2].filter((h): h i
 export interface ListedOption {
   id: string
   label: string
+  /** A line under the value, e.g. a species' lifespan. */
+  hint: string | null
   enabled: boolean
   custom: boolean
   swatches: string[]
@@ -62,14 +70,15 @@ export function listOptions(attribute: Attribute, edits: AttributeEdits | undefi
   if (attribute.kind !== 'pick' && attribute.kind !== 'color') return []
   const removed = new Set(edits?.removed ?? [])
   const disabled = new Set(edits?.disabled ?? [])
-  const shipped: { id: string; label: string; swatches: string[] }[] =
+  const shipped: { id: string; label: string; hint?: string | undefined; swatches: string[] }[] =
     attribute.kind === 'color' ? attribute.options : attribute.options.map((o) => ({ ...o, swatches: [] }))
   const builtIn = shipped
     .filter((o) => !removed.has(o.id))
-    .map((o) => ({ id: o.id, label: o.label, enabled: !disabled.has(o.id), custom: false, swatches: o.swatches }))
+    .map((o) => ({ id: o.id, label: o.label, hint: o.hint ?? null, enabled: !disabled.has(o.id), custom: false, swatches: o.swatches }))
   const own = (edits?.added ?? []).map((o) => ({
     id: o.id,
     label: o.label,
+    hint: o.lifespan ? describeLifespan(o.lifespan) : null,
     enabled: !disabled.has(o.id),
     custom: true,
     swatches: swatchesOf(o),
@@ -101,14 +110,25 @@ export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits 
   }
   const options = [
     ...attribute.options.filter((o) => !drop.has(o.id)),
-    ...added.map((o) => ({ id: o.id, label: o.label, hint: undefined, weight: 1, when: undefined })),
+    ...added.map((o) => ({ id: o.id, label: o.label, hint: o.lifespan ? describeLifespan(o.lifespan) : undefined, weight: 1, when: undefined })),
   ]
   return options.length > 0 ? { ...attribute, options } : attribute
 }
 
+/**
+ * The player's own species bring their lifespans to 나이 as extra cases —
+ * before 나이's own edits, so the player's bounds still win over them.
+ */
+function withCustomLifespans(attribute: Attribute, edits: Edits): Attribute {
+  if (attribute.id !== 'age' || attribute.kind !== 'range') return attribute
+  const drop = new Set([...(edits['species']?.disabled ?? []), ...(edits['species']?.removed ?? [])])
+  const cases = (edits['species']?.added ?? []).flatMap((o) => (o.lifespan && !drop.has(o.id) ? [ageCase(o.id, o.lifespan)] : []))
+  return cases.length ? { ...attribute, cases: [...attribute.cases, ...cases] } : attribute
+}
+
 export function applyEdits(catalog: Catalog, edits: Edits | undefined): Catalog {
   if (!edits || !Object.values(edits).some(isEdited)) return catalog
-  const attributes = catalog.attributes.map((a) => applyAttributeEdits(a, edits[a.id]))
+  const attributes = catalog.attributes.map((a) => applyAttributeEdits(withCustomLifespans(a, edits), edits[a.id]))
   const byId = new Map(attributes.map((a) => [a.id, a]))
   return { ...catalog, attributes, byId, rollOrder: catalog.rollOrder.map((a) => byId.get(a.id)!) }
 }
@@ -126,6 +146,8 @@ type Packed = Record<
     a?: [string, string, string?, string?][] | undefined
     n?: number | undefined
     x?: number | undefined
+    /** Added option id → [min, max] lifespan. */
+    l?: Record<string, [number, number]> | undefined
   }
 >
 
@@ -142,6 +164,9 @@ export function packEdits(edits: Edits, attributeIds: readonly string[]): string
         : {}),
       ...(e!.min !== undefined ? { n: e!.min } : {}),
       ...(e!.max !== undefined ? { x: e!.max } : {}),
+      ...(e!.added.some((o) => o.lifespan)
+        ? { l: Object.fromEntries(e!.added.flatMap((o) => (o.lifespan ? [[o.id, [o.lifespan.min, o.lifespan.max]]] : []))) }
+        : {}),
     }
   }
   if (Object.keys(packed).length === 0) return ''
@@ -160,7 +185,10 @@ export function unpackEdits(text: string): Edits | undefined {
         {
           disabled: p.d ?? [],
           removed: p.r ?? [],
-          added: (p.a ?? []).map(([oid, label, hex, hex2]) => ({ id: oid, label, ...(hex ? { hex } : {}), ...(hex2 ? { hex2 } : {}) })),
+          added: (p.a ?? []).map(([oid, label, hex, hex2]) => {
+            const life = p.l?.[oid]
+            return { id: oid, label, ...(hex ? { hex } : {}), ...(hex2 ? { hex2 } : {}), ...(life ? { lifespan: { min: life[0], max: life[1] } } : {}) }
+          }),
           ...(p.n !== undefined ? { min: p.n } : {}),
           ...(p.x !== undefined ? { max: p.x } : {}),
         },

@@ -90,6 +90,10 @@ One value in an attribute's editor.
 type AttributeOption @weak {
   key: String
   label: String
+  """
+  A line under the value, e.g. a species' lifespan.
+  """
+  hint: String
   enabled: Boolean
   """
   Added by the player rather than shipped in the catalogue.
