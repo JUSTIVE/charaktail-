@@ -730,7 +730,8 @@ function drawAtlas(canvas: HTMLCanvasElement, specs: readonly BallSpec[], limit:
       if (count !== null) {
         ctx.save()
         ctx.font = labelFont(150)
-        ctx.globalAlpha = 0.16
+        // Barely there: the shader's colour split and refraction double any ink, and on iOS it shouted (#161).
+        ctx.globalAlpha = 0.06
         ctx.fillStyle = ink
         ctx.fillText(String(count), ATLAS_CELL / 2, cy + 6)
         ctx.restore()
