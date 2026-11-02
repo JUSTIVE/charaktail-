@@ -29,6 +29,8 @@ export const AddedOption = z.object({
     .object({ min: z.number().int().positive(), max: z.number().int().positive() })
     .refine((l) => l.min <= l.max)
     .optional(),
+  /** 외형 특징 only: its odds, 0–1. Unset, ADDED_TRAIT_CHANCE. */
+  chance: z.number().gt(0).max(1).optional(),
   /** 종족 only: the span its 키 is rolled in, in cm. Species added before it fall back to 키's own. */
   height: z
     .object({ min: z.number().int().positive(), max: z.number().int().positive() })
@@ -114,7 +116,7 @@ export function listOptions(attribute: Attribute, edits: AttributeEdits | undefi
   const own = (edits?.added ?? []).map((o) => ({
     id: o.id,
     label: o.label,
-    hint: o.lifespan ? describeLifespan(o.lifespan) : attribute.kind === 'traits' ? chanceHint(ADDED_TRAIT_CHANCE) : null,
+    hint: o.lifespan ? describeLifespan(o.lifespan) : attribute.kind === 'traits' ? chanceHint(o.chance ?? ADDED_TRAIT_CHANCE) : null,
     part: o.part ?? 0,
     groups: o.group ? [o.group] : [],
     enabled: !disabled.has(o.id),
@@ -146,7 +148,7 @@ export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits 
   if (attribute.kind === 'traits') {
     const options = [
       ...attribute.options.filter((o) => !drop.has(o.id)),
-      ...added.map((o) => ({ id: o.id, label: o.label, chance: ADDED_TRAIT_CHANCE, when: undefined })),
+      ...added.map((o) => ({ id: o.id, label: o.label, chance: o.chance ?? ADDED_TRAIT_CHANCE, when: undefined })),
     ]
     const max = edits!.count ?? attribute.max
     return { ...attribute, options: options.length > 0 ? options : attribute.options, ...(max !== undefined ? { max } : {}) }
@@ -246,6 +248,8 @@ type Packed = Record<
     p?: Record<string, number> | undefined
     /** Added option id → [min, max] lifespan. */
     l?: Record<string, [number, number]> | undefined
+    /** Added option id → its 외형 특징 odds, in whole percent. */
+    q?: Record<string, number> | undefined
     /** Added option id → [min, max] 키 in cm. */
     h?: Record<string, [number, number]> | undefined
   }
@@ -275,6 +279,9 @@ export function packEdits(edits: Edits, attributeIds: readonly string[], keyOf: 
       ...(e!.added.some((o) => o.lifespan)
         ? { l: Object.fromEntries(e!.added.flatMap((o) => (o.lifespan ? [[o.id, [o.lifespan.min, o.lifespan.max]]] : []))) }
         : {}),
+      ...(e!.added.some((o) => o.chance !== undefined)
+        ? { q: Object.fromEntries(e!.added.flatMap((o) => (o.chance !== undefined ? [[o.id, Math.round(o.chance * 100)]] : []))) }
+        : {}),
       ...(e!.added.some((o) => o.height)
         ? { h: Object.fromEntries(e!.added.flatMap((o) => (o.height ? [[o.id, [o.height.min, o.height.max]]] : []))) }
         : {}),
@@ -299,6 +306,7 @@ export function unpackEdits(text: string, idOf: (key: string) => string = (key) 
           added: (p.a ?? []).map(([oid, label, hex, hex2]) => {
             const life = p.l?.[oid]
             const height = p.h?.[oid]
+            const percent = p.q?.[oid]
             const part = p.p?.[oid]
             const group = p.g?.[oid]
             return {
@@ -310,6 +318,7 @@ export function unpackEdits(text: string, idOf: (key: string) => string = (key) 
               ...(group ? { group } : {}),
               ...(life ? { lifespan: { min: life[0], max: life[1] } } : {}),
               ...(height ? { height: { min: height[0], max: height[1] } } : {}),
+              ...(percent !== undefined ? { chance: percent / 100 } : {}),
             }
           }),
           ...(p.n !== undefined ? { min: p.n } : {}),

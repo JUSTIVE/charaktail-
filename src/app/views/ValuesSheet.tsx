@@ -2,6 +2,7 @@ import NumberFlow from '@number-flow/react'
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import { graphql } from 'relay-runtime'
 
+import { ADDED_TRAIT_CHANCE } from '../../domain/edits'
 import { useLocalQuery } from '../../graph/useLocalQuery'
 
 import { addOption, clearCount, removeOption, resetAttribute, setCount, setOptionsEnabled, setRange, toggleOption } from '../../state/edits'
@@ -570,7 +571,8 @@ function RangeEditor({
 /**
  * Adding a value: the whole panel morphs from the list into this view and
  * back. What it asks for follows the kind — a colour (or two) for colours,
- * the part for a phrase, the expected lifespan and 키 for a species.
+ * the part for a phrase, the expected lifespan and 키 for a species, the
+ * odds for a 외형 특징.
  */
 export function AddValueSheet({ attributeId, group }: { attributeId: string; group?: string | undefined }) {
   const data = useLocalQuery<AddValueSheetQuery>(
@@ -596,6 +598,7 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
   const [high, setHigh] = useState('100')
   const [short, setShort] = useState('145')
   const [tall, setTall] = useState('195')
+  const [percent, setPercent] = useState(String(Math.round(ADDED_TRAIT_CHANCE * 100)))
   const [error, setError] = useState<string | null>(null)
 
   const raw = data.attribute
@@ -605,6 +608,7 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
   const color = attribute.color
   const isColor = raw.__typename === 'ColorAttribute'
   const isSpecies = attributeId === 'species'
+  const isTraits = raw.__typename === 'TraitsAttribute'
   const partLabels = raw.__typename === 'ComposeAttribute' ? (raw.partLabels ?? []) : []
 
   const submit = (event: FormEvent) => {
@@ -616,13 +620,14 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
       group,
       lifespan: isSpecies ? { min: Number(low), max: Number(high) } : undefined,
       height: isSpecies ? { min: Number(short), max: Number(tall) } : undefined,
+      chance: isTraits ? Number(percent) / 100 : undefined,
     })
     setError(problem)
     if (problem) return
     haptic.select()
     toList()
   }
-  const bound = (label: string, value: string, set: (v: string) => void, unit: string) => (
+  const bound = (label: string, value: string, set: (v: string) => void, unit: string, digits = 5) => (
     <label className="name-field min-w-0 flex-1 gap-2 px-3">
       <span className="eyebrow shrink-0">{label}</span>
       <input
@@ -631,7 +636,7 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
         inputMode="numeric"
         enterKeyHint="done"
         onChange={(event) => {
-          set(event.target.value.replace(/[^0-9]/g, '').slice(0, 5))
+          set(event.target.value.replace(/[^0-9]/g, '').slice(0, digits))
           setError(null)
         }}
         className="tnum min-w-0 flex-1 bg-transparent text-[16px] font-semibold outline-none"
@@ -730,13 +735,20 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
           {error ? null : <p className="mt-2 text-[12px] text-faint">나이는 이 수명 안에서, 키는 이 범위 안에서 뽑혀요.</p>}
         </div>
       ) : null}
+      {isTraits ? (
+        <div className="ms-seq" style={seq(2)}>
+          <p className="eyebrow mb-1.5">나올 확률</p>
+          {bound('확률', percent, setPercent, '%', 3)}
+          {error ? null : <p className="mt-2 text-[12px] text-faint">뽑을 때마다 이 확률로 붙어요. 다른 특징과 함께 나올 수 있어요.</p>}
+        </div>
+      ) : null}
       {error ? <p className="text-[12px] text-[#ff977d]">{error}</p> : null}
 
       <div className="ms-seq flex gap-2" style={seq(3)}>
         <Button variant="ghost" className="flex-1 py-3" onClick={toList}>
           취소
         </Button>
-        <Button type="submit" variant="primary" className="flex-1 py-3" disabled={name.trim() === '' || (isSpecies && [low, high, short, tall].includes(''))}>
+        <Button type="submit" variant="primary" className="flex-1 py-3" disabled={name.trim() === '' || (isSpecies && [low, high, short, tall].includes('')) || (isTraits && percent === '')}>
           추가
         </Button>
       </div>

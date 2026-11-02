@@ -180,6 +180,18 @@ describe('several at once', () => {
     expect(own).toBe(true)
   })
 
+  test('a 외형 특징 of the player\'s own comes out at its own odds, kept in the roll key', () => {
+    const edits = { traits: { disabled: [], removed: [], added: [{ id: 'uA', label: '늘 있는 것', chance: 1 }, { id: 'uB', label: '없는 것', chance: 0.01 }] } }
+    let rare = 0
+    for (let i = 0; i < 200; i++) {
+      const request = { seed: `q${i}`, attributeIds: ['traits'], nonces: {}, edits }
+      const traits = rollCharacter(catalog, decodeRollKey(encodeRollKey(request))!)[0]!
+      expect(traits.valueIds).toContain('uA')
+      if (traits.valueIds.includes('uB')) rare++
+    }
+    expect(rare).toBeLessThan(10)
+  })
+
   test('without a cap, 외형 특징 roll exactly as before', () => {
     const plain = { seed: 'same', attributeIds: ['species', 'traits'] }
     const edited = { ...plain, edits: { traits: { disabled: [], removed: [], added: [], count: 99 } } }
