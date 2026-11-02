@@ -102,3 +102,10 @@ export { rangeMin } from '../attributeFields'
  * @live
  */
 export { rangeMax } from '../attributeFields'
+
+/**
+ * How many of its values are switched on.
+ * @relayField StatsAttribute.enabledCount: Int!
+ * @live
+ */
+export { enabledCount } from '../attributeFields'

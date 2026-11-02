@@ -554,6 +554,26 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   }
 }
 
+/* How many values a chip has on: a big faint numeral behind the label,
+   sunk into the chip's corner so its edge cuts it — the chip clips it. */
+.chip-count {
+  position: absolute;
+  z-index: -1;
+  right: 34px;
+  bottom: -0.32em;
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  pointer-events: none;
+  color: var(--chip);
+  opacity: 0.16;
+  transition: opacity 200ms ease;
+}
+.chip[aria-pressed='true'] .chip-count {
+  opacity: 0.26;
+}
+
 /* Kebab on a chip: a sibling pinned to the chip's corner. */
 .chip-kebab {
   /* Above the chip's tap layer (HapticTap). */

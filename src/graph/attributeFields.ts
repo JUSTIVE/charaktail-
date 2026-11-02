@@ -112,6 +112,13 @@ export function options(attribute: AttributeRecord) {
   return editsCell.live((edits) => listOptions(attribute, edits[attribute.id]))
 }
 
+/**
+ * How many of its values are switched on — the number on the picker chip.
+ */
+export function enabledCount(attribute: AttributeRecord) {
+  return editsCell.live((edits) => listOptions(attribute, edits[attribute.id]).filter((o) => o.enabled).length)
+}
+
 export function selected(attribute: AttributeRecord) {
   return selectionCell.live((ids) => ids.includes(attribute.id))
 }

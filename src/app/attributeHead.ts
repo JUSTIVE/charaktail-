@@ -13,6 +13,7 @@ const fragment = graphql`
   fragment attributeHead_attribute on Attribute @inline {
     __typename
     ... on PickAttribute {
+      enabledCount
       key
       label
       color
@@ -22,6 +23,7 @@ const fragment = graphql`
       locked
     }
     ... on ColorAttribute {
+      enabledCount
       key
       label
       color
@@ -31,6 +33,7 @@ const fragment = graphql`
       locked
     }
     ... on ComposeAttribute {
+      enabledCount
       key
       label
       color
@@ -40,6 +43,7 @@ const fragment = graphql`
       locked
     }
     ... on StatsAttribute {
+      enabledCount
       key
       label
       color
@@ -67,6 +71,7 @@ const fragment = graphql`
       locked
     }
     ... on TraitsAttribute {
+      enabledCount
       key
       label
       color
@@ -90,6 +95,8 @@ export interface AttributeHead {
   edited: boolean
   selected: boolean
   locked: boolean
+  /** List kinds: how many values are on. Null for kinds with no list (키, 생일). */
+  enabledCount: number | null
 }
 
 /** The fields every kind has, or null for a member this build doesn't know. */
@@ -97,5 +104,6 @@ export function attributeHead(ref: attributeHead_attribute$key): AttributeHead |
   const data = readInlineData(fragment, ref)
   if (data.__typename === '%other') return null
   const { __typename: kind, key, label, color, summary, edited, selected, locked } = data
-  return { kind, key, label, color, summary, edited, selected, locked }
+  const enabledCount = 'enabledCount' in data ? data.enabledCount : null
+  return { kind, key, label, color, summary, edited, selected, locked, enabledCount }
 }

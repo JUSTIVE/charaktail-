@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<86892a745f53cb03010f4d9a4abc01ba>>
+ * @generated SignedSource<<07f2feac4c9da3f37929037abdb87bd9>>
  * @lightSyntaxTransform
  */
 
@@ -21,6 +21,12 @@ import { edited as colorAttributeEditedResolverType } from "../graph/kinds/color
 (colorAttributeEditedResolverType satisfies (
   __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { enabledCount as colorAttributeEnabledCountResolverType } from "../graph/kinds/colorAttribute";
+// Type assertion validating that `colorAttributeEnabledCountResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(colorAttributeEnabledCountResolverType satisfies (
+  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<number>);
 import { key as colorAttributeKeyResolverType } from "../graph/kinds/colorAttribute";
 // Type assertion validating that `colorAttributeKeyResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -63,6 +69,12 @@ import { edited as composeAttributeEditedResolverType } from "../graph/kinds/com
 (composeAttributeEditedResolverType satisfies (
   __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { enabledCount as composeAttributeEnabledCountResolverType } from "../graph/kinds/composeAttribute";
+// Type assertion validating that `composeAttributeEnabledCountResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(composeAttributeEnabledCountResolverType satisfies (
+  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<number>);
 import { key as composeAttributeKeyResolverType } from "../graph/kinds/composeAttribute";
 // Type assertion validating that `composeAttributeKeyResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -147,6 +159,12 @@ import { edited as pickAttributeEditedResolverType } from "../graph/kinds/pickAt
 (pickAttributeEditedResolverType satisfies (
   __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { enabledCount as pickAttributeEnabledCountResolverType } from "../graph/kinds/pickAttribute";
+// Type assertion validating that `pickAttributeEnabledCountResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(pickAttributeEnabledCountResolverType satisfies (
+  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<number>);
 import { key as pickAttributeKeyResolverType } from "../graph/kinds/pickAttribute";
 // Type assertion validating that `pickAttributeKeyResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -231,6 +249,12 @@ import { edited as statsAttributeEditedResolverType } from "../graph/kinds/stats
 (statsAttributeEditedResolverType satisfies (
   __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { enabledCount as statsAttributeEnabledCountResolverType } from "../graph/kinds/statsAttribute";
+// Type assertion validating that `statsAttributeEnabledCountResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(statsAttributeEnabledCountResolverType satisfies (
+  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<number>);
 import { key as statsAttributeKeyResolverType } from "../graph/kinds/statsAttribute";
 // Type assertion validating that `statsAttributeKeyResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -273,6 +297,12 @@ import { edited as traitsAttributeEditedResolverType } from "../graph/kinds/trai
 (traitsAttributeEditedResolverType satisfies (
   __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { enabledCount as traitsAttributeEnabledCountResolverType } from "../graph/kinds/traitsAttribute";
+// Type assertion validating that `traitsAttributeEnabledCountResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(traitsAttributeEnabledCountResolverType satisfies (
+  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<number>);
 import { key as traitsAttributeKeyResolverType } from "../graph/kinds/traitsAttribute";
 // Type assertion validating that `traitsAttributeKeyResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -307,6 +337,7 @@ export type attributeHead_attribute$data = {
   readonly __typename: "ColorAttribute";
   readonly color: string;
   readonly edited: boolean;
+  readonly enabledCount: number;
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
@@ -317,6 +348,7 @@ export type attributeHead_attribute$data = {
   readonly __typename: "ComposeAttribute";
   readonly color: string;
   readonly edited: boolean;
+  readonly enabledCount: number;
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
@@ -337,6 +369,7 @@ export type attributeHead_attribute$data = {
   readonly __typename: "PickAttribute";
   readonly color: string;
   readonly edited: boolean;
+  readonly enabledCount: number;
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
@@ -357,6 +390,7 @@ export type attributeHead_attribute$data = {
   readonly __typename: "StatsAttribute";
   readonly color: string;
   readonly edited: boolean;
+  readonly enabledCount: number;
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
@@ -367,6 +401,7 @@ export type attributeHead_attribute$data = {
   readonly __typename: "TraitsAttribute";
   readonly color: string;
   readonly edited: boolean;
+  readonly enabledCount: number;
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
@@ -389,6 +424,6 @@ const node: ReaderInlineDataFragment = {
   "name": "attributeHead_attribute"
 };
 
-(node as any).hash = "83824009af3ddfb2d79946ea89f77f79";
+(node as any).hash = "16bc69852b31d98ded04a35b6453ccb8";
 
 export default node;

@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<b054cf31f717ebd02c0a28be28dfdfc1>>
+ * @generated SignedSource<<70c3b79dc64769c97a3ebf01cf537dce>>
  * @lightSyntaxTransform
  */
 
@@ -54,6 +54,7 @@ export type ShakeHudQuery = {
 import {ColorAttribute as colorAttributeRelayModelInstanceResolver} from '../graph/kinds/colorAttribute';
 import {color as colorAttributeColorResolver} from '../graph/kinds/colorAttribute';
 import {edited as colorAttributeEditedResolver} from '../graph/kinds/colorAttribute';
+import {enabledCount as colorAttributeEnabledCountResolver} from '../graph/kinds/colorAttribute';
 import {key as colorAttributeKeyResolver} from '../graph/kinds/colorAttribute';
 import {label as colorAttributeLabelResolver} from '../graph/kinds/colorAttribute';
 import {locked as colorAttributeLockedResolver} from '../graph/kinds/colorAttribute';
@@ -62,6 +63,7 @@ import {summary as colorAttributeSummaryResolver} from '../graph/kinds/colorAttr
 import {ComposeAttribute as composeAttributeRelayModelInstanceResolver} from '../graph/kinds/composeAttribute';
 import {color as composeAttributeColorResolver} from '../graph/kinds/composeAttribute';
 import {edited as composeAttributeEditedResolver} from '../graph/kinds/composeAttribute';
+import {enabledCount as composeAttributeEnabledCountResolver} from '../graph/kinds/composeAttribute';
 import {key as composeAttributeKeyResolver} from '../graph/kinds/composeAttribute';
 import {label as composeAttributeLabelResolver} from '../graph/kinds/composeAttribute';
 import {locked as composeAttributeLockedResolver} from '../graph/kinds/composeAttribute';
@@ -78,6 +80,7 @@ import {summary as dateAttributeSummaryResolver} from '../graph/kinds/dateAttrib
 import {PickAttribute as pickAttributeRelayModelInstanceResolver} from '../graph/kinds/pickAttribute';
 import {color as pickAttributeColorResolver} from '../graph/kinds/pickAttribute';
 import {edited as pickAttributeEditedResolver} from '../graph/kinds/pickAttribute';
+import {enabledCount as pickAttributeEnabledCountResolver} from '../graph/kinds/pickAttribute';
 import {key as pickAttributeKeyResolver} from '../graph/kinds/pickAttribute';
 import {label as pickAttributeLabelResolver} from '../graph/kinds/pickAttribute';
 import {locked as pickAttributeLockedResolver} from '../graph/kinds/pickAttribute';
@@ -94,6 +97,7 @@ import {summary as rangeAttributeSummaryResolver} from '../graph/kinds/rangeAttr
 import {StatsAttribute as statsAttributeRelayModelInstanceResolver} from '../graph/kinds/statsAttribute';
 import {color as statsAttributeColorResolver} from '../graph/kinds/statsAttribute';
 import {edited as statsAttributeEditedResolver} from '../graph/kinds/statsAttribute';
+import {enabledCount as statsAttributeEnabledCountResolver} from '../graph/kinds/statsAttribute';
 import {key as statsAttributeKeyResolver} from '../graph/kinds/statsAttribute';
 import {label as statsAttributeLabelResolver} from '../graph/kinds/statsAttribute';
 import {locked as statsAttributeLockedResolver} from '../graph/kinds/statsAttribute';
@@ -102,6 +106,7 @@ import {summary as statsAttributeSummaryResolver} from '../graph/kinds/statsAttr
 import {TraitsAttribute as traitsAttributeRelayModelInstanceResolver} from '../graph/kinds/traitsAttribute';
 import {color as traitsAttributeColorResolver} from '../graph/kinds/traitsAttribute';
 import {edited as traitsAttributeEditedResolver} from '../graph/kinds/traitsAttribute';
+import {enabledCount as traitsAttributeEnabledCountResolver} from '../graph/kinds/traitsAttribute';
 import {key as traitsAttributeKeyResolver} from '../graph/kinds/traitsAttribute';
 import {label as traitsAttributeLabelResolver} from '../graph/kinds/traitsAttribute';
 import {locked as traitsAttributeLockedResolver} from '../graph/kinds/traitsAttribute';
@@ -544,6 +549,15 @@ return {
                           "alias": null,
                           "args": null,
                           "fragment": (v2/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "enabledCount",
+                          "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeEnabledCountResolver, '__relay_model_instance', true),
+                          "path": "enabledCount"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v2/*:: as any*/),
                           "kind": "RelayResolver",
                           "name": "key",
                           "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeKeyResolver, '__relay_model_instance', true),
@@ -610,6 +624,15 @@ return {
                     {
                       "kind": "InlineFragment",
                       "selections": [
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v3/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "enabledCount",
+                          "resolverModule": resolverDataInjector(ColorAttribute____relay_model_instance_graphql, colorAttributeEnabledCountResolver, '__relay_model_instance', true),
+                          "path": "enabledCount"
+                        },
                         {
                           "alias": null,
                           "args": null,
@@ -684,6 +707,15 @@ return {
                           "alias": null,
                           "args": null,
                           "fragment": (v4/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "enabledCount",
+                          "resolverModule": resolverDataInjector(ComposeAttribute____relay_model_instance_graphql, composeAttributeEnabledCountResolver, '__relay_model_instance', true),
+                          "path": "enabledCount"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v4/*:: as any*/),
                           "kind": "RelayResolver",
                           "name": "key",
                           "resolverModule": resolverDataInjector(ComposeAttribute____relay_model_instance_graphql, composeAttributeKeyResolver, '__relay_model_instance', true),
@@ -750,6 +782,15 @@ return {
                     {
                       "kind": "InlineFragment",
                       "selections": [
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v5/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "enabledCount",
+                          "resolverModule": resolverDataInjector(StatsAttribute____relay_model_instance_graphql, statsAttributeEnabledCountResolver, '__relay_model_instance', true),
+                          "path": "enabledCount"
+                        },
                         {
                           "alias": null,
                           "args": null,
@@ -964,6 +1005,15 @@ return {
                           "alias": null,
                           "args": null,
                           "fragment": (v8/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "enabledCount",
+                          "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeEnabledCountResolver, '__relay_model_instance', true),
+                          "path": "enabledCount"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v8/*:: as any*/),
                           "kind": "RelayResolver",
                           "name": "key",
                           "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeKeyResolver, '__relay_model_instance', true),
@@ -1109,6 +1159,14 @@ return {
               "kind": "InlineFragment",
               "selections": [
                 {
+                  "name": "enabledCount",
+                  "args": null,
+                  "fragment": (v12/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
                   "name": "key",
                   "args": null,
                   "fragment": (v12/*:: as any*/),
@@ -1172,6 +1230,14 @@ return {
             {
               "kind": "InlineFragment",
               "selections": [
+                {
+                  "name": "enabledCount",
+                  "args": null,
+                  "fragment": (v13/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
                 {
                   "name": "key",
                   "args": null,
@@ -1237,6 +1303,14 @@ return {
               "kind": "InlineFragment",
               "selections": [
                 {
+                  "name": "enabledCount",
+                  "args": null,
+                  "fragment": (v14/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
                   "name": "key",
                   "args": null,
                   "fragment": (v14/*:: as any*/),
@@ -1300,6 +1374,14 @@ return {
             {
               "kind": "InlineFragment",
               "selections": [
+                {
+                  "name": "enabledCount",
+                  "args": null,
+                  "fragment": (v15/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
                 {
                   "name": "key",
                   "args": null,
@@ -1492,6 +1574,14 @@ return {
             {
               "kind": "InlineFragment",
               "selections": [
+                {
+                  "name": "enabledCount",
+                  "args": null,
+                  "fragment": (v18/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
                 {
                   "name": "key",
                   "args": null,

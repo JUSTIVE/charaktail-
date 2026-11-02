@@ -88,3 +88,10 @@ export { locked } from '../attributeFields'
  * @live
  */
 export { options } from '../attributeFields'
+
+/**
+ * How many of its values are switched on.
+ * @relayField ColorAttribute.enabledCount: Int!
+ * @live
+ */
+export { enabledCount } from '../attributeFields'

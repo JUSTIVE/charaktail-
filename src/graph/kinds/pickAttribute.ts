@@ -107,3 +107,10 @@ export { multiple } from '../attributeFields'
  * @live
  */
 export { count } from '../attributeFields'
+
+/**
+ * How many of its values are switched on.
+ * @relayField PickAttribute.enabledCount: Int!
+ * @live
+ */
+export { enabledCount } from '../attributeFields'

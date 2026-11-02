@@ -120,10 +120,17 @@ export function Picker() {
                 className="chip press-soft"
                 style={{ '--chip': attribute.color } as CSSProperties}
               >
+                {/* How many of its values are on: big and faint behind the label, cut off by the chip's edge. */}
+                {attribute.enabledCount !== null ? (
+                  <span aria-hidden className="chip-count">
+                    <NumberFlow value={attribute.enabledCount} className="tnum" />
+                  </span>
+                ) : null}
                 <span className="flex items-center gap-2 pr-6">
                   <Dot color={attribute.color} size={9} />
                   <span className="text-[14px] font-semibold">{attribute.label}</span>
                   {attribute.locked ? <LockIcon locked aria-label="잠김" width={12} height={12} className="-ml-0.5 shrink-0 opacity-70" /> : null}
+                  {attribute.enabledCount !== null ? <span className="sr-only">, 값 {attribute.enabledCount}개 켜짐</span> : null}
                 </span>
               </button>
             </HapticTap>

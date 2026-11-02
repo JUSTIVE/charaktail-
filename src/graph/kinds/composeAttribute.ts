@@ -94,3 +94,10 @@ export { options } from '../attributeFields'
  * @relayField ComposeAttribute.partLabels: [String!]!
  */
 export { partLabels } from '../attributeFields'
+
+/**
+ * How many of its values are switched on.
+ * @relayField ComposeAttribute.enabledCount: Int!
+ * @live
+ */
+export { enabledCount } from '../attributeFields'
