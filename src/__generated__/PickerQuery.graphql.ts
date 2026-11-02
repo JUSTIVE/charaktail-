@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<1f9af628c531f79099cc28437d54e8bc>>
+ * @generated SignedSource<<d0be31f43457e0615fb4dfb88be90ff3>>
  * @lightSyntaxTransform
  */
 
@@ -15,6 +15,12 @@ import { canShake as draftCanShakeResolverType } from "../graph/draft";
 (draftCanShakeResolverType satisfies (
   __relay_model_instance: Draft____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { characterCount as draftCharacterCountResolverType } from "../graph/draft";
+// Type assertion validating that `draftCharacterCountResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(draftCharacterCountResolverType satisfies (
+  __relay_model_instance: Draft____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<number>);
 import { name as draftNameResolverType } from "../graph/draft";
 // Type assertion validating that `draftNameResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -60,6 +66,7 @@ export type PickerQuery$data = {
   }>;
   readonly draft: {
     readonly canShake: boolean;
+    readonly characterCount: number;
     readonly name: string;
     readonly selectionCount: number;
   };
@@ -74,6 +81,7 @@ export type PickerQuery = {
 
 import {Draft as draftRelayModelInstanceResolver} from '../graph/draft';
 import {canShake as draftCanShakeResolver} from '../graph/draft';
+import {characterCount as draftCharacterCountResolver} from '../graph/draft';
 import {name as draftNameResolver} from '../graph/draft';
 import {selectionCount as draftSelectionCountResolver} from '../graph/draft';
 import {ColorAttribute as colorAttributeRelayModelInstanceResolver} from '../graph/kinds/colorAttribute';
@@ -451,6 +459,15 @@ return {
               "name": "selectionCount",
               "resolverModule": resolverDataInjector(Draft____relay_model_instance_graphql, draftSelectionCountResolver, '__relay_model_instance', true),
               "path": "draft.selectionCount"
+            },
+            {
+              "alias": null,
+              "args": null,
+              "fragment": (v0/*:: as any*/),
+              "kind": "RelayLiveResolver",
+              "name": "characterCount",
+              "resolverModule": resolverDataInjector(Draft____relay_model_instance_graphql, draftCharacterCountResolver, '__relay_model_instance', true),
+              "path": "draft.characterCount"
             }
           ],
           "storageKey": null
@@ -1228,6 +1245,14 @@ return {
               "storageKey": null,
               "isOutputType": true
             },
+            {
+              "name": "characterCount",
+              "args": null,
+              "fragment": (v11/*:: as any*/),
+              "kind": "RelayResolver",
+              "storageKey": null,
+              "isOutputType": true
+            },
             (v9/*:: as any*/)
           ],
           "storageKey": null
@@ -1818,6 +1843,6 @@ return {
 };
 })();
 
-(node as any).hash = "4cc783bafad7cae80a3625aa287ccf34";
+(node as any).hash = "7b3038bdbba4e8f84fe0a3a42e9f7a33";
 
 export default node;

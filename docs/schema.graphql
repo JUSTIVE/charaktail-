@@ -299,6 +299,10 @@ type Draft {
   name: String! @live
   selectionCount: Int! @live
   """
+  How many different characters the next shake picks one from — the selection over the value lists as edited.
+  """
+  characterCount: Float! @live
+  """
   Ready to shake: a name and at least one attribute.
   """
   canShake: Boolean! @live

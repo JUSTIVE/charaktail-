@@ -290,6 +290,18 @@ describe('species spans', () => {
   })
 })
 
+describe('character count', () => {
+  test('counts values as edited, and 나이·키 species by species', async () => {
+    const { countCharacters } = await import('./count')
+    expect(countCharacters(catalog, {}, [])).toBe(0)
+    expect(countCharacters(catalog, {}, ['gender'])).toBe(4)
+    expect(countCharacters(catalog, { gender: { disabled: ['여성'], removed: [], added: [] } }, ['gender'])).toBe(3)
+    // One species on: its own 키 span, not 키's default.
+    const onlyDwarf = { species: { disabled: speciesTable.filter((s) => s.id !== 'dwarf').map((s) => s.id), removed: [], added: [] } }
+    expect(countCharacters(catalog, onlyDwarf, ['species', 'height'])).toBe(150 - 110 + 1)
+  })
+})
+
 describe('compose edits', () => {
   test('a value added to the second part lands there and survives the roll key', () => {
     const epithet = catalog.byId.get('epithet') as AttributeOf<'compose'>
