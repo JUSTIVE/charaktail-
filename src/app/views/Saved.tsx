@@ -1,15 +1,15 @@
 import { Link, useSearch } from '@tanstack/react-router'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { graphql } from 'relay-runtime'
 
 import { useLocalQuery } from '../../graph/useLocalQuery'
 
 import { router } from '../../router'
 import { haptic } from '../../stage/haptics'
-import { addFolder, moveToFolder, removeFolder, renameFolder } from '../../state/saved'
+import { addFolder, moveToFolder, removeFolder, removeSaved, renameFolder } from '../../state/saved'
 import { FOLDER_NAME_MAX } from '../../state/schema'
 import { attributeHead } from '../attributeHead'
-import { BackIcon, FolderIcon, PlusIcon } from '../icons'
+import { BackIcon, FolderIcon, PlusIcon, TrashIcon } from '../icons'
 import { Button, seq } from '../ui'
 import type { SavedQuery } from '../../__generated__/SavedQuery.graphql'
 
@@ -59,6 +59,14 @@ export function Saved() {
   // Which inline form is open: a new folder, or renaming the current one.
   const [editing, setEditing] = useState<'new' | 'rename' | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  // A character's trash button arms on the first tap and deletes on the second;
+  // left alone, it disarms.
+  const [arming, setArming] = useState<string | null>(null)
+  useEffect(() => {
+    if (!arming) return
+    const t = setTimeout(() => setArming(null), 3000)
+    return () => clearTimeout(t)
+  }, [arming])
 
   return (
     <div data-stage-floor className="space-y-3.5">
@@ -154,7 +162,7 @@ export function Saved() {
             const filed = entry.folder ? folderName.get(entry.folder) : undefined
             return (
               <li key={key} className="ms-item relative" style={seq(index + 2)}>
-                <Link to="/result" search={{ k: key }} className="press result-row flex items-center gap-3 pr-12">
+                <Link to="/result" search={{ k: key }} className={`press result-row flex items-center gap-3 ${folders.length > 0 ? 'pr-[84px]' : 'pr-12'}`}>
                   <span className="flex -space-x-1">
                     {(entry.roll?.entries ?? []).slice(0, 6).map((e, i) => (
                       <span key={i} className="size-3.5 rounded-full ring-2 ring-[var(--ms-surface)]" style={{ background: (e.attribute && attributeHead(e.attribute)?.color) ?? '#888' }} />
@@ -168,6 +176,21 @@ export function Saved() {
                     </span>
                   </span>
                 </Link>
+                <button
+                  type="button"
+                  className="saved-delete press"
+                  data-armed={arming === key || undefined}
+                  data-alone={folders.length === 0 || undefined}
+                  aria-label={arming === key ? `한 번 더 누르면 ${entry.roll?.name ?? '캐릭터'} 삭제` : `${entry.roll?.name ?? '캐릭터'} 삭제`}
+                  onClick={() => {
+                    haptic.select()
+                    if (arming !== key) return setArming(key)
+                    setArming(null)
+                    removeSaved(key)
+                  }}
+                >
+                  <TrashIcon width={16} height={16} />
+                </button>
                 {/* A native picker over the icon: the phone's own sheet lists the folders. */}
                 {folders.length > 0 ? (
                   <label className="folder-move press" data-filed={entry.folder ? true : undefined} aria-label={`${entry.roll?.name ?? '캐릭터'} 폴더 옮기기`}>

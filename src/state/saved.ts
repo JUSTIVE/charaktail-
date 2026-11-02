@@ -46,6 +46,11 @@ export function removeFolder(id: string): void {
   savedCell.set((list) => list.map(({ folder, ...rest }) => (folder === id ? rest : { ...rest, ...(folder ? { folder } : {}) })))
 }
 
+/** Takes a character out of 보관함 — its folder only ever held a pointer to it. */
+export function removeSaved(key: string): void {
+  savedCell.set((list) => list.filter((s) => s.key !== key))
+}
+
 /** Files a saved character in a folder, or takes it out with null. */
 export function moveToFolder(key: string, folder: string | null): void {
   savedCell.set((list) =>

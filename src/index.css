@@ -615,6 +615,27 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
 .folder-pill-add {
   border-style: dashed;
 }
+/* Deleting a saved character: the first tap arms it (red), the second deletes. */
+.saved-delete {
+  position: absolute;
+  top: 50%;
+  right: 44px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  color: var(--color-faint);
+  transition: color 160ms ease, background-color 160ms ease;
+}
+.saved-delete[data-alone] {
+  right: 6px;
+}
+.saved-delete[data-armed] {
+  color: #ff977d;
+  background: rgb(255 151 125 / 0.14);
+}
 /* Moving a saved character: an icon over an invisible native select. */
 .folder-move {
   position: absolute;
