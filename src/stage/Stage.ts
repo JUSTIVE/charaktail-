@@ -730,9 +730,15 @@ function drawAtlas(canvas: HTMLCanvasElement, specs: readonly BallSpec[], limit:
       if (count !== null) {
         ctx.save()
         ctx.font = labelFont(150)
-        // Barely there: the shader's colour split and refraction double any ink, and on iOS it shouted (#161).
-        ctx.globalAlpha = 0.06
-        ctx.fillStyle = ink
+        // No shadow: the label before this one left its own set, and Safari
+        // draws shadowed text at full strength whatever globalAlpha says —
+        // every bubble after the first got a solid numeral (#162). The
+        // faintness rides in the colour itself; barely there, since the
+        // shader's colour split and refraction double any ink (#161).
+        ctx.shadowColor = 'transparent'
+        ctx.shadowBlur = 0
+        ctx.shadowOffsetY = 0
+        ctx.fillStyle = dark ? 'rgba(18, 17, 19, 0.06)' : 'rgba(255, 255, 255, 0.06)'
         ctx.fillText(String(count), ATLAS_CELL / 2, cy + 6)
         ctx.restore()
         ctx.font = labelFont(size)
