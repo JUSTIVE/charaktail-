@@ -13,6 +13,8 @@ const fragment = graphql`
   fragment attributeHead_attribute on Attribute @inline {
     __typename
     ... on PickAttribute {
+      multiple
+      count
       enabledCount
       key
       label
@@ -71,6 +73,8 @@ const fragment = graphql`
       locked
     }
     ... on TraitsAttribute {
+      multiple
+      count
       enabledCount
       key
       label
@@ -97,6 +101,11 @@ export interface AttributeHead {
   locked: boolean
   /** List kinds: how many values are on. Null for kinds with no list (키, 생일). */
   enabledCount: number | null
+  /**
+   * Several at once: how many come out — exactly, for a pick; at most, for
+   * 외형 특징, where Infinity means 무제한. Null for one-at-a-time kinds.
+   */
+  draws: number | null
 }
 
 /** The fields every kind has, or null for a member this build doesn't know. */
@@ -105,5 +114,6 @@ export function attributeHead(ref: attributeHead_attribute$key): AttributeHead |
   if (data.__typename === '%other') return null
   const { __typename: kind, key, label, color, summary, edited, selected, locked } = data
   const enabledCount = 'enabledCount' in data ? data.enabledCount : null
-  return { kind, key, label, color, summary, edited, selected, locked, enabledCount }
+  const draws = 'multiple' in data && data.multiple ? (data.count ?? Number.POSITIVE_INFINITY) : null
+  return { kind, key, label, color, summary, edited, selected, locked, enabledCount, draws }
 }

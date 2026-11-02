@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<07f2feac4c9da3f37929037abdb87bd9>>
+ * @generated SignedSource<<a0bdac44201e86fab2ccb0f11285c536>>
  * @lightSyntaxTransform
  */
 
@@ -153,6 +153,12 @@ import { color as pickAttributeColorResolverType } from "../graph/kinds/pickAttr
 (pickAttributeColorResolverType satisfies (
   __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => string);
+import { count as pickAttributeCountResolverType } from "../graph/kinds/pickAttribute";
+// Type assertion validating that `pickAttributeCountResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(pickAttributeCountResolverType satisfies (
+  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<number | null | undefined>);
 import { edited as pickAttributeEditedResolverType } from "../graph/kinds/pickAttribute";
 // Type assertion validating that `pickAttributeEditedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -183,6 +189,12 @@ import { locked as pickAttributeLockedResolverType } from "../graph/kinds/pickAt
 (pickAttributeLockedResolverType satisfies (
   __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { multiple as pickAttributeMultipleResolverType } from "../graph/kinds/pickAttribute";
+// Type assertion validating that `pickAttributeMultipleResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(pickAttributeMultipleResolverType satisfies (
+  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
+) => boolean);
 import { selected as pickAttributeSelectedResolverType } from "../graph/kinds/pickAttribute";
 // Type assertion validating that `pickAttributeSelectedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -291,6 +303,12 @@ import { color as traitsAttributeColorResolverType } from "../graph/kinds/traits
 (traitsAttributeColorResolverType satisfies (
   __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => string);
+import { count as traitsAttributeCountResolverType } from "../graph/kinds/traitsAttribute";
+// Type assertion validating that `traitsAttributeCountResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(traitsAttributeCountResolverType satisfies (
+  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<number | null | undefined>);
 import { edited as traitsAttributeEditedResolverType } from "../graph/kinds/traitsAttribute";
 // Type assertion validating that `traitsAttributeEditedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -321,6 +339,12 @@ import { locked as traitsAttributeLockedResolverType } from "../graph/kinds/trai
 (traitsAttributeLockedResolverType satisfies (
   __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { multiple as traitsAttributeMultipleResolverType } from "../graph/kinds/traitsAttribute";
+// Type assertion validating that `traitsAttributeMultipleResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(traitsAttributeMultipleResolverType satisfies (
+  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
+) => boolean);
 import { selected as traitsAttributeSelectedResolverType } from "../graph/kinds/traitsAttribute";
 // Type assertion validating that `traitsAttributeSelectedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -368,11 +392,13 @@ export type attributeHead_attribute$data = {
 } | {
   readonly __typename: "PickAttribute";
   readonly color: string;
+  readonly count: number | null | undefined;
   readonly edited: boolean;
   readonly enabledCount: number;
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
+  readonly multiple: boolean;
   readonly selected: boolean;
   readonly summary: string;
   readonly " $fragmentType": "attributeHead_attribute";
@@ -400,11 +426,13 @@ export type attributeHead_attribute$data = {
 } | {
   readonly __typename: "TraitsAttribute";
   readonly color: string;
+  readonly count: number | null | undefined;
   readonly edited: boolean;
   readonly enabledCount: number;
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
+  readonly multiple: boolean;
   readonly selected: boolean;
   readonly summary: string;
   readonly " $fragmentType": "attributeHead_attribute";
@@ -424,6 +452,6 @@ const node: ReaderInlineDataFragment = {
   "name": "attributeHead_attribute"
 };
 
-(node as any).hash = "16bc69852b31d98ded04a35b6453ccb8";
+(node as any).hash = "646a0e7bc65566bccddf5f69fff32453";
 
 export default node;

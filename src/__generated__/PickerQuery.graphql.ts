@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<d0be31f43457e0615fb4dfb88be90ff3>>
+ * @generated SignedSource<<65c60bb28ae68c158b4c450ce93c3794>>
  * @lightSyntaxTransform
  */
 
@@ -112,11 +112,13 @@ import {selected as dateAttributeSelectedResolver} from '../graph/kinds/dateAttr
 import {summary as dateAttributeSummaryResolver} from '../graph/kinds/dateAttribute';
 import {PickAttribute as pickAttributeRelayModelInstanceResolver} from '../graph/kinds/pickAttribute';
 import {color as pickAttributeColorResolver} from '../graph/kinds/pickAttribute';
+import {count as pickAttributeCountResolver} from '../graph/kinds/pickAttribute';
 import {edited as pickAttributeEditedResolver} from '../graph/kinds/pickAttribute';
 import {enabledCount as pickAttributeEnabledCountResolver} from '../graph/kinds/pickAttribute';
 import {key as pickAttributeKeyResolver} from '../graph/kinds/pickAttribute';
 import {label as pickAttributeLabelResolver} from '../graph/kinds/pickAttribute';
 import {locked as pickAttributeLockedResolver} from '../graph/kinds/pickAttribute';
+import {multiple as pickAttributeMultipleResolver} from '../graph/kinds/pickAttribute';
 import {selected as pickAttributeSelectedResolver} from '../graph/kinds/pickAttribute';
 import {summary as pickAttributeSummaryResolver} from '../graph/kinds/pickAttribute';
 import {RangeAttribute as rangeAttributeRelayModelInstanceResolver} from '../graph/kinds/rangeAttribute';
@@ -138,11 +140,13 @@ import {selected as statsAttributeSelectedResolver} from '../graph/kinds/statsAt
 import {summary as statsAttributeSummaryResolver} from '../graph/kinds/statsAttribute';
 import {TraitsAttribute as traitsAttributeRelayModelInstanceResolver} from '../graph/kinds/traitsAttribute';
 import {color as traitsAttributeColorResolver} from '../graph/kinds/traitsAttribute';
+import {count as traitsAttributeCountResolver} from '../graph/kinds/traitsAttribute';
 import {edited as traitsAttributeEditedResolver} from '../graph/kinds/traitsAttribute';
 import {enabledCount as traitsAttributeEnabledCountResolver} from '../graph/kinds/traitsAttribute';
 import {key as traitsAttributeKeyResolver} from '../graph/kinds/traitsAttribute';
 import {label as traitsAttributeLabelResolver} from '../graph/kinds/traitsAttribute';
 import {locked as traitsAttributeLockedResolver} from '../graph/kinds/traitsAttribute';
+import {multiple as traitsAttributeMultipleResolver} from '../graph/kinds/traitsAttribute';
 import {selected as traitsAttributeSelectedResolver} from '../graph/kinds/traitsAttribute';
 import {summary as traitsAttributeSummaryResolver} from '../graph/kinds/traitsAttribute';
 import {attributes as queryAttributesResolver} from '../graph/root';
@@ -655,6 +659,24 @@ return {
                           "alias": null,
                           "args": null,
                           "fragment": (v2/*:: as any*/),
+                          "kind": "RelayResolver",
+                          "name": "multiple",
+                          "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeMultipleResolver, '__relay_model_instance', true),
+                          "path": "multiple"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v2/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "count",
+                          "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeCountResolver, '__relay_model_instance', true),
+                          "path": "count"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v2/*:: as any*/),
                           "kind": "RelayLiveResolver",
                           "name": "enabledCount",
                           "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeEnabledCountResolver, '__relay_model_instance', true),
@@ -1111,6 +1133,24 @@ return {
                           "alias": null,
                           "args": null,
                           "fragment": (v8/*:: as any*/),
+                          "kind": "RelayResolver",
+                          "name": "multiple",
+                          "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeMultipleResolver, '__relay_model_instance', true),
+                          "path": "multiple"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v8/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "count",
+                          "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeCountResolver, '__relay_model_instance', true),
+                          "path": "count"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v8/*:: as any*/),
                           "kind": "RelayLiveResolver",
                           "name": "enabledCount",
                           "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeEnabledCountResolver, '__relay_model_instance', true),
@@ -1330,6 +1370,22 @@ return {
             {
               "kind": "InlineFragment",
               "selections": [
+                {
+                  "name": "multiple",
+                  "args": null,
+                  "fragment": (v12/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "count",
+                  "args": null,
+                  "fragment": (v12/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
                 {
                   "name": "enabledCount",
                   "args": null,
@@ -1746,6 +1802,22 @@ return {
             {
               "kind": "InlineFragment",
               "selections": [
+                {
+                  "name": "multiple",
+                  "args": null,
+                  "fragment": (v18/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "count",
+                  "args": null,
+                  "fragment": (v18/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
                 {
                   "name": "enabledCount",
                   "args": null,

@@ -513,7 +513,8 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   overflow-y: auto;
   overscroll-behavior: contain;
   margin-inline: -4px;
-  padding: 6px 4px 10px;
+  /* Room above the first row for the mini bubbles on chips' corners. */
+  padding: 10px 4px 10px;
 }
 
 /*
@@ -657,6 +658,39 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   color: color-mix(in oklab, var(--nested) 75%, white);
   background: color-mix(in oklab, var(--nested) 22%, transparent);
   border: 1px solid color-mix(in oklab, var(--nested) 45%, transparent);
+}
+
+/*
+ * How many a several-at-once chip draws: a mini bubble — the stage's drops in
+ * small, glossy in the chip's colour — sitting on its top-right corner.
+ */
+.chip-draws {
+  z-index: 3;
+  position: absolute;
+  top: -7px;
+  right: -3px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1;
+  pointer-events: none;
+  color: white;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+  background:
+    radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.55), transparent 42%),
+    radial-gradient(circle at 50% 60%, var(--chip), color-mix(in oklab, var(--chip) 60%, black));
+  box-shadow: 0 0 10px -2px var(--chip), inset 0 -1px 2px rgb(0 0 0 / 0.25);
+  transition: filter 200ms ease, opacity 200ms ease;
+}
+/* An off chip's bubble goes dark with it. */
+.chip-draws:not([data-on]) {
+  filter: grayscale(1) brightness(0.55);
+  box-shadow: none;
 }
 
 /* Kebab on a chip: a sibling pinned to the chip's corner. */

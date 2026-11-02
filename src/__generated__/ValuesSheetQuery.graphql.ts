@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<71ed2a1464b489a739ad01eb77cbd47d>>
+ * @generated SignedSource<<8fef08bbed9c3b46359d1ee5ddf95ef1>>
  * @lightSyntaxTransform
  */
 
@@ -580,7 +580,7 @@ v17 = {
   "abstractKey": null
 },
 v18 = {
-  "name": "key",
+  "name": "multiple",
   "args": null,
   "fragment": (v17/*:: as any*/),
   "kind": "RelayResolver",
@@ -588,7 +588,7 @@ v18 = {
   "isOutputType": true
 },
 v19 = {
-  "name": "label",
+  "name": "count",
   "args": null,
   "fragment": (v17/*:: as any*/),
   "kind": "RelayResolver",
@@ -596,6 +596,22 @@ v19 = {
   "isOutputType": true
 },
 v20 = {
+  "name": "key",
+  "args": null,
+  "fragment": (v17/*:: as any*/),
+  "kind": "RelayResolver",
+  "storageKey": null,
+  "isOutputType": true
+},
+v21 = {
+  "name": "label",
+  "args": null,
+  "fragment": (v17/*:: as any*/),
+  "kind": "RelayResolver",
+  "storageKey": null,
+  "isOutputType": true
+},
+v22 = {
   "name": "options",
   "args": null,
   "fragment": (v17/*:: as any*/),
@@ -603,7 +619,7 @@ v20 = {
   "storageKey": null,
   "isOutputType": true
 },
-v21 = [
+v23 = [
   {
     "alias": null,
     "args": null,
@@ -612,45 +628,45 @@ v21 = [
     "storageKey": null
   }
 ],
-v22 = {
+v24 = {
   "kind": "InlineFragment",
-  "selections": (v21/*:: as any*/),
+  "selections": (v23/*:: as any*/),
   "type": "AttributeOption",
   "abstractKey": null
 },
-v23 = {
+v25 = {
   "name": "key",
   "args": null,
-  "fragment": (v22/*:: as any*/),
-  "kind": "RelayResolver",
-  "storageKey": null,
-  "isOutputType": true
-},
-v24 = {
-  "name": "label",
-  "args": null,
-  "fragment": (v22/*:: as any*/),
-  "kind": "RelayResolver",
-  "storageKey": null,
-  "isOutputType": true
-},
-v25 = {
-  "name": "hint",
-  "args": null,
-  "fragment": (v22/*:: as any*/),
+  "fragment": (v24/*:: as any*/),
   "kind": "RelayResolver",
   "storageKey": null,
   "isOutputType": true
 },
 v26 = {
-  "name": "enabled",
+  "name": "label",
   "args": null,
-  "fragment": (v22/*:: as any*/),
+  "fragment": (v24/*:: as any*/),
   "kind": "RelayResolver",
   "storageKey": null,
   "isOutputType": true
 },
 v27 = {
+  "name": "hint",
+  "args": null,
+  "fragment": (v24/*:: as any*/),
+  "kind": "RelayResolver",
+  "storageKey": null,
+  "isOutputType": true
+},
+v28 = {
+  "name": "enabled",
+  "args": null,
+  "fragment": (v24/*:: as any*/),
+  "kind": "RelayResolver",
+  "storageKey": null,
+  "isOutputType": true
+},
+v29 = {
   "alias": null,
   "args": null,
   "concreteType": "AttributeOption",
@@ -658,13 +674,13 @@ v27 = {
   "name": "options",
   "plural": true,
   "selections": [
-    (v23/*:: as any*/),
-    (v24/*:: as any*/),
     (v25/*:: as any*/),
+    (v26/*:: as any*/),
+    (v27/*:: as any*/),
     {
       "name": "groups",
       "args": null,
-      "fragment": (v22/*:: as any*/),
+      "fragment": (v24/*:: as any*/),
       "kind": "RelayResolver",
       "storageKey": null,
       "isOutputType": true
@@ -672,16 +688,16 @@ v27 = {
     {
       "name": "part",
       "args": null,
-      "fragment": (v22/*:: as any*/),
+      "fragment": (v24/*:: as any*/),
       "kind": "RelayResolver",
       "storageKey": null,
       "isOutputType": true
     },
-    (v26/*:: as any*/),
+    (v28/*:: as any*/),
     {
       "name": "custom",
       "args": null,
-      "fragment": (v22/*:: as any*/),
+      "fragment": (v24/*:: as any*/),
       "kind": "RelayResolver",
       "storageKey": null,
       "isOutputType": true
@@ -689,7 +705,7 @@ v27 = {
     {
       "name": "swatches",
       "args": null,
-      "fragment": (v22/*:: as any*/),
+      "fragment": (v24/*:: as any*/),
       "kind": "RelayResolver",
       "storageKey": null,
       "isOutputType": true
@@ -697,7 +713,7 @@ v27 = {
   ],
   "storageKey": null
 },
-v28 = {
+v30 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -717,7 +733,7 @@ v28 = {
   "type": "ColorAttribute",
   "abstractKey": null
 },
-v29 = {
+v31 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -737,7 +753,7 @@ v29 = {
   "type": "ComposeAttribute",
   "abstractKey": null
 },
-v30 = {
+v32 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -757,7 +773,7 @@ v30 = {
   "type": "StatsAttribute",
   "abstractKey": null
 },
-v31 = {
+v33 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -777,13 +793,13 @@ v31 = {
   "type": "RangeAttribute",
   "abstractKey": null
 },
-v32 = {
+v34 = {
   "kind": "InlineFragment",
-  "selections": (v21/*:: as any*/),
+  "selections": (v23/*:: as any*/),
   "type": "SpeciesRange",
   "abstractKey": null
 },
-v33 = {
+v35 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -803,7 +819,7 @@ v33 = {
   "type": "DateAttribute",
   "abstractKey": null
 },
-v34 = {
+v36 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -822,6 +838,22 @@ v34 = {
   ],
   "type": "TraitsAttribute",
   "abstractKey": null
+},
+v37 = {
+  "name": "multiple",
+  "args": null,
+  "fragment": (v36/*:: as any*/),
+  "kind": "RelayResolver",
+  "storageKey": null,
+  "isOutputType": true
+},
+v38 = {
+  "name": "count",
+  "args": null,
+  "fragment": (v36/*:: as any*/),
+  "kind": "RelayResolver",
+  "storageKey": null,
+  "isOutputType": true
 };
 return {
   "fragment": {
@@ -954,6 +986,24 @@ return {
                     {
                       "kind": "InlineFragment",
                       "selections": [
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v4/*:: as any*/),
+                          "kind": "RelayResolver",
+                          "name": "multiple",
+                          "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeMultipleResolver, '__relay_model_instance', true),
+                          "path": "multiple"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v4/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "count",
+                          "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeCountResolver, '__relay_model_instance', true),
+                          "path": "count"
+                        },
                         {
                           "alias": null,
                           "args": null,
@@ -1410,6 +1460,24 @@ return {
                     {
                       "kind": "InlineFragment",
                       "selections": [
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v10/*:: as any*/),
+                          "kind": "RelayResolver",
+                          "name": "multiple",
+                          "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeMultipleResolver, '__relay_model_instance', true),
+                          "path": "multiple"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v10/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "count",
+                          "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeCountResolver, '__relay_model_instance', true),
+                          "path": "count"
+                        },
                         {
                           "alias": null,
                           "args": null,
@@ -1956,6 +2024,8 @@ return {
             {
               "kind": "InlineFragment",
               "selections": [
+                (v18/*:: as any*/),
+                (v19/*:: as any*/),
                 {
                   "name": "enabledCount",
                   "args": null,
@@ -1964,8 +2034,8 @@ return {
                   "storageKey": null,
                   "isOutputType": true
                 },
-                (v18/*:: as any*/),
-                (v19/*:: as any*/),
+                (v20/*:: as any*/),
+                (v21/*:: as any*/),
                 {
                   "name": "color",
                   "args": null,
@@ -2006,26 +2076,12 @@ return {
                   "storageKey": null,
                   "isOutputType": true
                 },
-                {
-                  "name": "multiple",
-                  "args": null,
-                  "fragment": (v17/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "count",
-                  "args": null,
-                  "fragment": (v17/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
+                (v18/*:: as any*/),
+                (v19/*:: as any*/),
                 {
                   "kind": "ClientEdgeToClientObject",
-                  "backingField": (v20/*:: as any*/),
-                  "linkedField": (v27/*:: as any*/)
+                  "backingField": (v22/*:: as any*/),
+                  "linkedField": (v29/*:: as any*/)
                 },
                 {
                   "kind": "ClientEdgeToClientObject",
@@ -2045,11 +2101,11 @@ return {
                     "name": "groupBy",
                     "plural": false,
                     "selections": [
-                      (v18/*:: as any*/),
-                      (v19/*:: as any*/),
+                      (v20/*:: as any*/),
+                      (v21/*:: as any*/),
                       {
                         "kind": "ClientEdgeToClientObject",
-                        "backingField": (v20/*:: as any*/),
+                        "backingField": (v22/*:: as any*/),
                         "linkedField": {
                           "alias": null,
                           "args": null,
@@ -2058,10 +2114,10 @@ return {
                           "name": "options",
                           "plural": true,
                           "selections": [
-                            (v23/*:: as any*/),
-                            (v24/*:: as any*/),
                             (v25/*:: as any*/),
-                            (v26/*:: as any*/)
+                            (v26/*:: as any*/),
+                            (v27/*:: as any*/),
+                            (v28/*:: as any*/)
                           ],
                           "storageKey": null
                         }
@@ -2082,182 +2138,6 @@ return {
                 {
                   "name": "enabledCount",
                   "args": null,
-                  "fragment": (v28/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "key",
-                  "args": null,
-                  "fragment": (v28/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "label",
-                  "args": null,
-                  "fragment": (v28/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "color",
-                  "args": null,
-                  "fragment": (v28/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "summary",
-                  "args": null,
-                  "fragment": (v28/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "edited",
-                  "args": null,
-                  "fragment": (v28/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "selected",
-                  "args": null,
-                  "fragment": (v28/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "locked",
-                  "args": null,
-                  "fragment": (v28/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "kind": "ClientEdgeToClientObject",
-                  "backingField": {
-                    "name": "options",
-                    "args": null,
-                    "fragment": (v28/*:: as any*/),
-                    "kind": "RelayResolver",
-                    "storageKey": null,
-                    "isOutputType": true
-                  },
-                  "linkedField": (v27/*:: as any*/)
-                },
-                (v15/*:: as any*/)
-              ],
-              "type": "ColorAttribute",
-              "abstractKey": null
-            },
-            {
-              "kind": "InlineFragment",
-              "selections": [
-                {
-                  "name": "enabledCount",
-                  "args": null,
-                  "fragment": (v29/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "key",
-                  "args": null,
-                  "fragment": (v29/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "label",
-                  "args": null,
-                  "fragment": (v29/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "color",
-                  "args": null,
-                  "fragment": (v29/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "summary",
-                  "args": null,
-                  "fragment": (v29/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "edited",
-                  "args": null,
-                  "fragment": (v29/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "selected",
-                  "args": null,
-                  "fragment": (v29/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "locked",
-                  "args": null,
-                  "fragment": (v29/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "partLabels",
-                  "args": null,
-                  "fragment": (v29/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "kind": "ClientEdgeToClientObject",
-                  "backingField": {
-                    "name": "options",
-                    "args": null,
-                    "fragment": (v29/*:: as any*/),
-                    "kind": "RelayResolver",
-                    "storageKey": null,
-                    "isOutputType": true
-                  },
-                  "linkedField": (v27/*:: as any*/)
-                },
-                (v15/*:: as any*/)
-              ],
-              "type": "ComposeAttribute",
-              "abstractKey": null
-            },
-            {
-              "kind": "InlineFragment",
-              "selections": [
-                {
-                  "name": "enabledCount",
-                  "args": null,
                   "fragment": (v30/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
@@ -2313,22 +2193,6 @@ return {
                 },
                 {
                   "name": "locked",
-                  "args": null,
-                  "fragment": (v30/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "rangeMin",
-                  "args": null,
-                  "fragment": (v30/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "rangeMax",
                   "args": null,
                   "fragment": (v30/*:: as any*/),
                   "kind": "RelayResolver",
@@ -2345,16 +2209,24 @@ return {
                     "storageKey": null,
                     "isOutputType": true
                   },
-                  "linkedField": (v27/*:: as any*/)
+                  "linkedField": (v29/*:: as any*/)
                 },
                 (v15/*:: as any*/)
               ],
-              "type": "StatsAttribute",
+              "type": "ColorAttribute",
               "abstractKey": null
             },
             {
               "kind": "InlineFragment",
               "selections": [
+                {
+                  "name": "enabledCount",
+                  "args": null,
+                  "fragment": (v31/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
                 {
                   "name": "key",
                   "args": null,
@@ -2412,39 +2284,7 @@ return {
                   "isOutputType": true
                 },
                 {
-                  "name": "rangeMin",
-                  "args": null,
-                  "fragment": (v31/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "rangeMax",
-                  "args": null,
-                  "fragment": (v31/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "unit",
-                  "args": null,
-                  "fragment": (v31/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "hasCases",
-                  "args": null,
-                  "fragment": (v31/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "dependsOnSpecies",
+                  "name": "partLabels",
                   "args": null,
                   "fragment": (v31/*:: as any*/),
                   "kind": "RelayResolver",
@@ -2454,9 +2294,225 @@ return {
                 {
                   "kind": "ClientEdgeToClientObject",
                   "backingField": {
-                    "name": "speciesRanges",
+                    "name": "options",
                     "args": null,
                     "fragment": (v31/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": true
+                  },
+                  "linkedField": (v29/*:: as any*/)
+                },
+                (v15/*:: as any*/)
+              ],
+              "type": "ComposeAttribute",
+              "abstractKey": null
+            },
+            {
+              "kind": "InlineFragment",
+              "selections": [
+                {
+                  "name": "enabledCount",
+                  "args": null,
+                  "fragment": (v32/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "key",
+                  "args": null,
+                  "fragment": (v32/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "label",
+                  "args": null,
+                  "fragment": (v32/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "color",
+                  "args": null,
+                  "fragment": (v32/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "summary",
+                  "args": null,
+                  "fragment": (v32/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "edited",
+                  "args": null,
+                  "fragment": (v32/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "selected",
+                  "args": null,
+                  "fragment": (v32/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "locked",
+                  "args": null,
+                  "fragment": (v32/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "rangeMin",
+                  "args": null,
+                  "fragment": (v32/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "rangeMax",
+                  "args": null,
+                  "fragment": (v32/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "backingField": {
+                    "name": "options",
+                    "args": null,
+                    "fragment": (v32/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": true
+                  },
+                  "linkedField": (v29/*:: as any*/)
+                },
+                (v15/*:: as any*/)
+              ],
+              "type": "StatsAttribute",
+              "abstractKey": null
+            },
+            {
+              "kind": "InlineFragment",
+              "selections": [
+                {
+                  "name": "key",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "label",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "color",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "summary",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "edited",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "selected",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "locked",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "rangeMin",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "rangeMax",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "unit",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "hasCases",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "dependsOnSpecies",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "backingField": {
+                    "name": "speciesRanges",
+                    "args": null,
+                    "fragment": (v33/*:: as any*/),
                     "kind": "RelayResolver",
                     "storageKey": null,
                     "isOutputType": true
@@ -2472,7 +2528,7 @@ return {
                       {
                         "name": "speciesKey",
                         "args": null,
-                        "fragment": (v32/*:: as any*/),
+                        "fragment": (v34/*:: as any*/),
                         "kind": "RelayResolver",
                         "storageKey": null,
                         "isOutputType": true
@@ -2480,7 +2536,7 @@ return {
                       {
                         "name": "speciesLabel",
                         "args": null,
-                        "fragment": (v32/*:: as any*/),
+                        "fragment": (v34/*:: as any*/),
                         "kind": "RelayResolver",
                         "storageKey": null,
                         "isOutputType": true
@@ -2488,7 +2544,7 @@ return {
                       {
                         "name": "speciesHint",
                         "args": null,
-                        "fragment": (v32/*:: as any*/),
+                        "fragment": (v34/*:: as any*/),
                         "kind": "RelayResolver",
                         "storageKey": null,
                         "isOutputType": true
@@ -2496,7 +2552,7 @@ return {
                       {
                         "name": "span",
                         "args": null,
-                        "fragment": (v32/*:: as any*/),
+                        "fragment": (v34/*:: as any*/),
                         "kind": "RelayResolver",
                         "storageKey": null,
                         "isOutputType": true
@@ -2504,7 +2560,7 @@ return {
                       {
                         "name": "bands",
                         "args": null,
-                        "fragment": (v32/*:: as any*/),
+                        "fragment": (v34/*:: as any*/),
                         "kind": "RelayResolver",
                         "storageKey": null,
                         "isOutputType": true
@@ -2524,7 +2580,7 @@ return {
                 {
                   "name": "key",
                   "args": null,
-                  "fragment": (v33/*:: as any*/),
+                  "fragment": (v35/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2532,7 +2588,7 @@ return {
                 {
                   "name": "label",
                   "args": null,
-                  "fragment": (v33/*:: as any*/),
+                  "fragment": (v35/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2540,7 +2596,7 @@ return {
                 {
                   "name": "color",
                   "args": null,
-                  "fragment": (v33/*:: as any*/),
+                  "fragment": (v35/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2548,7 +2604,7 @@ return {
                 {
                   "name": "summary",
                   "args": null,
-                  "fragment": (v33/*:: as any*/),
+                  "fragment": (v35/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2556,7 +2612,7 @@ return {
                 {
                   "name": "edited",
                   "args": null,
-                  "fragment": (v33/*:: as any*/),
+                  "fragment": (v35/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2564,7 +2620,7 @@ return {
                 {
                   "name": "selected",
                   "args": null,
-                  "fragment": (v33/*:: as any*/),
+                  "fragment": (v35/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2572,7 +2628,7 @@ return {
                 {
                   "name": "locked",
                   "args": null,
-                  "fragment": (v33/*:: as any*/),
+                  "fragment": (v35/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2585,10 +2641,12 @@ return {
             {
               "kind": "InlineFragment",
               "selections": [
+                (v37/*:: as any*/),
+                (v38/*:: as any*/),
                 {
                   "name": "enabledCount",
                   "args": null,
-                  "fragment": (v34/*:: as any*/),
+                  "fragment": (v36/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2596,7 +2654,7 @@ return {
                 {
                   "name": "key",
                   "args": null,
-                  "fragment": (v34/*:: as any*/),
+                  "fragment": (v36/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2604,7 +2662,7 @@ return {
                 {
                   "name": "label",
                   "args": null,
-                  "fragment": (v34/*:: as any*/),
+                  "fragment": (v36/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2612,7 +2670,7 @@ return {
                 {
                   "name": "color",
                   "args": null,
-                  "fragment": (v34/*:: as any*/),
+                  "fragment": (v36/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2620,7 +2678,7 @@ return {
                 {
                   "name": "summary",
                   "args": null,
-                  "fragment": (v34/*:: as any*/),
+                  "fragment": (v36/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2628,7 +2686,7 @@ return {
                 {
                   "name": "edited",
                   "args": null,
-                  "fragment": (v34/*:: as any*/),
+                  "fragment": (v36/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2636,7 +2694,7 @@ return {
                 {
                   "name": "selected",
                   "args": null,
-                  "fragment": (v34/*:: as any*/),
+                  "fragment": (v36/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -2644,38 +2702,24 @@ return {
                 {
                   "name": "locked",
                   "args": null,
-                  "fragment": (v34/*:: as any*/),
+                  "fragment": (v36/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
                 },
-                {
-                  "name": "multiple",
-                  "args": null,
-                  "fragment": (v34/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
-                {
-                  "name": "count",
-                  "args": null,
-                  "fragment": (v34/*:: as any*/),
-                  "kind": "RelayResolver",
-                  "storageKey": null,
-                  "isOutputType": true
-                },
+                (v37/*:: as any*/),
+                (v38/*:: as any*/),
                 {
                   "kind": "ClientEdgeToClientObject",
                   "backingField": {
                     "name": "options",
                     "args": null,
-                    "fragment": (v34/*:: as any*/),
+                    "fragment": (v36/*:: as any*/),
                     "kind": "RelayResolver",
                     "storageKey": null,
                     "isOutputType": true
                   },
-                  "linkedField": (v27/*:: as any*/)
+                  "linkedField": (v29/*:: as any*/)
                 },
                 (v15/*:: as any*/)
               ],

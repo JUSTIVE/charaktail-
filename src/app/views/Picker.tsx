@@ -160,6 +160,17 @@ export function Picker() {
                 ) : null}
               </button>
             </HapticTap>
+            {/* Several at once (액세서리 2개씩, 외형 특징 최대 N개): a mini bubble on the chip's corner. */}
+            {attribute.draws !== null ? (
+              <span
+                className="chip-draws"
+                data-on={attribute.selected || undefined}
+                style={{ '--chip': attribute.color } as CSSProperties}
+                aria-label={Number.isFinite(attribute.draws) ? `${attribute.draws}개씩` : '무제한'}
+              >
+                {Number.isFinite(attribute.draws) ? <NumberFlow value={attribute.draws} className="tnum" /> : '∞'}
+              </span>
+            ) : null}
             {/* A sibling, not a child: buttons cannot nest. */}
             <button
               type="button"
