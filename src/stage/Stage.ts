@@ -178,11 +178,23 @@ export class Stage {
     canvas.addEventListener('webglcontextrestored', onRestored)
     this.disposers.push(() => canvas.removeEventListener('webglcontextrestored', onRestored))
 
+    // iOS may throw away a hidden 2D canvas's pixels while the app is in the
+    // background; the next upload of a label texture would then be blank, and
+    // nothing ever drew it again (#159). Coming back always repaints them.
     const onVisibility = () => {
       if (document.hidden) cancelAnimationFrame(this.frame)
-      else this.start()
+      else {
+        this.redrawLabels()
+        this.start()
+      }
     }
     document.addEventListener('visibilitychange', onVisibility)
+    const onShow = () => this.redrawLabels()
+    window.addEventListener('pageshow', onShow)
+    this.disposers.push(() => window.removeEventListener('pageshow', onShow))
+    // A 2D canvas that lost its pixels says so when it gets them back (Safari 17+, Chrome).
+    this.atlasCanvas.addEventListener('contextrestored', onShow)
+    this.disposers.push(() => this.atlasCanvas.removeEventListener('contextrestored', onShow))
     this.disposers.push(() => document.removeEventListener('visibilitychange', onVisibility))
     this.start()
   }
@@ -609,10 +621,15 @@ export class Stage {
     this.renderer.render(this.scene, this.camera)
   }
 
+  /** The tallest label atlas this GPU takes. */
+  private atlasLimit(): number {
+    return this.renderer.capabilities.maxTextureSize || 4096
+  }
+
   /** Same balls, fresh ink: repaint the label atlas and the chant in place. */
   private redrawLabels(): void {
     if (this.atlas && this.atlasSpecs.length) {
-      drawAtlas(this.atlasCanvas, this.atlasSpecs, this.atlas)
+      drawAtlas(this.atlasCanvas, this.atlasSpecs, this.atlasLimit(), this.atlas)
     }
     if (this.shakaTex) {
       drawShaka(this.shakaTex)
@@ -624,7 +641,7 @@ export class Stage {
     const bodies = this.world.bodies
     const specs = bodies.map((b) => this.specs.get(b.id)!)
     this.atlas?.dispose()
-    this.atlas = drawAtlas(this.atlasCanvas, specs)
+    this.atlas = drawAtlas(this.atlasCanvas, specs, this.atlasLimit())
     this.atlasSpecs = specs
     // Ask for exactly these glyphs; draw again once they are in.
     void document.fonts.load(labelFont(64), specs.map((s) => s.label).join('')).then(() => this.redrawLabels())
@@ -682,16 +699,21 @@ const labelFont = (px: number) => `700 ${px}px "Pretendard Variable", Pretendard
 /**
  * One row per label; the ink follows the fill, so amber and lime get dark
  * type. Draws into `canvas`; with `into`, refreshes that texture in place
- * (same size) instead of making a new one.
+ * (same size) instead of making a new one. Rows shrink below ATLAS_CELL when
+ * a tall stack would pass `limit`, the GPU's largest texture — some phones
+ * take no more than 4096px, and an atlas that fails to upload draws no
+ * labels at all (#159). Everything is drawn in ATLAS_CELL units and scaled.
  */
-function drawAtlas(canvas: HTMLCanvasElement, specs: readonly BallSpec[], into?: CanvasTexture): CanvasTexture {
+function drawAtlas(canvas: HTMLCanvasElement, specs: readonly BallSpec[], limit: number, into?: CanvasTexture): CanvasTexture {
   const labels = specs.map((s) => s.label)
   const rows = Math.max(labels.length, 1)
+  const cell = Math.min(ATLAS_CELL, Math.floor(limit / rows))
   // Setting the size also clears the canvas.
-  canvas.width = ATLAS_CELL
-  canvas.height = ATLAS_CELL * rows
+  canvas.width = cell
+  canvas.height = cell * rows
   const ctx = canvas.getContext('2d')
   if (ctx) {
+    ctx.setTransform(cell / ATLAS_CELL, 0, 0, cell / ATLAS_CELL, 0, 0)
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     labels.forEach((label, i) => {
