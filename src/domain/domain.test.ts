@@ -56,7 +56,7 @@ describe('roll', () => {
       const species = values.get('species')!.valueIds[0]
       if (species === 'alien') expect(world).toBe('spaceOpera')
       if (species === 'android') expect(values.get('age')!.label).toStartWith('제조 후')
-      expect(values.get('personality')!.valueIds).toHaveLength(2)
+      expect(values.get('personality')!.valueIds.length).toBeOneOf([1, 2])
     }
   })
 
@@ -75,7 +75,8 @@ describe('explain', () => {
       for (const value of explainRoll(catalog, { seed: `e${i}`, attributeIds: all })) {
         const attribute = catalog.byId.get(value.attributeId)!
         // Only list kinds name their values; generated kinds describe how they roll.
-        if (attribute.kind !== 'color' && !(attribute.kind === 'pick' && attribute.count === 1)) continue
+        // A split (이중인격) names two sets at once, so it is no single value either.
+        if (attribute.kind !== 'color' && !(attribute.kind === 'pick' && value.valueIds.length === 1)) continue
         expect(value.possible).toContain(value.label)
       }
     }
@@ -211,16 +212,16 @@ describe('several at once', () => {
 })
 
 describe('split', () => {
-  test('이중인격 shows up about once in a thousand, as two sets that share nothing', () => {
+  test('이중인격 shows up about once in a thousand, as two personalities that share nothing', () => {
     let splits = 0
     for (let i = 0; i < 20000; i++) {
       const value = rollCharacter(catalog, { seed: `p${i}`, attributeIds: ['personality'] })[0]!
       if (!value.label.includes('⇄')) {
-        expect(value.valueIds).toHaveLength(2)
+        expect(value.valueIds).toHaveLength(1)
         continue
       }
       splits++
-      expect(new Set(value.valueIds).size).toBe(4)
+      expect(new Set(value.valueIds).size).toBe(2)
       expect(value.detail).toContain('이중인격')
     }
     expect(splits).toBeGreaterThan(5)

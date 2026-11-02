@@ -71,7 +71,7 @@ export const ADDED_TRAIT_CHANCE = 0.2
 
 /** Kinds that can come out several at once — 외형 특징, or a pick that draws more than one. */
 export function isMultiple(attribute: Attribute): boolean {
-  return attribute.kind === 'traits' || (attribute.kind === 'pick' && attribute.count > 1)
+  return attribute.kind === 'traits' || (attribute.kind === 'pick' && (attribute.count > 1 || attribute.several))
 }
 
 const swatchesOf = (o: AddedOption): string[] => [o.hex, o.hex2].filter((h): h is string => !!h)
