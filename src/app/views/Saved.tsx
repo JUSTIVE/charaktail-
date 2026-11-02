@@ -47,7 +47,10 @@ export function Saved() {
     `,
     {},
   )
-  const { f } = useSearch({ from: '/saved' })
+  // Not tied to /saved: this view is still on screen, morphing away, after
+  // the route has already left it — a strict read would throw then (#148).
+  const search = useSearch({ strict: false }) as { f?: unknown }
+  const f = typeof search.f === 'string' ? search.f : undefined
   const folders = data.folders ?? []
   const all = data.saved ?? []
   const current = folders.find((folder) => folder.key === f) ?? null
