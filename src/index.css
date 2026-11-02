@@ -567,11 +567,15 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   letter-spacing: -0.04em;
   pointer-events: none;
   color: var(--chip);
-  opacity: 0.16;
-  transition: opacity 200ms ease;
+  transition: opacity 200ms ease, color 200ms ease;
 }
 .chip[aria-pressed='true'] .chip-count {
   opacity: 0.26;
+}
+/* Off chips are dark: the numeral goes grey with the rest. */
+.chip[aria-pressed='false'] .chip-count {
+  color: var(--color-faint);
+  opacity: 0.12;
 }
 
 /* Kebab on a chip: a sibling pinned to the chip's corner. */
