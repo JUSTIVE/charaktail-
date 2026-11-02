@@ -82,7 +82,7 @@ const fromBase64Url = (text: string) =>
 /** Locked values, compact: id → [label, valueIds, detail, swatches]. Only the rolled attributes' go in. */
 type PackedLocks = Record<string, [string, string[], string?, string[]?]>
 
-export function packLocks(locked: Readonly<Record<string, RolledValue>>, attributeIds: readonly string[]): string {
+function packLocks(locked: Readonly<Record<string, RolledValue>>, attributeIds: readonly string[]): string {
   const packed: PackedLocks = {}
   for (const id of attributeIds) {
     const v = locked[id]

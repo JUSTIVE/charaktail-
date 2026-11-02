@@ -1,5 +1,5 @@
 import { catalog } from '../domain/catalog/index'
-import { decodeRollKey, packLocks, rollCharacter, unpackLocks } from '../domain/roll'
+import { decodeRollKey, rollCharacter, unpackLocks } from '../domain/roll'
 import { Cell } from './cell'
 import type { Locks } from './schema'
 import { selectionCell } from './selection'
@@ -7,14 +7,11 @@ import { selectionCell } from './selection'
 /**
  * Attributes the player has locked: each keeps its exact value through every
  * re-roll — the next shake, a shake over the result — until unlocked.
- * They live in the address (`?l=`), not in storage: a link carries them, the
- * back button brings earlier ones back. `syncLocksWithUrl` keeps this cell
- * and the address in step.
+ * A link can start them (`?l=`, read once on entry by `locksFromUrl`); from
+ * there they are the player's to lock and unlock, and the address is left
+ * alone — it records how the page was opened, not every change after.
  */
 export const locksCell = new Cell<Locks>({})
-
-const allIds = catalog.attributes.map((a) => a.id)
-const pack = (locks: Locks) => packLocks(locks, allIds)
 
 /** Unlocks one attribute — the chip's lock button. */
 export function unlock(attributeId: string): void {
@@ -25,43 +22,10 @@ export function unlock(attributeId: string): void {
   })
 }
 
-interface UrlSync {
-  read: () => string | undefined
-  write: (l: string | undefined) => void
-  subscribe: (onChange: () => void) => () => void
-}
-
-/**
- * The address is where locks live. It wins when it names locks (a link, the
- * back button); when a navigation drops them (a link to /), they are put back
- * — locks last until unlocked. Every change to the locks is written to it.
- */
-export function syncLocksWithUrl(url: UrlSync): () => void {
-  let writing = false
-  const fromUrl = () => {
-    if (writing) return
-    const l = url.read()
-    if (l) {
-      if (l !== pack(locksCell.read())) locksCell.set(unpackLocks(l) ?? {})
-    } else if (Object.keys(locksCell.read()).length) {
-      writing = true
-      url.write(pack(locksCell.read()))
-      writing = false
-    }
-  }
-  fromUrl()
-  const offUrl = url.subscribe(fromUrl)
-  const offCell = locksCell.subscribe(() => {
-    const packed = pack(locksCell.read()) || undefined
-    if (packed === url.read()) return
-    writing = true
-    url.write(packed)
-    writing = false
-  })
-  return () => {
-    offUrl()
-    offCell()
-  }
+/** The locks a link opens with: `?l=`, packed like a roll key's locked segment. Read once, on entry. */
+export function locksFromUrl(l: string | null | undefined): void {
+  const locks = l ? unpackLocks(l) : undefined
+  if (locks) locksCell.set(locks)
 }
 
 /** Locks (or unlocks) an attribute at the value it has in this roll. */

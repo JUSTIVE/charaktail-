@@ -13,9 +13,9 @@ import { Shell } from './app/Shell'
  *   /saved            보관함 (?f=<폴더 id> → 그 폴더만)
  */
 /*
- * Locks ride in the address on every screen (`?l=`, packed like a roll key's
- * locked segment): every route inherits it from the root, and
- * state/locks.ts keeps the lock store and the address in step.
+ * A link may open any screen with locks (`?l=`, packed like a roll key's
+ * locked segment) — every route accepts it from the root. It is read once on
+ * entry (state/locks.ts); locking and unlocking after that leave it alone.
  */
 const rootRoute = createRootRoute({
   component: Shell,
