@@ -1,5 +1,5 @@
 import { catalog } from '../domain/catalog/index'
-import { decodeRollKey, rollCharacter, unpackLocks } from '../domain/roll'
+import { decodeRollKey, packLocks, rollCharacter, unpackLocks } from '../domain/roll'
 import { Cell } from './cell'
 import type { Locks } from './schema'
 import { selectionCell } from './selection'
@@ -20,6 +20,16 @@ export function unlock(attributeId: string): void {
     const { [attributeId]: _, ...rest } = all
     return rest
   })
+}
+
+/**
+ * The locks as `?l=` — written when the player shakes again with locks on,
+ * so that screen's address says what it starts from (#160). Undefined when
+ * nothing is locked.
+ */
+export function locksParam(): string | undefined {
+  const locks = activeLocks()
+  return Object.keys(locks).length ? packLocks(locks, Object.keys(locks)) : undefined
 }
 
 /** The locks a link opens with: `?l=`, packed like a roll key's locked segment. Read once, on entry. */

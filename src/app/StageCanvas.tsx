@@ -7,7 +7,7 @@ import { useLocalQuery } from '../graph/useLocalQuery'
 import { freshSeed } from '../domain/rng'
 import { encodeRollKey } from '../domain/roll'
 import { attributeHead } from './attributeHead'
-import { activeLocks } from '../state/locks'
+import { activeLocks, locksParam } from '../state/locks'
 import { router } from '../router'
 import { editsCell } from '../state/edits'
 import { currentName } from '../state/name'
@@ -50,7 +50,7 @@ export function StageCanvas() {
     }
     stage.onReshake = () => {
       // The stage is already mixing; the route catches up and the HUD shows it.
-      void router.navigate({ to: '/shake', search: { a: encodeAttributeIds(selectionCell.read()), n: currentName() }, replace: true })
+      void router.navigate({ to: '/shake', search: { a: encodeAttributeIds(selectionCell.read()), n: currentName(), l: locksParam() }, replace: true })
     }
     stageHandle.current = stage
     // Dev only: lets a test harness inspect the stage.

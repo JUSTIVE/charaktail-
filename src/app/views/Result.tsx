@@ -7,7 +7,7 @@ import { useSheetStackActions } from 'morphing-sheet/react'
 
 import { decodeRollKey, encodeRollKey } from '../../domain/roll'
 import { router } from '../../router'
-import { toggleLock } from '../../state/locks'
+import { locksParam, toggleLock } from '../../state/locks'
 import { toggleSaved } from '../../state/saved'
 import { haptic } from '../../stage/haptics'
 import { shareCharacter } from '../characterText'
@@ -200,7 +200,8 @@ export function Result() {
           className="flex-1 px-5"
           // Back to the picker, still holding this roll's attributes and name
           // (SceneSync restored both from the key), ready to adjust and shake.
-          onClick={() => void router.navigate({ to: '/', search: {} })}
+          // Locks on: the picker's address carries them (`?l=`).
+          onClick={() => void router.navigate({ to: '/', search: { l: locksParam() } })}
         >
           <ShakeIcon width={17} height={17} />
           다시 흔들기
