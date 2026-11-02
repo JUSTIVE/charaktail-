@@ -49,6 +49,7 @@ export function Picker() {
   const count = attributes.filter((a) => a.selected).length
   const parts = koreanParts(data.draft?.characterCount ?? 0)
   const auraColors = attributes.filter((a) => a.selected).map((a) => a.color ?? '#7c7a85')
+  const highlight = `linear-gradient(90deg, ${(auraColors.length > 1 ? auraColors : [...auraColors, ...auraColors, '#ffffff']).map((c) => `color-mix(in oklab, ${c} 55%, transparent)`).join(', ')})`
   const allOn = count === attributes.length
   // 완전 종속 속성 (나이, 키 of 종족) fold into their chip while it is on: no chips of their own, tags inside it.
   const selectedKeys = new Set(attributes.filter((a) => a.selected).map((a) => a.key))
@@ -217,12 +218,16 @@ export function Picker() {
                 {parts ? (
                   <span className="whitespace-nowrap text-[clamp(12.5px,3.55vw,14px)] tracking-[-0.01em] [word-break:keep-all]">
                     흔들어서{' '}
-                    {parts.map((part) => (
-                      <Fragment key={part.unit}>
-                        <NumberFlow value={part.value} locales="ko-KR" className="tnum" />
-                        {part.unit}{' '}
-                      </Fragment>
-                    ))}
+                    {/* The number, highlighted: a marker stroke in the selection's own colours. */}
+                    <span className="cta-count" style={{ '--hl': highlight } as CSSProperties}>
+                      {parts.map((part, i) => (
+                        <Fragment key={part.unit}>
+                          {i > 0 ? ' ' : null}
+                          <NumberFlow value={part.value} locales="ko-KR" className="tnum" />
+                          {part.unit}
+                        </Fragment>
+                      ))}
+                    </span>{' '}
                     개의 캐릭터 중 하나 뽑기
                   </span>
                 ) : (

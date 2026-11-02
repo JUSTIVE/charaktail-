@@ -779,6 +779,16 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   .chip-unlock:hover { background: rgb(255 255 255 / 0.06); }
 }
 
+/* The shake button's number: heavier, over a marker stroke in the selection's colours. */
+.cta-count {
+  padding: 0 3px;
+  border-radius: 4px;
+  font-weight: 800;
+  background: var(--hl) no-repeat 0 100% / 100% 48%;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 /* Kebab on a chip: a sibling pinned to the chip's corner. */
 .chip-kebab {
   /* Above the chip's tap layer (HapticTap). */
