@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<c030274ccb3ccdd579acafff14657ad5>>
+ * @generated SignedSource<<73b911d3947fb9a8887c0210226de38f>>
  * @lightSyntaxTransform
  */
 
@@ -8,13 +8,79 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from 'relay-runtime';
-import { FragmentRefs, DataID } from "relay-runtime";
+import { LiveState, FragmentRefs, DataID } from "relay-runtime";
+import { ageMax as attributeOptionAgeMaxResolverType } from "../graph/attributeOption";
+// Type assertion validating that `attributeOptionAgeMaxResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeOptionAgeMaxResolverType satisfies (
+  __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
+) => number | null | undefined);
+import { ageMin as attributeOptionAgeMinResolverType } from "../graph/attributeOption";
+// Type assertion validating that `attributeOptionAgeMinResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeOptionAgeMinResolverType satisfies (
+  __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
+) => number | null | undefined);
+import { chance as attributeOptionChanceResolverType } from "../graph/attributeOption";
+// Type assertion validating that `attributeOptionChanceResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeOptionChanceResolverType satisfies (
+  __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
+) => number | null | undefined);
+import { heightMax as attributeOptionHeightMaxResolverType } from "../graph/attributeOption";
+// Type assertion validating that `attributeOptionHeightMaxResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeOptionHeightMaxResolverType satisfies (
+  __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
+) => number | null | undefined);
+import { heightMin as attributeOptionHeightMinResolverType } from "../graph/attributeOption";
+// Type assertion validating that `attributeOptionHeightMinResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeOptionHeightMinResolverType satisfies (
+  __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
+) => number | null | undefined);
+import { key as attributeOptionKeyResolverType } from "../graph/attributeOption";
+// Type assertion validating that `attributeOptionKeyResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeOptionKeyResolverType satisfies (
+  __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
+) => string);
+import { label as attributeOptionLabelResolverType } from "../graph/attributeOption";
+// Type assertion validating that `attributeOptionLabelResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeOptionLabelResolverType satisfies (
+  __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
+) => string);
+import { swatches as attributeOptionSwatchesResolverType } from "../graph/attributeOption";
+// Type assertion validating that `attributeOptionSwatchesResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(attributeOptionSwatchesResolverType satisfies (
+  __relay_model_instance: AttributeOption____relay_model_instance$data['__relay_model_instance'],
+) => ReadonlyArray<string>);
+import { options as colorAttributeOptionsResolverType } from "../graph/kinds/colorAttribute";
+// Type assertion validating that `colorAttributeOptionsResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(colorAttributeOptionsResolverType satisfies (
+  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<ReadonlyArray<AttributeOption>>);
+import { options as composeAttributeOptionsResolverType } from "../graph/kinds/composeAttribute";
+// Type assertion validating that `composeAttributeOptionsResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(composeAttributeOptionsResolverType satisfies (
+  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<ReadonlyArray<AttributeOption>>);
 import { partLabels as composeAttributePartLabelsResolverType } from "../graph/kinds/composeAttribute";
 // Type assertion validating that `composeAttributePartLabelsResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
 (composeAttributePartLabelsResolverType satisfies (
   __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => ReadonlyArray<string>);
+import { options as pickAttributeOptionsResolverType } from "../graph/kinds/pickAttribute";
+// Type assertion validating that `pickAttributeOptionsResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(pickAttributeOptionsResolverType satisfies (
+  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<ReadonlyArray<AttributeOption>>);
 import { attribute as queryAttributeResolverType } from "../graph/root";
 // Type assertion validating that `queryAttributeResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -26,12 +92,35 @@ import { attribute as queryAttributeResolverType } from "../graph/root";
   readonly __typename: "ColorAttribute" | "ComposeAttribute" | "DateAttribute" | "PickAttribute" | "RangeAttribute" | "StatsAttribute" | "TraitsAttribute";
   readonly id: DataID;
 } | null | undefined);
+import { options as statsAttributeOptionsResolverType } from "../graph/kinds/statsAttribute";
+// Type assertion validating that `statsAttributeOptionsResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(statsAttributeOptionsResolverType satisfies (
+  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<ReadonlyArray<AttributeOption>>);
+import { options as traitsAttributeOptionsResolverType } from "../graph/kinds/traitsAttribute";
+// Type assertion validating that `traitsAttributeOptionsResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(traitsAttributeOptionsResolverType satisfies (
+  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<ReadonlyArray<AttributeOption>>);
+import { AttributeOption } from "../graph/attributeOption";
 export type AddValueSheetQuery$variables = {
   id: string;
 };
 export type AddValueSheetQuery$data = {
   readonly attribute: {
     readonly __typename: string;
+    readonly options?: ReadonlyArray<{
+      readonly ageMax: number | null | undefined;
+      readonly ageMin: number | null | undefined;
+      readonly chance: number | null | undefined;
+      readonly heightMax: number | null | undefined;
+      readonly heightMin: number | null | undefined;
+      readonly key: string;
+      readonly label: string;
+      readonly swatches: ReadonlyArray<string>;
+    }>;
     readonly partLabels?: ReadonlyArray<string>;
     readonly " $fragmentSpreads": FragmentRefs<"attributeHead_attribute">;
   } | null | undefined;
@@ -41,6 +130,14 @@ export type AddValueSheetQuery = {
   variables: AddValueSheetQuery$variables;
 };
 
+import {ageMax as attributeOptionAgeMaxResolver} from '../graph/attributeOption';
+import {ageMin as attributeOptionAgeMinResolver} from '../graph/attributeOption';
+import {chance as attributeOptionChanceResolver} from '../graph/attributeOption';
+import {heightMax as attributeOptionHeightMaxResolver} from '../graph/attributeOption';
+import {heightMin as attributeOptionHeightMinResolver} from '../graph/attributeOption';
+import {key as attributeOptionKeyResolver} from '../graph/attributeOption';
+import {label as attributeOptionLabelResolver} from '../graph/attributeOption';
+import {swatches as attributeOptionSwatchesResolver} from '../graph/attributeOption';
 import {ColorAttribute as colorAttributeRelayModelInstanceResolver} from '../graph/kinds/colorAttribute';
 import {color as colorAttributeColorResolver} from '../graph/kinds/colorAttribute';
 import {edited as colorAttributeEditedResolver} from '../graph/kinds/colorAttribute';
@@ -48,6 +145,7 @@ import {enabledCount as colorAttributeEnabledCountResolver} from '../graph/kinds
 import {key as colorAttributeKeyResolver} from '../graph/kinds/colorAttribute';
 import {label as colorAttributeLabelResolver} from '../graph/kinds/colorAttribute';
 import {locked as colorAttributeLockedResolver} from '../graph/kinds/colorAttribute';
+import {options as colorAttributeOptionsResolver} from '../graph/kinds/colorAttribute';
 import {selected as colorAttributeSelectedResolver} from '../graph/kinds/colorAttribute';
 import {summary as colorAttributeSummaryResolver} from '../graph/kinds/colorAttribute';
 import {ComposeAttribute as composeAttributeRelayModelInstanceResolver} from '../graph/kinds/composeAttribute';
@@ -57,6 +155,7 @@ import {enabledCount as composeAttributeEnabledCountResolver} from '../graph/kin
 import {key as composeAttributeKeyResolver} from '../graph/kinds/composeAttribute';
 import {label as composeAttributeLabelResolver} from '../graph/kinds/composeAttribute';
 import {locked as composeAttributeLockedResolver} from '../graph/kinds/composeAttribute';
+import {options as composeAttributeOptionsResolver} from '../graph/kinds/composeAttribute';
 import {partLabels as composeAttributePartLabelsResolver} from '../graph/kinds/composeAttribute';
 import {selected as composeAttributeSelectedResolver} from '../graph/kinds/composeAttribute';
 import {summary as composeAttributeSummaryResolver} from '../graph/kinds/composeAttribute';
@@ -75,6 +174,7 @@ import {enabledCount as pickAttributeEnabledCountResolver} from '../graph/kinds/
 import {key as pickAttributeKeyResolver} from '../graph/kinds/pickAttribute';
 import {label as pickAttributeLabelResolver} from '../graph/kinds/pickAttribute';
 import {locked as pickAttributeLockedResolver} from '../graph/kinds/pickAttribute';
+import {options as pickAttributeOptionsResolver} from '../graph/kinds/pickAttribute';
 import {selected as pickAttributeSelectedResolver} from '../graph/kinds/pickAttribute';
 import {summary as pickAttributeSummaryResolver} from '../graph/kinds/pickAttribute';
 import {RangeAttribute as rangeAttributeRelayModelInstanceResolver} from '../graph/kinds/rangeAttribute';
@@ -92,6 +192,7 @@ import {enabledCount as statsAttributeEnabledCountResolver} from '../graph/kinds
 import {key as statsAttributeKeyResolver} from '../graph/kinds/statsAttribute';
 import {label as statsAttributeLabelResolver} from '../graph/kinds/statsAttribute';
 import {locked as statsAttributeLockedResolver} from '../graph/kinds/statsAttribute';
+import {options as statsAttributeOptionsResolver} from '../graph/kinds/statsAttribute';
 import {selected as statsAttributeSelectedResolver} from '../graph/kinds/statsAttribute';
 import {summary as statsAttributeSummaryResolver} from '../graph/kinds/statsAttribute';
 import {TraitsAttribute as traitsAttributeRelayModelInstanceResolver} from '../graph/kinds/traitsAttribute';
@@ -101,9 +202,11 @@ import {enabledCount as traitsAttributeEnabledCountResolver} from '../graph/kind
 import {key as traitsAttributeKeyResolver} from '../graph/kinds/traitsAttribute';
 import {label as traitsAttributeLabelResolver} from '../graph/kinds/traitsAttribute';
 import {locked as traitsAttributeLockedResolver} from '../graph/kinds/traitsAttribute';
+import {options as traitsAttributeOptionsResolver} from '../graph/kinds/traitsAttribute';
 import {selected as traitsAttributeSelectedResolver} from '../graph/kinds/traitsAttribute';
 import {summary as traitsAttributeSummaryResolver} from '../graph/kinds/traitsAttribute';
 import {attribute as queryAttributeResolver} from '../graph/root';
+import AttributeOption____relay_model_instance_graphql from './AttributeOption____relay_model_instance.graphql';
 import ColorAttribute____relay_model_instance_graphql from './ColorAttribute____relay_model_instance.graphql';
 import ColorAttribute__id_graphql from './ColorAttribute__id.graphql';
 import ComposeAttribute____relay_model_instance_graphql from './ComposeAttribute____relay_model_instance.graphql';
@@ -178,16 +281,109 @@ v9 = {
   "name": "TraitsAttribute____relay_model_instance"
 },
 v10 = {
+  "kind": "WeakModel",
+  "concreteType": "AttributeOption",
+  "plural": true
+},
+v11 = {
+  "args": null,
+  "kind": "FragmentSpread",
+  "name": "AttributeOption____relay_model_instance"
+},
+v12 = {
+  "alias": null,
+  "args": null,
+  "concreteType": "AttributeOption",
+  "kind": "LinkedField",
+  "name": "options",
+  "plural": true,
+  "selections": [
+    {
+      "alias": null,
+      "args": null,
+      "fragment": (v11/*:: as any*/),
+      "kind": "RelayResolver",
+      "name": "key",
+      "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionKeyResolver, '__relay_model_instance', true),
+      "path": "attribute.options.key"
+    },
+    {
+      "alias": null,
+      "args": null,
+      "fragment": (v11/*:: as any*/),
+      "kind": "RelayResolver",
+      "name": "label",
+      "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionLabelResolver, '__relay_model_instance', true),
+      "path": "attribute.options.label"
+    },
+    {
+      "alias": null,
+      "args": null,
+      "fragment": (v11/*:: as any*/),
+      "kind": "RelayResolver",
+      "name": "swatches",
+      "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionSwatchesResolver, '__relay_model_instance', true),
+      "path": "attribute.options.swatches"
+    },
+    {
+      "alias": null,
+      "args": null,
+      "fragment": (v11/*:: as any*/),
+      "kind": "RelayResolver",
+      "name": "chance",
+      "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionChanceResolver, '__relay_model_instance', true),
+      "path": "attribute.options.chance"
+    },
+    {
+      "alias": null,
+      "args": null,
+      "fragment": (v11/*:: as any*/),
+      "kind": "RelayResolver",
+      "name": "ageMin",
+      "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionAgeMinResolver, '__relay_model_instance', true),
+      "path": "attribute.options.ageMin"
+    },
+    {
+      "alias": null,
+      "args": null,
+      "fragment": (v11/*:: as any*/),
+      "kind": "RelayResolver",
+      "name": "ageMax",
+      "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionAgeMaxResolver, '__relay_model_instance', true),
+      "path": "attribute.options.ageMax"
+    },
+    {
+      "alias": null,
+      "args": null,
+      "fragment": (v11/*:: as any*/),
+      "kind": "RelayResolver",
+      "name": "heightMin",
+      "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionHeightMinResolver, '__relay_model_instance', true),
+      "path": "attribute.options.heightMin"
+    },
+    {
+      "alias": null,
+      "args": null,
+      "fragment": (v11/*:: as any*/),
+      "kind": "RelayResolver",
+      "name": "heightMax",
+      "resolverModule": resolverDataInjector(AttributeOption____relay_model_instance_graphql, attributeOptionHeightMaxResolver, '__relay_model_instance', true),
+      "path": "attribute.options.heightMax"
+    }
+  ],
+  "storageKey": null
+},
+v13 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
   "name": "id",
   "storageKey": null
 },
-v11 = [
-  (v10/*:: as any*/)
+v14 = [
+  (v13/*:: as any*/)
 ],
-v12 = {
+v15 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -195,7 +391,7 @@ v12 = {
       "args": null,
       "fragment": {
         "kind": "InlineFragment",
-        "selections": (v11/*:: as any*/),
+        "selections": (v14/*:: as any*/),
         "type": "PickAttribute",
         "abstractKey": null
       },
@@ -207,7 +403,96 @@ v12 = {
   "type": "PickAttribute",
   "abstractKey": null
 },
-v13 = {
+v16 = {
+  "kind": "InlineFragment",
+  "selections": [
+    {
+      "alias": null,
+      "args": null,
+      "kind": "ScalarField",
+      "name": "__relay_model_instance",
+      "storageKey": null
+    }
+  ],
+  "type": "AttributeOption",
+  "abstractKey": null
+},
+v17 = {
+  "alias": null,
+  "args": null,
+  "concreteType": "AttributeOption",
+  "kind": "LinkedField",
+  "name": "options",
+  "plural": true,
+  "selections": [
+    {
+      "name": "key",
+      "args": null,
+      "fragment": (v16/*:: as any*/),
+      "kind": "RelayResolver",
+      "storageKey": null,
+      "isOutputType": true
+    },
+    {
+      "name": "label",
+      "args": null,
+      "fragment": (v16/*:: as any*/),
+      "kind": "RelayResolver",
+      "storageKey": null,
+      "isOutputType": true
+    },
+    {
+      "name": "swatches",
+      "args": null,
+      "fragment": (v16/*:: as any*/),
+      "kind": "RelayResolver",
+      "storageKey": null,
+      "isOutputType": true
+    },
+    {
+      "name": "chance",
+      "args": null,
+      "fragment": (v16/*:: as any*/),
+      "kind": "RelayResolver",
+      "storageKey": null,
+      "isOutputType": true
+    },
+    {
+      "name": "ageMin",
+      "args": null,
+      "fragment": (v16/*:: as any*/),
+      "kind": "RelayResolver",
+      "storageKey": null,
+      "isOutputType": true
+    },
+    {
+      "name": "ageMax",
+      "args": null,
+      "fragment": (v16/*:: as any*/),
+      "kind": "RelayResolver",
+      "storageKey": null,
+      "isOutputType": true
+    },
+    {
+      "name": "heightMin",
+      "args": null,
+      "fragment": (v16/*:: as any*/),
+      "kind": "RelayResolver",
+      "storageKey": null,
+      "isOutputType": true
+    },
+    {
+      "name": "heightMax",
+      "args": null,
+      "fragment": (v16/*:: as any*/),
+      "kind": "RelayResolver",
+      "storageKey": null,
+      "isOutputType": true
+    }
+  ],
+  "storageKey": null
+},
+v18 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -215,7 +500,7 @@ v13 = {
       "args": null,
       "fragment": {
         "kind": "InlineFragment",
-        "selections": (v11/*:: as any*/),
+        "selections": (v14/*:: as any*/),
         "type": "ColorAttribute",
         "abstractKey": null
       },
@@ -227,7 +512,7 @@ v13 = {
   "type": "ColorAttribute",
   "abstractKey": null
 },
-v14 = {
+v19 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -235,7 +520,7 @@ v14 = {
       "args": null,
       "fragment": {
         "kind": "InlineFragment",
-        "selections": (v11/*:: as any*/),
+        "selections": (v14/*:: as any*/),
         "type": "ComposeAttribute",
         "abstractKey": null
       },
@@ -247,7 +532,7 @@ v14 = {
   "type": "ComposeAttribute",
   "abstractKey": null
 },
-v15 = {
+v20 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -255,7 +540,7 @@ v15 = {
       "args": null,
       "fragment": {
         "kind": "InlineFragment",
-        "selections": (v11/*:: as any*/),
+        "selections": (v14/*:: as any*/),
         "type": "StatsAttribute",
         "abstractKey": null
       },
@@ -267,7 +552,7 @@ v15 = {
   "type": "StatsAttribute",
   "abstractKey": null
 },
-v16 = {
+v21 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -275,7 +560,7 @@ v16 = {
       "args": null,
       "fragment": {
         "kind": "InlineFragment",
-        "selections": (v11/*:: as any*/),
+        "selections": (v14/*:: as any*/),
         "type": "RangeAttribute",
         "abstractKey": null
       },
@@ -287,7 +572,7 @@ v16 = {
   "type": "RangeAttribute",
   "abstractKey": null
 },
-v17 = {
+v22 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -295,7 +580,7 @@ v17 = {
       "args": null,
       "fragment": {
         "kind": "InlineFragment",
-        "selections": (v11/*:: as any*/),
+        "selections": (v14/*:: as any*/),
         "type": "DateAttribute",
         "abstractKey": null
       },
@@ -307,7 +592,7 @@ v17 = {
   "type": "DateAttribute",
   "abstractKey": null
 },
-v18 = {
+v23 = {
   "kind": "InlineFragment",
   "selections": [
     {
@@ -315,7 +600,7 @@ v18 = {
       "args": null,
       "fragment": {
         "kind": "InlineFragment",
-        "selections": (v11/*:: as any*/),
+        "selections": (v14/*:: as any*/),
         "type": "TraitsAttribute",
         "abstractKey": null
       },
@@ -1011,9 +1296,122 @@ return {
                   "name": "partLabels",
                   "resolverModule": resolverDataInjector(ComposeAttribute____relay_model_instance_graphql, composeAttributePartLabelsResolver, '__relay_model_instance', true),
                   "path": "attribute.partLabels"
+                },
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "concreteType": "AttributeOption",
+                  "modelResolvers": null,
+                  "serverObjectOperations": null,
+                  "backingField": {
+                    "alias": null,
+                    "args": null,
+                    "fragment": (v5/*:: as any*/),
+                    "kind": "RelayLiveResolver",
+                    "name": "options",
+                    "resolverModule": resolverDataInjector(ComposeAttribute____relay_model_instance_graphql, composeAttributeOptionsResolver, '__relay_model_instance', true),
+                    "path": "attribute.options",
+                    "normalizationInfo": (v10/*:: as any*/)
+                  },
+                  "linkedField": (v12/*:: as any*/)
                 }
               ],
               "type": "ComposeAttribute",
+              "abstractKey": null
+            },
+            {
+              "kind": "InlineFragment",
+              "selections": [
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "concreteType": "AttributeOption",
+                  "modelResolvers": null,
+                  "serverObjectOperations": null,
+                  "backingField": {
+                    "alias": null,
+                    "args": null,
+                    "fragment": (v3/*:: as any*/),
+                    "kind": "RelayLiveResolver",
+                    "name": "options",
+                    "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeOptionsResolver, '__relay_model_instance', true),
+                    "path": "attribute.options",
+                    "normalizationInfo": (v10/*:: as any*/)
+                  },
+                  "linkedField": (v12/*:: as any*/)
+                }
+              ],
+              "type": "PickAttribute",
+              "abstractKey": null
+            },
+            {
+              "kind": "InlineFragment",
+              "selections": [
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "concreteType": "AttributeOption",
+                  "modelResolvers": null,
+                  "serverObjectOperations": null,
+                  "backingField": {
+                    "alias": null,
+                    "args": null,
+                    "fragment": (v4/*:: as any*/),
+                    "kind": "RelayLiveResolver",
+                    "name": "options",
+                    "resolverModule": resolverDataInjector(ColorAttribute____relay_model_instance_graphql, colorAttributeOptionsResolver, '__relay_model_instance', true),
+                    "path": "attribute.options",
+                    "normalizationInfo": (v10/*:: as any*/)
+                  },
+                  "linkedField": (v12/*:: as any*/)
+                }
+              ],
+              "type": "ColorAttribute",
+              "abstractKey": null
+            },
+            {
+              "kind": "InlineFragment",
+              "selections": [
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "concreteType": "AttributeOption",
+                  "modelResolvers": null,
+                  "serverObjectOperations": null,
+                  "backingField": {
+                    "alias": null,
+                    "args": null,
+                    "fragment": (v6/*:: as any*/),
+                    "kind": "RelayLiveResolver",
+                    "name": "options",
+                    "resolverModule": resolverDataInjector(StatsAttribute____relay_model_instance_graphql, statsAttributeOptionsResolver, '__relay_model_instance', true),
+                    "path": "attribute.options",
+                    "normalizationInfo": (v10/*:: as any*/)
+                  },
+                  "linkedField": (v12/*:: as any*/)
+                }
+              ],
+              "type": "StatsAttribute",
+              "abstractKey": null
+            },
+            {
+              "kind": "InlineFragment",
+              "selections": [
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "concreteType": "AttributeOption",
+                  "modelResolvers": null,
+                  "serverObjectOperations": null,
+                  "backingField": {
+                    "alias": null,
+                    "args": null,
+                    "fragment": (v9/*:: as any*/),
+                    "kind": "RelayLiveResolver",
+                    "name": "options",
+                    "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeOptionsResolver, '__relay_model_instance', true),
+                    "path": "attribute.options",
+                    "normalizationInfo": (v10/*:: as any*/)
+                  },
+                  "linkedField": (v12/*:: as any*/)
+                }
+              ],
+              "type": "TraitsAttribute",
               "abstractKey": null
             }
           ],
@@ -1055,7 +1453,7 @@ return {
                 {
                   "name": "enabledCount",
                   "args": null,
-                  "fragment": (v12/*:: as any*/),
+                  "fragment": (v15/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1063,7 +1461,7 @@ return {
                 {
                   "name": "key",
                   "args": null,
-                  "fragment": (v12/*:: as any*/),
+                  "fragment": (v15/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1071,7 +1469,7 @@ return {
                 {
                   "name": "label",
                   "args": null,
-                  "fragment": (v12/*:: as any*/),
+                  "fragment": (v15/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1079,7 +1477,7 @@ return {
                 {
                   "name": "color",
                   "args": null,
-                  "fragment": (v12/*:: as any*/),
+                  "fragment": (v15/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1087,7 +1485,7 @@ return {
                 {
                   "name": "summary",
                   "args": null,
-                  "fragment": (v12/*:: as any*/),
+                  "fragment": (v15/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1095,7 +1493,7 @@ return {
                 {
                   "name": "edited",
                   "args": null,
-                  "fragment": (v12/*:: as any*/),
+                  "fragment": (v15/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1103,7 +1501,7 @@ return {
                 {
                   "name": "selected",
                   "args": null,
-                  "fragment": (v12/*:: as any*/),
+                  "fragment": (v15/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1111,12 +1509,24 @@ return {
                 {
                   "name": "locked",
                   "args": null,
-                  "fragment": (v12/*:: as any*/),
+                  "fragment": (v15/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
                 },
-                (v10/*:: as any*/)
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "backingField": {
+                    "name": "options",
+                    "args": null,
+                    "fragment": (v15/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": true
+                  },
+                  "linkedField": (v17/*:: as any*/)
+                },
+                (v13/*:: as any*/)
               ],
               "type": "PickAttribute",
               "abstractKey": null
@@ -1127,7 +1537,7 @@ return {
                 {
                   "name": "enabledCount",
                   "args": null,
-                  "fragment": (v13/*:: as any*/),
+                  "fragment": (v18/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1135,7 +1545,7 @@ return {
                 {
                   "name": "key",
                   "args": null,
-                  "fragment": (v13/*:: as any*/),
+                  "fragment": (v18/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1143,7 +1553,7 @@ return {
                 {
                   "name": "label",
                   "args": null,
-                  "fragment": (v13/*:: as any*/),
+                  "fragment": (v18/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1151,7 +1561,7 @@ return {
                 {
                   "name": "color",
                   "args": null,
-                  "fragment": (v13/*:: as any*/),
+                  "fragment": (v18/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1159,7 +1569,7 @@ return {
                 {
                   "name": "summary",
                   "args": null,
-                  "fragment": (v13/*:: as any*/),
+                  "fragment": (v18/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1167,7 +1577,7 @@ return {
                 {
                   "name": "edited",
                   "args": null,
-                  "fragment": (v13/*:: as any*/),
+                  "fragment": (v18/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1175,7 +1585,7 @@ return {
                 {
                   "name": "selected",
                   "args": null,
-                  "fragment": (v13/*:: as any*/),
+                  "fragment": (v18/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1183,12 +1593,24 @@ return {
                 {
                   "name": "locked",
                   "args": null,
-                  "fragment": (v13/*:: as any*/),
+                  "fragment": (v18/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
                 },
-                (v10/*:: as any*/)
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "backingField": {
+                    "name": "options",
+                    "args": null,
+                    "fragment": (v18/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": true
+                  },
+                  "linkedField": (v17/*:: as any*/)
+                },
+                (v13/*:: as any*/)
               ],
               "type": "ColorAttribute",
               "abstractKey": null
@@ -1199,7 +1621,7 @@ return {
                 {
                   "name": "enabledCount",
                   "args": null,
-                  "fragment": (v14/*:: as any*/),
+                  "fragment": (v19/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1207,7 +1629,7 @@ return {
                 {
                   "name": "key",
                   "args": null,
-                  "fragment": (v14/*:: as any*/),
+                  "fragment": (v19/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1215,7 +1637,7 @@ return {
                 {
                   "name": "label",
                   "args": null,
-                  "fragment": (v14/*:: as any*/),
+                  "fragment": (v19/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1223,7 +1645,7 @@ return {
                 {
                   "name": "color",
                   "args": null,
-                  "fragment": (v14/*:: as any*/),
+                  "fragment": (v19/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1231,7 +1653,7 @@ return {
                 {
                   "name": "summary",
                   "args": null,
-                  "fragment": (v14/*:: as any*/),
+                  "fragment": (v19/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1239,7 +1661,7 @@ return {
                 {
                   "name": "edited",
                   "args": null,
-                  "fragment": (v14/*:: as any*/),
+                  "fragment": (v19/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1247,7 +1669,7 @@ return {
                 {
                   "name": "selected",
                   "args": null,
-                  "fragment": (v14/*:: as any*/),
+                  "fragment": (v19/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1255,7 +1677,7 @@ return {
                 {
                   "name": "locked",
                   "args": null,
-                  "fragment": (v14/*:: as any*/),
+                  "fragment": (v19/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1263,12 +1685,24 @@ return {
                 {
                   "name": "partLabels",
                   "args": null,
-                  "fragment": (v14/*:: as any*/),
+                  "fragment": (v19/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
                 },
-                (v10/*:: as any*/)
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "backingField": {
+                    "name": "options",
+                    "args": null,
+                    "fragment": (v19/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": true
+                  },
+                  "linkedField": (v17/*:: as any*/)
+                },
+                (v13/*:: as any*/)
               ],
               "type": "ComposeAttribute",
               "abstractKey": null
@@ -1279,7 +1713,7 @@ return {
                 {
                   "name": "enabledCount",
                   "args": null,
-                  "fragment": (v15/*:: as any*/),
+                  "fragment": (v20/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1287,7 +1721,7 @@ return {
                 {
                   "name": "key",
                   "args": null,
-                  "fragment": (v15/*:: as any*/),
+                  "fragment": (v20/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1295,7 +1729,7 @@ return {
                 {
                   "name": "label",
                   "args": null,
-                  "fragment": (v15/*:: as any*/),
+                  "fragment": (v20/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1303,7 +1737,7 @@ return {
                 {
                   "name": "color",
                   "args": null,
-                  "fragment": (v15/*:: as any*/),
+                  "fragment": (v20/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1311,7 +1745,7 @@ return {
                 {
                   "name": "summary",
                   "args": null,
-                  "fragment": (v15/*:: as any*/),
+                  "fragment": (v20/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1319,7 +1753,7 @@ return {
                 {
                   "name": "edited",
                   "args": null,
-                  "fragment": (v15/*:: as any*/),
+                  "fragment": (v20/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1327,7 +1761,7 @@ return {
                 {
                   "name": "selected",
                   "args": null,
-                  "fragment": (v15/*:: as any*/),
+                  "fragment": (v20/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1335,12 +1769,24 @@ return {
                 {
                   "name": "locked",
                   "args": null,
-                  "fragment": (v15/*:: as any*/),
+                  "fragment": (v20/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
                 },
-                (v10/*:: as any*/)
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "backingField": {
+                    "name": "options",
+                    "args": null,
+                    "fragment": (v20/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": true
+                  },
+                  "linkedField": (v17/*:: as any*/)
+                },
+                (v13/*:: as any*/)
               ],
               "type": "StatsAttribute",
               "abstractKey": null
@@ -1351,7 +1797,7 @@ return {
                 {
                   "name": "key",
                   "args": null,
-                  "fragment": (v16/*:: as any*/),
+                  "fragment": (v21/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1359,7 +1805,7 @@ return {
                 {
                   "name": "label",
                   "args": null,
-                  "fragment": (v16/*:: as any*/),
+                  "fragment": (v21/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1367,7 +1813,7 @@ return {
                 {
                   "name": "color",
                   "args": null,
-                  "fragment": (v16/*:: as any*/),
+                  "fragment": (v21/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1375,7 +1821,7 @@ return {
                 {
                   "name": "summary",
                   "args": null,
-                  "fragment": (v16/*:: as any*/),
+                  "fragment": (v21/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1383,7 +1829,7 @@ return {
                 {
                   "name": "edited",
                   "args": null,
-                  "fragment": (v16/*:: as any*/),
+                  "fragment": (v21/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1391,7 +1837,7 @@ return {
                 {
                   "name": "selected",
                   "args": null,
-                  "fragment": (v16/*:: as any*/),
+                  "fragment": (v21/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1399,12 +1845,12 @@ return {
                 {
                   "name": "locked",
                   "args": null,
-                  "fragment": (v16/*:: as any*/),
+                  "fragment": (v21/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
                 },
-                (v10/*:: as any*/)
+                (v13/*:: as any*/)
               ],
               "type": "RangeAttribute",
               "abstractKey": null
@@ -1415,7 +1861,7 @@ return {
                 {
                   "name": "key",
                   "args": null,
-                  "fragment": (v17/*:: as any*/),
+                  "fragment": (v22/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1423,7 +1869,7 @@ return {
                 {
                   "name": "label",
                   "args": null,
-                  "fragment": (v17/*:: as any*/),
+                  "fragment": (v22/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1431,7 +1877,7 @@ return {
                 {
                   "name": "color",
                   "args": null,
-                  "fragment": (v17/*:: as any*/),
+                  "fragment": (v22/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1439,7 +1885,7 @@ return {
                 {
                   "name": "summary",
                   "args": null,
-                  "fragment": (v17/*:: as any*/),
+                  "fragment": (v22/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1447,7 +1893,7 @@ return {
                 {
                   "name": "edited",
                   "args": null,
-                  "fragment": (v17/*:: as any*/),
+                  "fragment": (v22/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1455,7 +1901,7 @@ return {
                 {
                   "name": "selected",
                   "args": null,
-                  "fragment": (v17/*:: as any*/),
+                  "fragment": (v22/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1463,12 +1909,12 @@ return {
                 {
                   "name": "locked",
                   "args": null,
-                  "fragment": (v17/*:: as any*/),
+                  "fragment": (v22/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
                 },
-                (v10/*:: as any*/)
+                (v13/*:: as any*/)
               ],
               "type": "DateAttribute",
               "abstractKey": null
@@ -1479,7 +1925,7 @@ return {
                 {
                   "name": "enabledCount",
                   "args": null,
-                  "fragment": (v18/*:: as any*/),
+                  "fragment": (v23/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1487,7 +1933,7 @@ return {
                 {
                   "name": "key",
                   "args": null,
-                  "fragment": (v18/*:: as any*/),
+                  "fragment": (v23/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1495,7 +1941,7 @@ return {
                 {
                   "name": "label",
                   "args": null,
-                  "fragment": (v18/*:: as any*/),
+                  "fragment": (v23/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1503,7 +1949,7 @@ return {
                 {
                   "name": "color",
                   "args": null,
-                  "fragment": (v18/*:: as any*/),
+                  "fragment": (v23/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1511,7 +1957,7 @@ return {
                 {
                   "name": "summary",
                   "args": null,
-                  "fragment": (v18/*:: as any*/),
+                  "fragment": (v23/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1519,7 +1965,7 @@ return {
                 {
                   "name": "edited",
                   "args": null,
-                  "fragment": (v18/*:: as any*/),
+                  "fragment": (v23/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1527,7 +1973,7 @@ return {
                 {
                   "name": "selected",
                   "args": null,
-                  "fragment": (v18/*:: as any*/),
+                  "fragment": (v23/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
@@ -1535,12 +1981,24 @@ return {
                 {
                   "name": "locked",
                   "args": null,
-                  "fragment": (v18/*:: as any*/),
+                  "fragment": (v23/*:: as any*/),
                   "kind": "RelayResolver",
                   "storageKey": null,
                   "isOutputType": true
                 },
-                (v10/*:: as any*/)
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "backingField": {
+                    "name": "options",
+                    "args": null,
+                    "fragment": (v23/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": true
+                  },
+                  "linkedField": (v17/*:: as any*/)
+                },
+                (v13/*:: as any*/)
               ],
               "type": "TraitsAttribute",
               "abstractKey": null
@@ -1573,6 +2031,6 @@ return {
 };
 })();
 
-(node as any).hash = "aa4c12b92db18340bd564500e0517e5a";
+(node as any).hash = "d625bbc6d14bc1dcb233755695d6b3ce";
 
 export default node;

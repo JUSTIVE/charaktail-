@@ -39,35 +39,37 @@ export function removeOption(attributeId: string, optionId: string): void {
   })
 }
 
-/** Returns why the value could not be added, or null when it was. */
-export function addOption(
-  attributeId: string,
-  label: string,
-  extras: {
-    hex?: string | undefined
-    hex2?: string | undefined
-    lifespan?: { min: number; max: number } | undefined
-    /** 외형 특징 only: its odds, 0–1. */
-    chance?: number | undefined
-    /** 종족 only: the span its 키 is rolled in, in cm. */
-    height?: { min: number; max: number } | undefined
-    /** Compose kinds: the part the value joins. */
-    part?: number | undefined
-    /** Grouped kinds: the group value it is added under. */
-    group?: string | undefined
-  } = {},
-): string | null {
+type Span = { min: number; max: number }
+
+/** What a value can carry besides its name, by kind. */
+export interface ValueExtras {
+  hex?: string | undefined
+  /** null: one colour, where it had two. */
+  hex2?: string | null | undefined
+  /** 외형 특징 only: its odds, 0–1. */
+  chance?: number | undefined
+  /** 종족 only: the span its 나이 is rolled in. */
+  age?: Span | undefined
+  /** 종족 only: the span its 키 is rolled in, in cm. */
+  height?: Span | undefined
+  /** Compose kinds: the part the value joins. */
+  part?: number | undefined
+  /** Grouped kinds: the group value it is added under. */
+  group?: string | undefined
+}
+
+/** Why a value's name and extras are refused, or null. `self` is the value being edited, which may keep its own name. */
+function checkValue(attributeId: string, name: string, extras: ValueExtras, self?: string): string | null {
   const attribute = catalog.byId.get(attributeId)
-  const name = label.trim()
   if (!attribute || attribute.kind === 'range') return '이 속성에는 값을 추가할 수 없어요.'
   if (name === '') return '값을 입력해 주세요.'
-  if (listOptions(attribute, editsCell.read()[attributeId]).some((o) => o.label === name)) return '이미 있는 값이에요.'
-  const { lifespan, height, chance, part, group } = extras
+  if (listOptions(attribute, editsCell.read()[attributeId]).some((o) => o.label === name && o.id !== self)) return '이미 있는 값이에요.'
+  const { age, height, chance, part } = extras
   if (part !== undefined && (attribute.kind !== 'compose' || part < 0 || part >= attribute.parts.length)) return '없는 마디예요.'
-  if (lifespan) {
-    if (!Number.isInteger(lifespan.min) || !Number.isInteger(lifespan.max) || lifespan.min < 1) return '수명을 1년 이상으로 입력해 주세요.'
-    if (lifespan.max > 99999) return '수명은 99999년까지 입력할 수 있어요.'
-    if (lifespan.min > lifespan.max) return '최소 수명이 최대보다 클 수 없어요.'
+  if (age) {
+    if (!Number.isInteger(age.min) || !Number.isInteger(age.max) || age.min < 1) return '나이를 1세 이상으로 입력해 주세요.'
+    if (age.max > 99999) return '나이는 99999세까지 입력할 수 있어요.'
+    if (age.min > age.max) return '최소 나이가 최대보다 클 수 없어요.'
   }
   if (chance !== undefined && !(chance > 0 && chance <= 1)) return '확률은 1–100% 사이로 입력해 주세요.'
   if (height) {
@@ -75,9 +77,51 @@ export function addOption(
     if (height.max > 99999) return '키는 99999cm까지 입력할 수 있어요.'
     if (height.min > height.max) return '최소 키가 최대보다 클 수 없어요.'
   }
+  return null
+}
+
+/** Returns why the value could not be added, or null when it was. */
+export function addOption(attributeId: string, label: string, extras: ValueExtras = {}): string | null {
+  const name = label.trim()
+  const problem = checkValue(attributeId, name, extras)
+  if (problem) return problem
+  const attribute = catalog.byId.get(attributeId)!
+  const { age, height, chance, part, group } = extras
   const id = `u${Date.now().toString(36)}${Math.floor(Math.random() * 36 ** 2).toString(36)}`
   const colours = attribute.kind === 'color' ? { hex: extras.hex ?? '#7c7a85', ...(extras.hex2 ? { hex2: extras.hex2 } : {}) } : {}
-  patch(attributeId, (e) => ({ ...e, added: [...e.added, { id, label: name.slice(0, 24), ...colours, ...(lifespan ? { lifespan } : {}), ...(height ? { height } : {}), ...(chance !== undefined ? { chance } : {}), ...(part ? { part } : {}), ...(group ? { group } : {}) }] }))
+  patch(attributeId, (e) => ({ ...e, added: [...e.added, { id, label: name.slice(0, 24), ...colours, ...(age ? { age } : {}), ...(height ? { height } : {}), ...(chance !== undefined ? { chance } : {}), ...(part ? { part } : {}), ...(group ? { group } : {}) }] }))
+  return null
+}
+
+/**
+ * Changes a value already in the list — the player's own in place, a
+ * shipped one as a change laid over it (its id stays, so conditions on it
+ * hold). Returns why it was refused, or null.
+ */
+export function editOption(attributeId: string, optionId: string, label: string, extras: ValueExtras = {}): string | null {
+  const name = label.trim()
+  const problem = checkValue(attributeId, name, extras, optionId)
+  if (problem) return problem
+  const attribute = catalog.byId.get(attributeId)!
+  const { age, height, chance } = extras
+  const colour = attribute.kind === 'color' && extras.hex ? { hex: extras.hex, hex2: extras.hex2 ?? null } : {}
+  patch(attributeId, (e) => {
+    const own = e.added.find((o) => o.id === optionId)
+    if (own) {
+      const { hex2: _, ...rest } = own
+      const next = {
+        ...rest,
+        label: name.slice(0, 24),
+        ...(colour.hex ? { hex: colour.hex, ...(colour.hex2 ? { hex2: colour.hex2 } : {}) } : own.hex2 ? { hex2: own.hex2 } : {}),
+        ...(age ? { age } : {}),
+        ...(height ? { height } : {}),
+        ...(chance !== undefined ? { chance } : {}),
+      }
+      return { ...e, added: e.added.map((o) => (o.id === optionId ? next : o)) }
+    }
+    const change = { label: name.slice(0, 24), ...colour, ...(age ? { age } : {}), ...(height ? { height } : {}), ...(chance !== undefined ? { chance } : {}) }
+    return { ...e, changed: { ...e.changed, [optionId]: { ...e.changed?.[optionId], ...change } } }
+  })
   return null
 }
 

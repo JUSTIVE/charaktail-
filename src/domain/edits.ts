@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import type { Catalog } from './catalog'
-import { ageCase, describeLifespan } from './lifespan'
+import { ageCase, ageRangeCase, describeLifespan } from './lifespan'
 import type { Attribute } from './schema'
 
 /*
@@ -12,6 +12,12 @@ import type { Attribute } from './schema'
  */
 
 const Hex = z.string().regex(/^#[0-9a-fA-F]{6}$/)
+
+/** Whole years or centimetres, low to high. */
+const Span = z
+  .object({ min: z.number().int().positive(), max: z.number().int().positive() })
+  .refine((s) => s.min <= s.max)
+type Span = z.infer<typeof Span>
 
 export const AddedOption = z.object({
   id: z.string().min(1),
@@ -24,20 +30,33 @@ export const AddedOption = z.object({
   group: z.string().min(1).optional(),
   /** Compose kinds: which part the value joins (0-based). */
   part: z.number().int().min(0).optional(),
-  /** 종족 only: its expected lifespan, which 나이 is then rolled within. */
-  lifespan: z
-    .object({ min: z.number().int().positive(), max: z.number().int().positive() })
-    .refine((l) => l.min <= l.max)
-    .optional(),
+  /** 종족 only, from before #141: its expected lifespan, which 나이 is then rolled within. */
+  lifespan: Span.optional(),
+  /** 종족 only: the span its 나이 is rolled in, given directly. Wins over `lifespan`. */
+  age: Span.optional(),
   /** 외형 특징 only: its odds, 0–1. Unset, ADDED_TRAIT_CHANCE. */
   chance: z.number().gt(0).max(1).optional(),
   /** 종족 only: the span its 키 is rolled in, in cm. Species added before it fall back to 키's own. */
-  height: z
-    .object({ min: z.number().int().positive(), max: z.number().int().positive() })
-    .refine((h) => h.min <= h.max)
-    .optional(),
+  height: Span.optional(),
 })
 export type AddedOption = z.infer<typeof AddedOption>
+
+/**
+ * The player's change to a shipped value — its name, colours, odds, or a
+ * species' lifespan and 키. Its id stays, so every condition naming it still
+ * holds.
+ */
+export const OptionChange = z.object({
+  label: z.string().min(1).max(24).optional(),
+  hex: Hex.optional(),
+  /** null: one colour now, where it had two. */
+  hex2: Hex.nullable().optional(),
+  chance: z.number().gt(0).max(1).optional(),
+  /** 종족: the span its 나이 is rolled in. */
+  age: Span.optional(),
+  height: Span.optional(),
+})
+export type OptionChange = z.infer<typeof OptionChange>
 
 export const AttributeEdits = z.object({
   disabled: z.array(z.string()).default([]),
@@ -48,6 +67,8 @@ export const AttributeEdits = z.object({
   max: z.number().finite().optional(),
   /** Several-at-once kinds: how many a pick draws, or the most 외형 특징 that come out together. */
   count: z.number().int().positive().optional(),
+  /** Shipped value id → the player's change to it. */
+  changed: z.record(z.string(), OptionChange).optional(),
 })
 export type AttributeEdits = z.infer<typeof AttributeEdits>
 
@@ -57,7 +78,7 @@ export type Edits = z.infer<typeof Edits>
 export function isEdited(edits: AttributeEdits | undefined): boolean {
   return (
     !!edits &&
-    (edits.disabled.length > 0 || edits.removed.length > 0 || edits.added.length > 0 || edits.min !== undefined || edits.max !== undefined || edits.count !== undefined)
+    (edits.disabled.length > 0 || edits.removed.length > 0 || edits.added.length > 0 || edits.min !== undefined || edits.max !== undefined || edits.count !== undefined || Object.keys(edits.changed ?? {}).length > 0)
   )
 }
 
@@ -88,16 +109,64 @@ export interface ListedOption {
   enabled: boolean
   custom: boolean
   swatches: string[]
+  /** 외형 특징: its odds, 0–1. */
+  chance: number | null
+  /** 종족: the 나이 span the player gave it — their own and changed ones; the graph fills in the rest. */
+  age: Span | null
+  /** 종족: likewise its 키 span. */
+  height: Span | null
+}
+
+/** Shipped values with the player's changes laid over them. */
+export function applyChanges(attribute: Attribute, changed: Record<string, OptionChange> | undefined): Attribute {
+  if (!changed || Object.keys(changed).length === 0) return attribute
+  const label = <T extends { id: string; label: string }>(o: T): T => (changed[o.id]?.label ? { ...o, label: changed[o.id]!.label! } : o)
+  switch (attribute.kind) {
+    case 'pick':
+      return {
+        ...attribute,
+        options: attribute.options.map((o) => {
+          return label(o)
+        }),
+      }
+    case 'color':
+      return {
+        ...attribute,
+        options: attribute.options.map((o) => {
+          const c = changed[o.id]
+          const swatches = c?.hex ? [c.hex, ...(c.hex2 === null ? [] : c.hex2 ? [c.hex2] : o.swatches.slice(1, 2))] : o.swatches
+          return label({ ...o, swatches })
+        }),
+      }
+    case 'compose':
+      return { ...attribute, parts: attribute.parts.map((part) => part.map(label)) }
+    case 'stats':
+      return { ...attribute, stats: attribute.stats.map(label) }
+    case 'traits':
+      return { ...attribute, options: attribute.options.map((o) => label({ ...o, chance: changed[o.id]?.chance ?? o.chance })) }
+    default:
+      return attribute
+  }
 }
 
 /** Every value the player sees in the editor: built-ins left, then their own. */
-export function listOptions(attribute: Attribute, edits: AttributeEdits | undefined): ListedOption[] {
-  if (!isEditable(attribute)) return []
+export function listOptions(base: Attribute, edits: AttributeEdits | undefined): ListedOption[] {
+  if (!isEditable(base)) return []
+  const attribute = applyChanges(base, edits?.changed)
+  const changed = edits?.changed ?? {}
   const removed = new Set(edits?.removed ?? [])
   const disabled = new Set(edits?.disabled ?? [])
   const groupBy = attribute.kind === 'pick' ? attribute.groupBy : undefined
   const groupsOf = (when: Record<string, string[]> | undefined) => (groupBy && when?.[groupBy]) || []
-  const shipped: { id: string; label: string; hint?: string | undefined; swatches: string[]; part: number; groups: string[] }[] =
+  const shipped: {
+    id: string
+    label: string
+    hint?: string | undefined
+    swatches: string[]
+    part: number
+    groups: string[]
+    chance?: number | undefined
+  }[] =
     attribute.kind === 'color'
       ? attribute.options.map((o) => ({ ...o, part: 0, groups: [] }))
       : attribute.kind === 'compose'
@@ -111,17 +180,32 @@ export function listOptions(attribute: Attribute, edits: AttributeEdits | undefi
               : []
   const builtIn = shipped
     .filter((o) => !removed.has(o.id))
-    .map((o) => ({ id: o.id, label: o.label, hint: o.hint ?? null, part: o.part, groups: o.groups, enabled: !disabled.has(o.id), custom: false, swatches: o.swatches }))
+    .map((o) => ({
+      id: o.id,
+      label: o.label,
+      hint: o.hint ?? null,
+      part: o.part,
+      groups: o.groups,
+      enabled: !disabled.has(o.id),
+      custom: false,
+      swatches: o.swatches,
+      chance: o.chance ?? null,
+      age: changed[o.id]?.age ?? null,
+      height: changed[o.id]?.height ?? null,
+    }))
   // Within a part, values are listed together: the player's own after the shipped ones.
   const own = (edits?.added ?? []).map((o) => ({
     id: o.id,
     label: o.label,
-    hint: o.lifespan ? describeLifespan(o.lifespan) : attribute.kind === 'traits' ? chanceHint(o.chance ?? ADDED_TRAIT_CHANCE) : null,
+    hint: attribute.kind === 'traits' ? chanceHint(o.chance ?? ADDED_TRAIT_CHANCE) : null,
     part: o.part ?? 0,
     groups: o.group ? [o.group] : [],
     enabled: !disabled.has(o.id),
     custom: true,
     swatches: swatchesOf(o),
+    chance: attribute.kind === 'traits' ? (o.chance ?? ADDED_TRAIT_CHANCE) : null,
+    age: o.age ?? null,
+    height: o.height ?? null,
   }))
   return [...builtIn, ...own].sort((a, b) => a.part - b.part)
 }
@@ -131,16 +215,16 @@ function chanceHint(chance: number): string {
 }
 
 /** One attribute with its edits applied. Never leaves a list empty. */
-export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits | undefined): Attribute {
-  if (!isEdited(edits)) return attribute
+export function applyAttributeEdits(base: Attribute, edits: AttributeEdits | undefined): Attribute {
+  if (!isEdited(edits)) return base
+  const attribute = applyChanges(base, edits!.changed)
   if (attribute.kind === 'range') {
     const min = edits!.min ?? attribute.min
     const max = edits!.max ?? attribute.max
     if ((edits!.min === undefined && edits!.max === undefined) || min > max) return attribute
-    // The player's bounds win over every case: species keep their unit,
-    // prefix and bands, but no longer their own span.
-    const cases = attribute.cases.map(({ min: _min, max: _max, ...rest }) => rest)
-    return { ...attribute, min, max, cases }
+    // The player's bounds are for when no species decides: a rolled species
+    // keeps its own span (#142) — change that on the species itself.
+    return { ...attribute, min, max }
   }
   if (attribute.kind !== 'pick' && attribute.kind !== 'color' && attribute.kind !== 'compose' && attribute.kind !== 'stats' && attribute.kind !== 'traits') return attribute
   const drop = new Set([...edits!.disabled, ...edits!.removed])
@@ -194,36 +278,54 @@ export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits 
   return options.length > 0 ? { ...attribute, options, ...count } : { ...attribute, ...count }
 }
 
-/** 키 for one of the player's species: its own span, read against that species — 별사람치고 큰. */
-function heightCase(o: AddedOption, { min, max }: { min: number; max: number }) {
+type RangeCase = Extract<Attribute, { kind: 'range' }>['cases'][number]
+
+/** 키 for one species from its own span, read against that species — 별사람치고 큰. */
+function heightCase(id: string, label: string, { min, max }: Span): RangeCase {
   const third = (max - min) / 3
   const bands = [
-    { upTo: Math.round(min + third), label: `${o.label}치고 작은` },
+    { upTo: Math.round(min + third), label: `${label}치고 작은` },
     { upTo: Math.round(max - third), label: '평균' },
-    { upTo: Number.MAX_SAFE_INTEGER, label: `${o.label}치고 큰` },
+    { upTo: Number.MAX_SAFE_INTEGER, label: `${label}치고 큰` },
   ]
-  return { when: { species: [o.id] }, min, max, bands }
+  return { when: { species: [id] }, min, max, bands }
 }
 
 /**
- * The player's own species bring their lifespans to 나이 and their spans to 키
- * as extra cases — before those attributes' own edits, so the player's
+ * Species bring their lifespans to 나이 and their spans to 키 as cases: the
+ * player's own appended, a changed shipped one put first so it wins over the
+ * catalogue's — all before those attributes' own edits, so the player's
  * bounds still win over them.
  */
-function withCustomSpecies(attribute: Attribute, edits: Edits): Attribute {
+function withSpeciesEdits(attribute: Attribute, catalog: Catalog, edits: Edits): Attribute {
   if ((attribute.id !== 'age' && attribute.id !== 'height') || attribute.kind !== 'range') return attribute
-  const drop = new Set([...(edits['species']?.disabled ?? []), ...(edits['species']?.removed ?? [])])
-  const cases = (edits['species']?.added ?? []).flatMap((o) => {
+  const species = edits['species']
+  const drop = new Set([...(species?.disabled ?? []), ...(species?.removed ?? [])])
+  const isAge = attribute.id === 'age'
+  const own = (species?.added ?? []).flatMap((o): RangeCase[] => {
     if (drop.has(o.id)) return []
-    if (attribute.id === 'age') return o.lifespan ? [ageCase(o.id, o.lifespan)] : []
-    return o.height ? [heightCase(o, o.height)] : []
+    if (isAge) return o.age ? [ageRangeCase(o.id, o.age)] : o.lifespan ? [ageCase(o.id, o.lifespan)] : []
+    return o.height ? [heightCase(o.id, o.label, o.height)] : []
   })
-  return cases.length ? { ...attribute, cases: [...attribute.cases, ...cases] } : attribute
+  const shipped = catalog.byId.get('species')
+  const labelOf = (id: string) => species?.changed?.[id]?.label ?? (shipped?.kind === 'pick' ? shipped.options.find((o) => o.id === id)?.label : undefined) ?? id
+  const changed = Object.entries(species?.changed ?? {}).flatMap(([id, c]): RangeCase[] => {
+    if (drop.has(id)) return []
+    if (isAge) {
+      if (!c.age) return []
+      // Its own way of counting stays (유령은 사망 당시, 안드로이드는 제조 후), with the new span.
+      const own = attribute.cases.find((k) => Object.keys(k.when).length === 1 && k.when['species']?.length === 1 && k.when['species'][0] === id)
+      // No case of its own (인간): 나이's own bands still read right for it.
+      return [own ? { ...own, min: c.age.min, max: c.age.max } : { when: { species: [id] }, min: c.age.min, max: c.age.max }]
+    }
+    return c.height ? [heightCase(id, labelOf(id), c.height)] : []
+  })
+  return own.length || changed.length ? { ...attribute, cases: [...changed, ...attribute.cases, ...own] } : attribute
 }
 
 export function applyEdits(catalog: Catalog, edits: Edits | undefined): Catalog {
   if (!edits || !Object.values(edits).some(isEdited)) return catalog
-  const attributes = catalog.attributes.map((a) => applyAttributeEdits(withCustomSpecies(a, edits), edits[a.id]))
+  const attributes = catalog.attributes.map((a) => applyAttributeEdits(withSpeciesEdits(a, catalog, edits), edits[a.id]))
   const byId = new Map(attributes.map((a) => [a.id, a]))
   return { ...catalog, attributes, byId, rollOrder: catalog.rollOrder.map((a) => byId.get(a.id)!) }
 }
@@ -247,10 +349,14 @@ type Packed = Record<
     g?: Record<string, string> | undefined
     /** Added option id → compose part, when not the first. */
     p?: Record<string, number> | undefined
+    /** Added option id → [min, max] 나이. */
+    y?: Record<string, [number, number]> | undefined
     /** Added option id → [min, max] lifespan. */
     l?: Record<string, [number, number]> | undefined
     /** Added option id → its 외형 특징 odds, in whole percent. */
     q?: Record<string, number> | undefined
+    /** Shipped value id → the player's change to it. */
+    o?: Record<string, OptionChange> | undefined
     /** Added option id → [min, max] 키 in cm. */
     h?: Record<string, [number, number]> | undefined
   }
@@ -271,6 +377,7 @@ export function packEdits(edits: Edits, attributeIds: readonly string[], keyOf: 
       ...(e!.min !== undefined ? { n: e!.min } : {}),
       ...(e!.max !== undefined ? { x: e!.max } : {}),
       ...(e!.count !== undefined ? { c: e!.count } : {}),
+      ...(Object.keys(e!.changed ?? {}).length ? { o: e!.changed } : {}),
       ...(e!.added.some((o) => o.group)
         ? { g: Object.fromEntries(e!.added.flatMap((o) => (o.group ? [[o.id, o.group]] : []))) }
         : {}),
@@ -282,6 +389,9 @@ export function packEdits(edits: Edits, attributeIds: readonly string[], keyOf: 
         : {}),
       ...(e!.added.some((o) => o.chance !== undefined)
         ? { q: Object.fromEntries(e!.added.flatMap((o) => (o.chance !== undefined ? [[o.id, Math.round(o.chance * 100)]] : []))) }
+        : {}),
+      ...(e!.added.some((o) => o.age)
+        ? { y: Object.fromEntries(e!.added.flatMap((o) => (o.age ? [[o.id, [o.age.min, o.age.max]]] : []))) }
         : {}),
       ...(e!.added.some((o) => o.height)
         ? { h: Object.fromEntries(e!.added.flatMap((o) => (o.height ? [[o.id, [o.height.min, o.height.max]]] : []))) }
@@ -307,6 +417,7 @@ export function unpackEdits(text: string, idOf: (key: string) => string = (key) 
           added: (p.a ?? []).map(([oid, label, hex, hex2]) => {
             const life = p.l?.[oid]
             const height = p.h?.[oid]
+            const age = p.y?.[oid]
             const percent = p.q?.[oid]
             const part = p.p?.[oid]
             const group = p.g?.[oid]
@@ -319,12 +430,14 @@ export function unpackEdits(text: string, idOf: (key: string) => string = (key) 
               ...(group ? { group } : {}),
               ...(life ? { lifespan: { min: life[0], max: life[1] } } : {}),
               ...(height ? { height: { min: height[0], max: height[1] } } : {}),
+              ...(age ? { age: { min: age[0], max: age[1] } } : {}),
               ...(percent !== undefined ? { chance: percent / 100 } : {}),
             }
           }),
           ...(p.n !== undefined ? { min: p.n } : {}),
           ...(p.x !== undefined ? { max: p.x } : {}),
           ...(p.c !== undefined ? { count: p.c } : {}),
+          ...(p.o ? { changed: p.o } : {}),
         },
       ]),
     )

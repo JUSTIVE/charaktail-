@@ -1,6 +1,6 @@
 import { codeOf, decodeAttributeIds, encodeAttributeIds, idOf } from './codes'
 import { applyEdits, packEdits, unpackEdits, type Edits } from './edits'
-import { generators, possibilities, type RollContext } from './generators'
+import { fitsRange, generators, possibilities, type RollContext } from './generators'
 import { createRng } from './rng'
 import { RolledValue, type Attribute, type AttributeKind, type AttributeOf } from './schema'
 import type { Catalog } from './catalog'
@@ -40,7 +40,9 @@ export function rollCharacter(base: Catalog, request: RollRequest): RolledValue[
   for (const attribute of catalog.rollOrder) {
     if (!wanted.has(attribute.id)) continue
     const kept = request.locked?.[attribute.id]
-    if (kept) {
+    // A locked 나이 or 키 holds only while it fits the species rolled with it.
+    const stillFits = !kept || attribute.kind !== 'range' || fitsRange(attribute, kept, rolled)
+    if (kept && stillFits) {
       rolled.set(attribute.id, { ...kept, attributeId: attribute.id })
       continue
     }

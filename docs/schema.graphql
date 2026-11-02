@@ -135,6 +135,20 @@ type AttributeOption @weak {
   """
   custom: Boolean!
   swatches: [String!]!
+  """
+  외형 특징: its odds, 0–1.
+  """
+  chance: Float
+  """
+  종족: the 나이 span it rolls in.
+  """
+  ageMin: Int
+  ageMax: Int
+  """
+  종족: the 키 span it rolls in, in cm.
+  """
+  heightMin: Int
+  heightMax: Int
 }
 
 """

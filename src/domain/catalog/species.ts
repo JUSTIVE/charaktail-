@@ -44,5 +44,5 @@ export default defineAttribute({
   description: '세계관에 따라 등장하는 종족이 달라진다',
   defaultSelected: true,
   kind: 'pick',
-  options: speciesTable.map(({ lifespan, ...option }) => ({ ...option, hint: describeLifespan(lifespan) })),
+  options: speciesTable.map((option) => ({ ...option, hint: describeLifespan(option.lifespan) })),
 })

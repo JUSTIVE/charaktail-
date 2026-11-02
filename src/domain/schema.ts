@@ -42,11 +42,13 @@ const PickOption = z
       hint: z.string().optional(),
       weight: Weight,
       when: Condition.optional(),
+      /** 종족: its expected lifespan, shown in the editor and changed there. */
+      lifespan: z.object({ min: z.number().int().positive(), max: z.number().int().positive() }).optional(),
     }),
   ])
   .transform((input) =>
     typeof input === 'string'
-      ? { id: input, label: input, hint: undefined, weight: 1, when: undefined }
+      ? { id: input, label: input, hint: undefined, weight: 1, when: undefined, lifespan: undefined }
       : { ...input, id: input.id ?? input.label },
   )
 export type PickOption = z.output<typeof PickOption>

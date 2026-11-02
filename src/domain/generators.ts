@@ -22,6 +22,15 @@ export function matches(when: Condition | undefined, rolled: ReadonlyMap<string,
   })
 }
 
+/**
+ * A range case (엘프의 나이, 드워프의 키) applies only when what it names was
+ * actually rolled — 나이 rolled without 종족 is nobody's in particular, not a
+ * 유령's. Value conditions stay lenient: there, unrolled means unconstrained.
+ */
+function caseFor<C extends { when: Condition }>(cases: readonly C[], rolled: ReadonlyMap<string, RolledValue>): C | undefined {
+  return cases.find((c) => Object.keys(c.when).every((id) => rolled.has(id)) && matches(c.when, rolled))
+}
+
 /** Options allowed right now; the whole list if conditions would leave none. */
 function eligible<T extends { when?: Condition | undefined }>(options: readonly T[], ctx: RollContext): readonly T[] {
   const open = options.filter((option) => matches(option.when, ctx.rolled))
@@ -127,7 +136,7 @@ export const generators: { [K in AttributeKind]: Generator<K> } = {
   },
 
   range(attribute, ctx) {
-    const override = attribute.cases.find((c) => matches(c.when, ctx.rolled))
+    const override = caseFor(attribute.cases, ctx.rolled)
     const spec = { ...attribute, ...stripUndefined(override ?? {}) }
     const t = spec.distribution === 'normal' ? bell(ctx.rng) : ctx.rng()
     const steps = Math.floor((spec.max - spec.min) / spec.step)
@@ -142,6 +151,20 @@ export const generators: { [K in AttributeKind]: Generator<K> } = {
       swatches: [],
     }
   },
+}
+
+/**
+ * Whether a kept 나이 or 키 still fits what was rolled around it — the span of
+ * the species rolled this time. A locked one that no longer fits is rolled
+ * again (#142).
+ */
+export function fitsRange(attribute: AttributeOf<'range'>, kept: RolledValue, rolled: ReadonlyMap<string, RolledValue>): boolean {
+  const override = caseFor(attribute.cases, rolled)
+  const spec = { ...attribute, ...stripUndefined(override ?? {}) }
+  const head = spec.prefix ? `${spec.prefix} ` : ''
+  if (!kept.label.startsWith(head) || !kept.label.endsWith(spec.unit)) return false
+  const value = Number(kept.label.slice(head.length, kept.label.length - spec.unit.length))
+  return Number.isFinite(value) && value >= spec.min && value <= spec.max
 }
 
 /**
@@ -166,7 +189,7 @@ export function possibilities(attribute: AttributeOf<AttributeKind>, rolled: Rea
     case 'range':
       break
   }
-  const override = attribute.cases.find((c) => matches(c.when, rolled))
+  const override = caseFor(attribute.cases, rolled)
   const spec = { ...attribute, ...stripUndefined(override ?? {}) }
   return [`${spec.prefix ? `${spec.prefix} ` : ''}${spec.min}–${spec.max}${spec.unit}`, ...(spec.bands ?? []).map((b) => b.label)]
 }

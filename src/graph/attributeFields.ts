@@ -3,7 +3,7 @@ import type { DataID } from 'relay-runtime'
 import { catalog } from '../domain/catalog/index'
 import { applyAttributeEdits, isEdited, isMultiple, listOptions, type Edits } from '../domain/edits'
 import type { Attribute as AttributeRecord } from '../domain/schema'
-import { dependsOnSpecies as speciesDependent, rangesBySpecies } from '../domain/preview'
+import { dependsOnSpecies as speciesDependent, describeSpan, rangesBySpecies, speciesSpans } from '../domain/preview'
 import { editsCell } from '../state/edits'
 import { locksCell } from '../state/locks'
 import { selectionCell } from '../state/selection'
@@ -109,7 +109,24 @@ export function edited(attribute: AttributeRecord) {
  * Every value in the editor, with the player's switches and additions.
  */
 export function options(attribute: AttributeRecord) {
-  return editsCell.live((edits) => listOptions(attribute, edits[attribute.id]))
+  return editsCell.live((edits) => {
+    const list = listOptions(attribute, edits[attribute.id])
+    if (attribute.id !== 'species') return list
+    // Each species says the 나이 and 키 it rolls in — not its lifespan (#141).
+    const spans = speciesSpans(catalog, edits)
+    return list.map((option) => {
+      const span = spans.get(option.id)
+      const age = span?.age ?? null
+      const height = span?.height ?? null
+      const hint = [age ? `나이 ${describeSpan(age)}` : null, height ? `키 ${describeSpan(height)}` : null].filter(Boolean).join(' · ')
+      return {
+        ...option,
+        hint: hint || option.hint,
+        age: option.age ?? (age ? { min: age.min, max: age.max } : null),
+        height: option.height ?? (height ? { min: height.min, max: height.max } : null),
+      }
+    })
+  })
 }
 
 /**

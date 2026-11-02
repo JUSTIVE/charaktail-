@@ -236,6 +236,60 @@ describe('split', () => {
   })
 })
 
+describe('species spans', () => {
+  test('a locked 키 that doesn\'t fit the rolled species is rolled again inside its span', () => {
+    const locked = { height: { attributeId: 'height', valueIds: ['큰 편'], label: '190cm', detail: '큰 편', swatches: [] } }
+    for (let i = 0; i < 100; i++) {
+      const values = rollCharacter(catalog, { seed: `k${i}`, attributeIds: ['world', 'species', 'height'], locked })
+      const species = values.find((v) => v.attributeId === 'species')!.valueIds[0]
+      const cm = Number(values.find((v) => v.attributeId === 'height')!.label.replace(/[^0-9]/g, ''))
+      if (species === 'dwarf') expect(cm).toBeLessThanOrEqual(150)
+      if (species === 'fairy') expect(cm).toBeLessThanOrEqual(40)
+      if (species === 'human') expect(cm).toBe(190)
+    }
+  })
+
+  test('the player\'s 키 bounds no longer override a species\' own span', () => {
+    const edits = { height: { disabled: [], removed: [], added: [], min: 180, max: 190 } }
+    for (let i = 0; i < 200; i++) {
+      const values = rollCharacter(catalog, { seed: `b${i}`, attributeIds: ['world', 'species', 'height'], edits })
+      const species = values.find((v) => v.attributeId === 'species')!.valueIds[0]
+      const cm = Number(values.find((v) => v.attributeId === 'height')!.label.replace(/[^0-9]/g, ''))
+      if (species === 'dwarf') expect(cm).toBeLessThanOrEqual(150)
+      if (species === 'human') expect(cm).toBeGreaterThanOrEqual(180)
+    }
+  })
+
+  test('a shipped species takes a changed name, 나이 and 키, kept in the roll key', () => {
+    const edits = { species: { disabled: [], removed: [], added: [], changed: { human: { label: '사람', age: { min: 20, max: 25 }, height: { min: 200, max: 210 } } } } }
+    let seen = 0
+    for (let i = 0; i < 300; i++) {
+      const request = { seed: `h${i}`, attributeIds: ['world', 'species', 'age', 'height'], nonces: {}, edits }
+      const values = rollCharacter(catalog, decodeRollKey(encodeRollKey(request))!)
+      const species = values.find((v) => v.attributeId === 'species')!
+      if (species.valueIds[0] !== 'human') continue
+      seen++
+      expect(species.label).toBe('사람')
+      const age = Number(values.find((v) => v.attributeId === 'age')!.label.replace(/[^0-9]/g, ''))
+      const cm = Number(values.find((v) => v.attributeId === 'height')!.label.replace(/[^0-9]/g, ''))
+      expect(age).toBeGreaterThanOrEqual(20)
+      expect(age).toBeLessThanOrEqual(25)
+      expect(cm).toBeGreaterThanOrEqual(200)
+      expect(cm).toBeLessThanOrEqual(210)
+    }
+    expect(seen).toBeGreaterThan(10)
+  })
+
+  test('changed names and colours of other kinds come out in rolls', () => {
+    const color = catalog.byId.get('eyeColor') as AttributeOf<'color'>
+    const first = color.options[0]!.id
+    const edits = { eyeColor: { disabled: color.options.slice(1).map((o) => o.id), removed: [], added: [], changed: { [first]: { label: '바꾼 색', hex: '#123456', hex2: null } } } }
+    const value = rollCharacter(catalog, { seed: 'c', attributeIds: ['eyeColor'], edits })[0]!
+    expect(value.label).toBe('바꾼 색')
+    expect(value.swatches).toEqual(['#123456'])
+  })
+})
+
 describe('compose edits', () => {
   test('a value added to the second part lands there and survives the roll key', () => {
     const epithet = catalog.byId.get('epithet') as AttributeOf<'compose'>
@@ -289,10 +343,10 @@ describe('stats edits', () => {
 })
 
 describe('range edits', () => {
-  test("the player's bounds win over every species case", () => {
+  test("the player's bounds hold when no species is rolled — a species keeps its own (#142)", () => {
     const edits = { age: { disabled: [], removed: [], added: [], min: 20, max: 25 } }
     for (let i = 0; i < 300; i++) {
-      const values = rollCharacter(catalog, { seed: `r${i}`, attributeIds: ['world', 'species', 'age'], edits })
+      const values = rollCharacter(catalog, { seed: `r${i}`, attributeIds: ['world', 'age'], edits })
       const age = values.find((v) => v.attributeId === 'age')!
       const n = Number(age.label.replace(/[^0-9]/g, ''))
       expect(n).toBeGreaterThanOrEqual(20)

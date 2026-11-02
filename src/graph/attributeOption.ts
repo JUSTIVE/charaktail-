@@ -69,3 +69,41 @@ export function custom(option: AttributeOption): boolean {
 export function swatches(option: AttributeOption): string[] {
   return option.swatches
 }
+
+/**
+ * 외형 특징: its odds, 0–1.
+ * @relayField AttributeOption.chance: Float
+ */
+export function chance(option: AttributeOption): number | null {
+  return option.chance
+}
+
+/**
+ * 종족: the 나이 span it rolls in.
+ * @relayField AttributeOption.ageMin: Int
+ */
+export function ageMin(option: AttributeOption): number | null {
+  return option.age?.min ?? null
+}
+
+/**
+ * @relayField AttributeOption.ageMax: Int
+ */
+export function ageMax(option: AttributeOption): number | null {
+  return option.age?.max ?? null
+}
+
+/**
+ * 종족: the 키 span it rolls in, in cm.
+ * @relayField AttributeOption.heightMin: Int
+ */
+export function heightMin(option: AttributeOption): number | null {
+  return option.height?.min ?? null
+}
+
+/**
+ * @relayField AttributeOption.heightMax: Int
+ */
+export function heightMax(option: AttributeOption): number | null {
+  return option.height?.max ?? null
+}

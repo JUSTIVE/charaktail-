@@ -37,3 +37,12 @@ export function ageCase(speciesId: string, { min, max }: Lifespan, stages: reado
   const bands = stages.map(([f, label], i) => ({ upTo: i === stages.length - 1 ? Number.MAX_SAFE_INTEGER : Math.round(span * f), label }))
   return { when: { species: [speciesId] }, min: round(span * 0.13), max: round(max * 0.95), step, unit: '세', bands }
 }
+
+/**
+ * 나이 for one species from the span the player gave it directly — banded as
+ * if that span ran to the edge of its life.
+ */
+export function ageRangeCase(speciesId: string, { min, max }: Lifespan) {
+  const life = Math.max(1, Math.round(max / 0.95))
+  return { ...ageCase(speciesId, { min: life, max: life }), min, max }
+}

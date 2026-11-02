@@ -5,7 +5,7 @@ import { graphql } from 'relay-runtime'
 import { ADDED_TRAIT_CHANCE } from '../../domain/edits'
 import { useLocalQuery } from '../../graph/useLocalQuery'
 
-import { addOption, clearCount, removeOption, resetAttribute, setCount, setOptionsEnabled, setRange, toggleOption } from '../../state/edits'
+import { addOption, clearCount, editOption, removeOption, resetAttribute, setCount, setOptionsEnabled, setRange, toggleOption } from '../../state/edits'
 import { router } from '../../router'
 import { haptic } from '../../stage/haptics'
 import { BackIcon, PlusIcon, TrashIcon } from '../icons'
@@ -210,7 +210,7 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
             min={range.rangeMin ?? 0}
             max={range.rangeMax ?? 0}
             unit={range.unit ?? ''}
-            note={range.hasCases ? (attribute.edited ? '종족별 범위 대신 이 범위로 뽑아요.' : '지금은 종족마다 범위가 달라요. 입력하면 모두 이 범위로 뽑아요.') : null}
+            note={range.hasCases ? '종족 없이 뽑을 때의 범위예요. 종족마다의 범위는 종족 목록에서 그 종족을 눌러 바꿔요.' : null}
           />
           {/* Only while this range is locked: its value stays put through
               re-rolls while 종족 may change, so the player can see which
@@ -296,10 +296,19 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
                   ) : (
                     <Dot color={attribute.color ?? '#888'} size={7} />
                   )}
-                  <span className="min-w-0 flex-1">
+                  {/* The name and its line open the value for editing. */}
+                  <button
+                    type="button"
+                    aria-label={`${option.label} 편집`}
+                    className="press-soft min-w-0 flex-1 text-left"
+                    onClick={() => {
+                      haptic.select()
+                      void router.navigate({ to: '/', search: { values: attributeId, group, edit: option.key ?? undefined } })
+                    }}
+                  >
                     <span className="block truncate text-[14px] font-medium">{option.label}</span>
                     {option.hint ? <span className="tnum block truncate text-[11.5px] text-faint">{option.hint}</span> : null}
-                  </span>
+                  </button>
                   {option.custom ? <span className="values-badge">내 값</span> : null}
                   <HapticTap className="haptic-inline" onTap={switchOption} disabled={last}>
                     <button
@@ -569,12 +578,12 @@ function RangeEditor({
 }
 
 /**
- * Adding a value: the whole panel morphs from the list into this view and
- * back. What it asks for follows the kind — a colour (or two) for colours,
- * the part for a phrase, the expected lifespan and 키 for a species, the
- * odds for a 외형 특징.
+ * Adding a value, or changing one already in the list (`edit`, a value id):
+ * the whole panel morphs from the list into this view and back. What it asks
+ * for follows the kind — a colour (or two) for colours, the part for a
+ * phrase, the 나이 and 키 ranges for a species, the odds for a 외형 특징.
  */
-export function AddValueSheet({ attributeId, group }: { attributeId: string; group?: string | undefined }) {
+export function AddValueSheet({ attributeId, group, edit }: { attributeId: string; group?: string | undefined; edit?: string | undefined }) {
   const data = useLocalQuery<AddValueSheetQuery>(
     graphql`
       query AddValueSheetQuery($id: ID!) {
@@ -583,22 +592,112 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
           ...attributeHead_attribute
           ... on ComposeAttribute {
             partLabels
+            options {
+              key
+              label
+              swatches
+              chance
+              ageMin
+              ageMax
+              heightMin
+              heightMax
+            }
+          }
+          ... on PickAttribute {
+            options {
+              key
+              label
+              swatches
+              chance
+              ageMin
+              ageMax
+              heightMin
+              heightMax
+            }
+          }
+          ... on ColorAttribute {
+            options {
+              key
+              label
+              swatches
+              chance
+              ageMin
+              ageMax
+              heightMin
+              heightMax
+            }
+          }
+          ... on StatsAttribute {
+            options {
+              key
+              label
+              swatches
+              chance
+              ageMin
+              ageMax
+              heightMin
+              heightMax
+            }
+          }
+          ... on TraitsAttribute {
+            options {
+              key
+              label
+              swatches
+              chance
+              ageMin
+              ageMax
+              heightMin
+              heightMax
+            }
           }
         }
       }
     `,
     { id: attributeId },
   )
-  const [name, setName] = useState('')
-  const [hex, setHex] = useState('#6e56cf')
-  const [hex2, setHex2] = useState('#29a383')
-  const [twoTone, setTwoTone] = useState(false)
+  const raw = data.attribute
+  const options = raw && 'options' in raw ? (raw.options ?? []) : []
+  const editing = edit ? (options.find((o) => o.key === edit) ?? null) : null
+  if (edit && !editing) return null
+  // Keyed by the value, so moving to another one starts from its own fields.
+  return <ValueForm key={edit ?? 'new'} data={data} attributeId={attributeId} group={group} editing={editing} />
+}
+
+type EditedOption = {
+  readonly key: string
+  readonly label: string
+  readonly swatches: ReadonlyArray<string>
+  readonly chance: number | null | undefined
+  readonly ageMin: number | null | undefined
+  readonly ageMax: number | null | undefined
+  readonly heightMin: number | null | undefined
+  readonly heightMax: number | null | undefined
+}
+
+function ValueForm({
+  data,
+  attributeId,
+  group,
+  editing,
+}: {
+  data: AddValueSheetQuery['response']
+  attributeId: string
+  group?: string | undefined
+  editing: EditedOption | null
+}) {
+  const text = (n: number | null | undefined, fallback: number) => String(n ?? fallback)
+  const [name, setName] = useState(editing?.label ?? '')
+  const [hex, setHex] = useState(editing?.swatches[0] ?? '#6e56cf')
+  const [hex2, setHex2] = useState(editing?.swatches[1] ?? '#29a383')
+  const [twoTone, setTwoTone] = useState((editing?.swatches.length ?? 0) > 1)
   const [part, setPart] = useState(0)
-  const [low, setLow] = useState('70')
-  const [high, setHigh] = useState('100')
-  const [short, setShort] = useState('145')
-  const [tall, setTall] = useState('195')
-  const [percent, setPercent] = useState(String(Math.round(ADDED_TRAIT_CHANCE * 100)))
+  // A new species starts from a human's 나이 and 키.
+  const [young, setYoung] = useState(text(editing?.ageMin, 12))
+  const [old, setOld] = useState(text(editing?.ageMax, 80))
+  const [short, setShort] = useState(text(editing?.heightMin, 145))
+  const [tall, setTall] = useState(text(editing?.heightMax, 195))
+  const [percent, setPercent] = useState(text(editing?.chance != null ? Math.round(editing.chance * 100) : null, Math.round(ADDED_TRAIT_CHANCE * 100)))
   const [error, setError] = useState<string | null>(null)
 
   const raw = data.attribute
@@ -609,19 +708,21 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
   const isColor = raw.__typename === 'ColorAttribute'
   const isSpecies = attributeId === 'species'
   const isTraits = raw.__typename === 'TraitsAttribute'
-  const partLabels = raw.__typename === 'ComposeAttribute' ? (raw.partLabels ?? []) : []
+  // A new value picks its part; an existing one stays in its own.
+  const partLabels = raw.__typename === 'ComposeAttribute' && !editing ? (raw.partLabels ?? []) : []
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    const problem = addOption(attributeId, name, {
+    const extras = {
       hex: isColor ? hex : undefined,
-      hex2: isColor && twoTone ? hex2 : undefined,
-      part: partLabels.length ? part : undefined,
-      group,
-      lifespan: isSpecies ? { min: Number(low), max: Number(high) } : undefined,
+      hex2: isColor ? (twoTone ? hex2 : null) : undefined,
+      age: isSpecies ? { min: Number(young), max: Number(old) } : undefined,
       height: isSpecies ? { min: Number(short), max: Number(tall) } : undefined,
       chance: isTraits ? Number(percent) / 100 : undefined,
-    })
+    }
+    const problem = editing
+      ? editOption(attributeId, editing.key, name, extras)
+      : addOption(attributeId, name, { ...extras, hex2: extras.hex2 ?? undefined, part: partLabels.length ? part : undefined, group })
     setError(problem)
     if (problem) return
     haptic.select()
@@ -652,7 +753,8 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
           <BackIcon />
         </button>
         <h2 className="display flex min-w-0 flex-1 items-center gap-2">
-          <Dot color={color} size={10} />새 {attribute.label}
+          <Dot color={color} size={10} />
+          <span className="truncate">{editing ? `${editing.label} 편집` : `새 ${attribute.label}`}</span>
         </h2>
       </div>
 
@@ -720,11 +822,11 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
 
       {isSpecies ? (
         <div className="ms-seq" style={seq(2)}>
-          <p className="eyebrow mb-1.5">기대 수명</p>
+          <p className="eyebrow mb-1.5">나이</p>
           <div className="flex items-center gap-2">
-            {bound('최소', low, setLow, '년')}
+            {bound('최소', young, setYoung, '세')}
             <span aria-hidden className="text-faint">–</span>
-            {bound('최대', high, setHigh, '년')}
+            {bound('최대', old, setOld, '세')}
           </div>
           <p className="eyebrow mt-3 mb-1.5">키</p>
           <div className="flex items-center gap-2">
@@ -732,7 +834,7 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
             <span aria-hidden className="text-faint">–</span>
             {bound('최대', tall, setTall, 'cm')}
           </div>
-          {error ? null : <p className="mt-2 text-[12px] text-faint">나이는 이 수명 안에서, 키는 이 범위 안에서 뽑혀요.</p>}
+          {error ? null : <p className="mt-2 text-[12px] text-faint">이 종족이 나오면 나이와 키는 이 범위 안에서 뽑혀요.</p>}
         </div>
       ) : null}
       {isTraits ? (
@@ -748,8 +850,8 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
         <Button variant="ghost" className="flex-1 py-3" onClick={toList}>
           취소
         </Button>
-        <Button type="submit" variant="primary" className="flex-1 py-3" disabled={name.trim() === '' || (isSpecies && [low, high, short, tall].includes('')) || (isTraits && percent === '')}>
-          추가
+        <Button type="submit" variant="primary" className="flex-1 py-3" disabled={name.trim() === '' || (isSpecies && [young, old, short, tall].includes('')) || (isTraits && percent === '')}>
+          {editing ? '저장' : '추가'}
         </Button>
       </div>
     </form>
