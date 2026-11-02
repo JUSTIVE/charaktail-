@@ -302,6 +302,18 @@ describe('character count', () => {
   })
 })
 
+describe('korean numbers', () => {
+  test('two four-digit groups with their units, up to 해; from 1자 beyond counting', async () => {
+    const { koreanParts } = await import('./koreanNumber')
+    expect(koreanParts(4)).toEqual([{ value: 4, unit: '' }])
+    expect(koreanParts(258_910_680)).toEqual([{ value: 2, unit: '억' }, { value: 5891, unit: '만' }])
+    expect(koreanParts(1e8)).toEqual([{ value: 1, unit: '억' }])
+    expect(koreanParts(3.2e20)).toEqual([{ value: 3, unit: '해' }, { value: 2000, unit: '경' }])
+    expect(koreanParts(1e24)).toBeNull()
+    expect(koreanParts(2.7e49)).toBeNull()
+  })
+})
+
 describe('compose edits', () => {
   test('a value added to the second part lands there and survives the roll key', () => {
     const epithet = catalog.byId.get('epithet') as AttributeOf<'compose'>

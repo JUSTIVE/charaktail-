@@ -1,6 +1,7 @@
 import NumberFlow from '@number-flow/react'
-import { useState, type CSSProperties } from 'react'
+import { Fragment, useState, type CSSProperties } from 'react'
 import { encodeAttributeIds } from '../../domain/codes'
+import { koreanParts } from '../../domain/koreanNumber'
 import { graphql } from 'relay-runtime'
 
 import { useLocalQuery } from '../../graph/useLocalQuery'
@@ -45,7 +46,7 @@ export function Picker() {
   )
   const attributes = (data.attributes ?? []).flatMap((ref) => attributeHead(ref) ?? [])
   const count = attributes.filter((a) => a.selected).length
-  const characters = data.draft?.characterCount ?? 0
+  const parts = koreanParts(data.draft?.characterCount ?? 0)
   const auraColors = attributes.filter((a) => a.selected).map((a) => a.color ?? '#7c7a85')
   const allOn = count === attributes.length
   // 완전 종속 속성 (나이, 키 of 종족) fold into their chip while it is on: no chips of their own, tags inside it.
@@ -183,17 +184,21 @@ export function Picker() {
               <AuraTint colors={auraColors} />
               <span className="relative flex items-center gap-1.5">
                 <ShakeIcon width={18} height={18} />
-                {/* How many characters this shake picks from — rolls digit by digit as
-                    chips and values change, in 만·억 so a vast number stays short. */}
-                {/* Past 1경 there is no shorter Korean unit — just say it is beyond counting. */}
-                {characters >= 1e16 ? (
-                  <span>흔들어서 셀 수 없이 많은 캐릭터 중 하나 뽑기</span>
-                ) : (
-                  <span>
+                {/* How many characters this shake picks from, read the Korean way — 2억 5,891만 —
+                    each group rolling digit by digit as chips and values change. */}
+                {parts ? (
+                  <span className="whitespace-nowrap text-[clamp(12.5px,3.55vw,14px)] tracking-[-0.01em] [word-break:keep-all]">
                     흔들어서{' '}
-                    <NumberFlow value={characters} locales="ko-KR" format={{ notation: 'compact', maximumFractionDigits: 1 }} className="tnum" />
+                    {parts.map((part) => (
+                      <Fragment key={part.unit}>
+                        <NumberFlow value={part.value} locales="ko-KR" className="tnum" />
+                        {part.unit}{' '}
+                      </Fragment>
+                    ))}
                     개의 캐릭터 중 하나 뽑기
                   </span>
+                ) : (
+                  <span>흔들어서 셀 수 없이 많은 캐릭터 중 하나 뽑기</span>
                 )}
               </span>
             </Button>
