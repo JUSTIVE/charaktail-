@@ -1,6 +1,7 @@
 import { defineCatalog } from '../catalog'
 
 import ability from './ability'
+import accessory from './accessory'
 import age from './age'
 import birthday from './birthday'
 import bloodType from './bloodType'
@@ -51,6 +52,7 @@ export const catalog = defineCatalog([
   hairColor,
   hairStyle,
   traits,
+  accessory,
   themeColor,
   // 내면
   personality,

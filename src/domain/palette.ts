@@ -38,6 +38,7 @@ export const hue = {
   lavender: '#baa7ff',
   coral: '#ff977d',
   periwinkle: '#9eb1ff',
+  blush: '#ff8dcc',
 } as const
 
 /** Mauve, dark — steps 1 (app background) to 12 (high-contrast text). */
