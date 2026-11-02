@@ -10,6 +10,7 @@ import { router } from '../../router'
 import { toggleLock } from '../../state/locks'
 import { toggleSaved } from '../../state/saved'
 import { haptic } from '../../stage/haptics'
+import { shareCharacter } from '../characterText'
 import { LockIcon, ShareIcon, ShakeIcon, ShuffleIcon, StarIcon } from '../icons'
 import { attributeHead } from '../attributeHead'
 import { HapticTap } from '../HapticTap'
@@ -79,14 +80,8 @@ export function Result() {
   }
 
   const share = async () => {
-    const url = location.href
-    const lines = (roll.entries ?? []).map((e) => `${(e.attribute && attributeHead(e.attribute)?.label) ?? ''}: ${e.value}`)
-    const text = [roll.name ?? '', ...lines].filter(Boolean).join('\n')
-    if (navigator.share) {
-      await navigator.share({ title: 'charaktail 캐릭터', text, url }).catch(() => {})
-      return
-    }
-    await navigator.clipboard?.writeText(`${text}\n${url}`)
+    const lines = (roll.entries ?? []).map((e) => ({ label: (e.attribute && attributeHead(e.attribute)?.label) ?? '', value: e.value ?? '' }))
+    if ((await shareCharacter(roll.name, lines, location.href)) === 'shared') return
     setShared(true)
     setTimeout(() => setShared(false), 1600)
   }

@@ -1,5 +1,5 @@
 import { Link, useSearch } from '@tanstack/react-router'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import { graphql } from 'relay-runtime'
 
 import { useLocalQuery } from '../../graph/useLocalQuery'
@@ -9,7 +9,8 @@ import { haptic } from '../../stage/haptics'
 import { addFolder, moveToFolder, removeFolder, removeSaved, renameFolder } from '../../state/saved'
 import { FOLDER_NAME_MAX } from '../../state/schema'
 import { attributeHead } from '../attributeHead'
-import { BackIcon, FolderIcon, PlusIcon, TrashIcon } from '../icons'
+import { characterJson, characterMarkdown, characterUrl, downloadText, fileNameFor, shareCharacter } from '../characterText'
+import { BackIcon, FolderIcon, KebabIcon, PlusIcon } from '../icons'
 import { Button, seq } from '../ui'
 import type { SavedQuery } from '../../__generated__/SavedQuery.graphql'
 
@@ -40,6 +41,8 @@ export function Saved() {
               attribute {
                 ...attributeHead_attribute
               }
+              value
+              detail
             }
           }
         }
@@ -59,14 +62,20 @@ export function Saved() {
   // Which inline form is open: a new folder, or renaming the current one.
   const [editing, setEditing] = useState<'new' | 'rename' | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  // A character's trash button arms on the first tap and deletes on the second;
-  // left alone, it disarms.
-  const [arming, setArming] = useState<string | null>(null)
+  // Which character's menu is open. Closes on a tap anywhere else or Escape.
+  const [menuFor, setMenuFor] = useState<string | null>(null)
   useEffect(() => {
-    if (!arming) return
-    const t = setTimeout(() => setArming(null), 3000)
-    return () => clearTimeout(t)
-  }, [arming])
+    if (!menuFor) return
+    const close = (event: Event) => {
+      if (event instanceof KeyboardEvent ? event.key === 'Escape' : !(event.target as Element).closest('.saved-menu, .saved-kebab')) setMenuFor(null)
+    }
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', close)
+    return () => {
+      document.removeEventListener('pointerdown', close)
+      document.removeEventListener('keydown', close)
+    }
+  }, [menuFor])
 
   return (
     <div data-stage-floor className="space-y-3.5">
@@ -156,7 +165,8 @@ export function Saved() {
           {current ? '목록의 폴더 버튼으로 캐릭터를 이 폴더에 넣어 보세요.' : '결과 화면의 별을 누르면 여기에 모여요.'}
         </p>
       ) : (
-        <ul className="space-y-1.5">
+        // With a menu open the list keeps room for it: the sheet clips whatever pokes out.
+        <ul className="space-y-1.5" style={menuFor ? { minHeight: 252 } : undefined}>
           {saved.map((entry, index) => {
             const key = entry.roll?.key ?? ''
             const filed = entry.folder ? folderName.get(entry.folder) : undefined
@@ -178,19 +188,28 @@ export function Saved() {
                 </Link>
                 <button
                   type="button"
-                  className="saved-delete press"
-                  data-armed={arming === key || undefined}
-                  data-alone={folders.length === 0 || undefined}
-                  aria-label={arming === key ? `한 번 더 누르면 ${entry.roll?.name ?? '캐릭터'} 삭제` : `${entry.roll?.name ?? '캐릭터'} 삭제`}
+                  className="saved-kebab press"
+                  aria-label={`${entry.roll?.name ?? '캐릭터'} 메뉴`}
+                  aria-haspopup="menu"
+                  aria-expanded={menuFor === key}
                   onClick={() => {
                     haptic.select()
-                    if (arming !== key) return setArming(key)
-                    setArming(null)
-                    removeSaved(key)
+                    setMenuFor(menuFor === key ? null : key)
                   }}
                 >
-                  <TrashIcon width={16} height={16} />
+                  <KebabIcon width={16} height={16} />
                 </button>
+                {menuFor === key ? (
+                  <SavedMenu
+                    name={entry.roll?.name ?? null}
+                    rollKey={key}
+                    lines={(entry.roll?.entries ?? []).map((e) => {
+                      const head = e.attribute ? attributeHead(e.attribute) : null
+                      return { id: head?.key ?? '', label: head?.label ?? '', value: e.value ?? '', detail: e.detail }
+                    })}
+                    onClose={() => setMenuFor(null)}
+                  />
+                ) : null}
                 {/* A native picker over the icon: the phone's own sheet lists the folders. */}
                 {folders.length > 0 ? (
                   <label className="folder-move press" data-filed={entry.folder ? true : undefined} aria-label={`${entry.roll?.name ?? '캐릭터'} 폴더 옮기기`}>
@@ -216,6 +235,123 @@ export function Saved() {
           })}
         </ul>
       )}
+    </div>
+  )
+}
+
+/**
+ * A saved character's menu: copy it as Markdown, share it, save it as JSON,
+ * or delete it — deleting asks for a second tap.
+ */
+function SavedMenu({
+  name,
+  rollKey,
+  lines,
+  onClose,
+}: {
+  name: string | null
+  rollKey: string
+  lines: { id: string; label: string; value: string; detail?: string | null | undefined }[]
+  onClose: () => void
+}) {
+  const [done, setDone] = useState<string | null>(null)
+  const [arming, setArming] = useState(false)
+  // The sheet clips what pokes out of it, so the menu finds room inside it:
+  // below its row, else above, else slid to fit between the sheet's edges.
+  const box = useRef<HTMLDivElement>(null)
+  const [top, setTop] = useState<number | null>(null)
+  useLayoutEffect(() => {
+    const menu = box.current
+    const row = menu?.parentElement
+    const sheet = menu?.closest('[data-stage-floor]')?.parentElement
+    if (!menu || !row || !sheet) return setTop(0)
+    const place = () => {
+      const r = row.getBoundingClientRect()
+      const s = sheet.getBoundingClientRect()
+      const h = menu.offsetHeight
+      const floor = Math.min(s.bottom, window.innerHeight) - 8
+      const ceiling = Math.max(s.top, 0) + 8
+      const below = r.bottom - 4
+      const above = r.top + 4 - h
+      const at = below + h <= floor ? below : above >= ceiling ? above : Math.max(ceiling, Math.min(floor - h, r.top + r.height / 2 - h / 2))
+      setTop(at - r.top)
+    }
+    // The sheet slides to make room for the menu as it opens: follow it until it settles.
+    const until = performance.now() + 600
+    let frame = 0
+    const follow = () => {
+      place()
+      if (performance.now() < until) frame = requestAnimationFrame(follow)
+    }
+    follow()
+    return () => cancelAnimationFrame(frame)
+  }, [])
+  const url = characterUrl(rollKey)
+  // Says what just happened on the item itself, then closes.
+  const finish = (what: string) => {
+    setDone(what)
+    setTimeout(onClose, 900)
+  }
+  const item = 'saved-menu-item press-soft'
+  return (
+    <div
+      ref={box}
+      role="menu"
+      aria-label={`${name ?? '캐릭터'} 메뉴`}
+      className="saved-menu"
+      style={top === null ? { visibility: 'hidden' } : { top }}
+    >
+      <button
+        type="button"
+        role="menuitem"
+        className={item}
+        onClick={async () => {
+          haptic.select()
+          await navigator.clipboard?.writeText(characterMarkdown(name, lines, url))
+          finish('md')
+        }}
+      >
+        {done === 'md' ? '복사했어요' : 'MD 복사하기'}
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        className={item}
+        onClick={async () => {
+          haptic.select()
+          if ((await shareCharacter(name, lines, url)) === 'copied') return finish('share')
+          onClose()
+        }}
+      >
+        {done === 'share' ? '링크를 복사했어요' : '공유하기'}
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        className={item}
+        onClick={() => {
+          haptic.select()
+          downloadText(fileNameFor(name, 'json'), characterJson(name, rollKey, lines, url), 'application/json')
+          finish('json')
+        }}
+      >
+        {done === 'json' ? '내보냈어요' : 'JSON으로 내보내기'}
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        className={item}
+        data-danger
+        data-armed={arming || undefined}
+        onClick={() => {
+          haptic.select()
+          if (!arming) return setArming(true)
+          onClose()
+          removeSaved(rollKey)
+        }}
+      >
+        {arming ? '한 번 더 누르면 삭제해요' : '삭제하기'}
+      </button>
     </div>
   )
 }

@@ -615,11 +615,11 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
 .folder-pill-add {
   border-style: dashed;
 }
-/* Deleting a saved character: the first tap arms it (red), the second deletes. */
-.saved-delete {
+/* A saved character's kebab, at the row's right end; its menu drops from it. */
+.saved-kebab {
   position: absolute;
   top: 50%;
-  right: 44px;
+  right: 6px;
   display: grid;
   place-items: center;
   width: 36px;
@@ -627,20 +627,56 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   border-radius: 999px;
   transform: translateY(-50%);
   color: var(--color-faint);
-  transition: color 160ms ease, background-color 160ms ease;
 }
-.saved-delete[data-alone] {
+.saved-kebab[aria-expanded='true'] {
+  color: var(--color-ink);
+  background: rgb(255 255 255 / 0.08);
+}
+.saved-menu {
+  z-index: 5;
+  position: absolute;
+  /* Placed by its component, measured against the sheet. */
+  top: 0;
   right: 6px;
+  display: flex;
+  min-width: 168px;
+  flex-direction: column;
+  padding: 5px;
+  border-radius: 14px;
+  border: 1px solid var(--color-line);
+  background: color-mix(in oklab, var(--color-night) 92%, white);
+  box-shadow: 0 16px 40px -12px rgb(0 0 0 / 0.7);
+  transform-origin: top right;
+  animation: saved-menu-in 160ms var(--ease-out);
 }
-.saved-delete[data-armed] {
+@keyframes saved-menu-in {
+  from { opacity: 0; transform: scale(0.94); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .saved-menu { animation: none; }
+}
+.saved-menu-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+@media (hover: hover) and (pointer: fine) {
+  .saved-menu-item:hover { background: rgb(255 255 255 / 0.06); }
+}
+.saved-menu-item[data-danger] {
   color: #ff977d;
+}
+.saved-menu-item[data-armed] {
   background: rgb(255 151 125 / 0.14);
 }
 /* Moving a saved character: an icon over an invisible native select. */
 .folder-move {
   position: absolute;
   top: 50%;
-  right: 6px;
+  right: 44px;
   display: grid;
   place-items: center;
   width: 36px;
@@ -682,8 +718,8 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
 }
 
 /*
- * How many a several-at-once chip draws: a mini bubble — the stage's drops in
- * small, glossy in the chip's colour — sitting on its top-right corner.
+ * How many a several-at-once chip draws: a flat mini bubble in the chip's
+ * colour, sitting on its top-right corner.
  */
 .chip-draws {
   z-index: 3;
@@ -700,18 +736,14 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   font-weight: 800;
   line-height: 1;
   pointer-events: none;
-  color: white;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
-  background:
-    radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.55), transparent 42%),
-    radial-gradient(circle at 50% 60%, var(--chip), color-mix(in oklab, var(--chip) 60%, black));
-  box-shadow: 0 0 10px -2px var(--chip), inset 0 -1px 2px rgb(0 0 0 / 0.25);
-  transition: filter 200ms ease, opacity 200ms ease;
+  color: var(--color-night);
+  background: var(--chip);
+  transition: background-color 200ms ease, color 200ms ease;
 }
 /* An off chip's bubble goes dark with it. */
 .chip-draws:not([data-on]) {
-  filter: grayscale(1) brightness(0.55);
-  box-shadow: none;
+  color: var(--color-muted);
+  background: var(--color-line);
 }
 
 /* Kebab on a chip: a sibling pinned to the chip's corner. */
