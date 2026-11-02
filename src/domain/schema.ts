@@ -122,6 +122,11 @@ const PickAttribute = z.object({
    * value it names, one with no such condition under all of them.
    */
   groupBy: Key.optional(),
+  /**
+   * Rarely, a second set is drawn as well — 이중인격: two personalities, each
+   * its own `count` of values, none shared.
+   */
+  split: z.object({ chance: z.number().gt(0).max(1), label: Key }).optional(),
 })
 
 const ColorAttribute = z.object({

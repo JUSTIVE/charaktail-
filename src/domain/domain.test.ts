@@ -210,6 +210,24 @@ describe('several at once', () => {
   })
 })
 
+describe('split', () => {
+  test('이중인격 shows up about once in a thousand, as two sets that share nothing', () => {
+    let splits = 0
+    for (let i = 0; i < 20000; i++) {
+      const value = rollCharacter(catalog, { seed: `p${i}`, attributeIds: ['personality'] })[0]!
+      if (!value.label.includes('⇄')) {
+        expect(value.valueIds).toHaveLength(2)
+        continue
+      }
+      splits++
+      expect(new Set(value.valueIds).size).toBe(4)
+      expect(value.detail).toContain('이중인격')
+    }
+    expect(splits).toBeGreaterThan(5)
+    expect(splits).toBeLessThan(45)
+  })
+})
+
 describe('compose edits', () => {
   test('a value added to the second part lands there and survives the roll key', () => {
     const epithet = catalog.byId.get('epithet') as AttributeOf<'compose'>

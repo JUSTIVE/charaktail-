@@ -38,6 +38,20 @@ export const generators: { [K in AttributeKind]: Generator<K> } = {
   pick(attribute, ctx) {
     const pool = eligible(attribute.options, ctx)
     const picked = weightedSample(ctx.rng, pool, attribute.count)
+    // Drawn after the first set, so a roll that doesn't split comes out as it always did.
+    if (attribute.split && ctx.rng() < attribute.split.chance) {
+      const other = weightedSample(ctx.rng, pool.filter((o) => !picked.includes(o)), attribute.count)
+      if (other.length > 0) {
+        const words = (set: typeof picked) => set.map((option) => option.label).join(' · ')
+        return {
+          attributeId: attribute.id,
+          valueIds: [...picked, ...other].map((option) => option.id),
+          label: `${words(picked)} ⇄ ${words(other)}`,
+          detail: `${attribute.split.label} — 두 인격이 번갈아 나타나요`,
+          swatches: [],
+        }
+      }
+    }
     return {
       attributeId: attribute.id,
       valueIds: picked.map((option) => option.id),
