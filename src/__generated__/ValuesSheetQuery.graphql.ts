@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<8fef08bbed9c3b46359d1ee5ddf95ef1>>
+ * @generated SignedSource<<fb292e6a8fb5a1b42f388d8f501e4e11>>
  * @lightSyntaxTransform
  */
 
@@ -292,6 +292,7 @@ import {enabledCount as colorAttributeEnabledCountResolver} from '../graph/kinds
 import {key as colorAttributeKeyResolver} from '../graph/kinds/colorAttribute';
 import {label as colorAttributeLabelResolver} from '../graph/kinds/colorAttribute';
 import {locked as colorAttributeLockedResolver} from '../graph/kinds/colorAttribute';
+import {lockedValue as colorAttributeLockedValueResolver} from '../graph/kinds/colorAttribute';
 import {options as colorAttributeOptionsResolver} from '../graph/kinds/colorAttribute';
 import {selected as colorAttributeSelectedResolver} from '../graph/kinds/colorAttribute';
 import {summary as colorAttributeSummaryResolver} from '../graph/kinds/colorAttribute';
@@ -302,6 +303,7 @@ import {enabledCount as composeAttributeEnabledCountResolver} from '../graph/kin
 import {key as composeAttributeKeyResolver} from '../graph/kinds/composeAttribute';
 import {label as composeAttributeLabelResolver} from '../graph/kinds/composeAttribute';
 import {locked as composeAttributeLockedResolver} from '../graph/kinds/composeAttribute';
+import {lockedValue as composeAttributeLockedValueResolver} from '../graph/kinds/composeAttribute';
 import {options as composeAttributeOptionsResolver} from '../graph/kinds/composeAttribute';
 import {partLabels as composeAttributePartLabelsResolver} from '../graph/kinds/composeAttribute';
 import {selected as composeAttributeSelectedResolver} from '../graph/kinds/composeAttribute';
@@ -312,6 +314,7 @@ import {edited as dateAttributeEditedResolver} from '../graph/kinds/dateAttribut
 import {key as dateAttributeKeyResolver} from '../graph/kinds/dateAttribute';
 import {label as dateAttributeLabelResolver} from '../graph/kinds/dateAttribute';
 import {locked as dateAttributeLockedResolver} from '../graph/kinds/dateAttribute';
+import {lockedValue as dateAttributeLockedValueResolver} from '../graph/kinds/dateAttribute';
 import {selected as dateAttributeSelectedResolver} from '../graph/kinds/dateAttribute';
 import {summary as dateAttributeSummaryResolver} from '../graph/kinds/dateAttribute';
 import {PickAttribute as pickAttributeRelayModelInstanceResolver} from '../graph/kinds/pickAttribute';
@@ -323,6 +326,7 @@ import {groupBy as pickAttributeGroupByResolver} from '../graph/kinds/pickAttrib
 import {key as pickAttributeKeyResolver} from '../graph/kinds/pickAttribute';
 import {label as pickAttributeLabelResolver} from '../graph/kinds/pickAttribute';
 import {locked as pickAttributeLockedResolver} from '../graph/kinds/pickAttribute';
+import {lockedValue as pickAttributeLockedValueResolver} from '../graph/kinds/pickAttribute';
 import {multiple as pickAttributeMultipleResolver} from '../graph/kinds/pickAttribute';
 import {options as pickAttributeOptionsResolver} from '../graph/kinds/pickAttribute';
 import {selected as pickAttributeSelectedResolver} from '../graph/kinds/pickAttribute';
@@ -335,6 +339,7 @@ import {hasCases as rangeAttributeHasCasesResolver} from '../graph/kinds/rangeAt
 import {key as rangeAttributeKeyResolver} from '../graph/kinds/rangeAttribute';
 import {label as rangeAttributeLabelResolver} from '../graph/kinds/rangeAttribute';
 import {locked as rangeAttributeLockedResolver} from '../graph/kinds/rangeAttribute';
+import {lockedValue as rangeAttributeLockedValueResolver} from '../graph/kinds/rangeAttribute';
 import {rangeMax as rangeAttributeRangeMaxResolver} from '../graph/kinds/rangeAttribute';
 import {rangeMin as rangeAttributeRangeMinResolver} from '../graph/kinds/rangeAttribute';
 import {selected as rangeAttributeSelectedResolver} from '../graph/kinds/rangeAttribute';
@@ -348,6 +353,7 @@ import {enabledCount as statsAttributeEnabledCountResolver} from '../graph/kinds
 import {key as statsAttributeKeyResolver} from '../graph/kinds/statsAttribute';
 import {label as statsAttributeLabelResolver} from '../graph/kinds/statsAttribute';
 import {locked as statsAttributeLockedResolver} from '../graph/kinds/statsAttribute';
+import {lockedValue as statsAttributeLockedValueResolver} from '../graph/kinds/statsAttribute';
 import {options as statsAttributeOptionsResolver} from '../graph/kinds/statsAttribute';
 import {rangeMax as statsAttributeRangeMaxResolver} from '../graph/kinds/statsAttribute';
 import {rangeMin as statsAttributeRangeMinResolver} from '../graph/kinds/statsAttribute';
@@ -361,6 +367,7 @@ import {enabledCount as traitsAttributeEnabledCountResolver} from '../graph/kind
 import {key as traitsAttributeKeyResolver} from '../graph/kinds/traitsAttribute';
 import {label as traitsAttributeLabelResolver} from '../graph/kinds/traitsAttribute';
 import {locked as traitsAttributeLockedResolver} from '../graph/kinds/traitsAttribute';
+import {lockedValue as traitsAttributeLockedValueResolver} from '../graph/kinds/traitsAttribute';
 import {multiple as traitsAttributeMultipleResolver} from '../graph/kinds/traitsAttribute';
 import {options as traitsAttributeOptionsResolver} from '../graph/kinds/traitsAttribute';
 import {selected as traitsAttributeSelectedResolver} from '../graph/kinds/traitsAttribute';
@@ -1075,6 +1082,15 @@ return {
                           "name": "locked",
                           "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeLockedResolver, '__relay_model_instance', true),
                           "path": "locked"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v4/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "lockedValue",
+                          "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeLockedValueResolver, '__relay_model_instance', true),
+                          "path": "lockedValue"
                         }
                       ],
                       "type": "PickAttribute",
@@ -1154,6 +1170,15 @@ return {
                           "name": "locked",
                           "resolverModule": resolverDataInjector(ColorAttribute____relay_model_instance_graphql, colorAttributeLockedResolver, '__relay_model_instance', true),
                           "path": "locked"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v5/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "lockedValue",
+                          "resolverModule": resolverDataInjector(ColorAttribute____relay_model_instance_graphql, colorAttributeLockedValueResolver, '__relay_model_instance', true),
+                          "path": "lockedValue"
                         }
                       ],
                       "type": "ColorAttribute",
@@ -1233,6 +1258,15 @@ return {
                           "name": "locked",
                           "resolverModule": resolverDataInjector(ComposeAttribute____relay_model_instance_graphql, composeAttributeLockedResolver, '__relay_model_instance', true),
                           "path": "locked"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v6/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "lockedValue",
+                          "resolverModule": resolverDataInjector(ComposeAttribute____relay_model_instance_graphql, composeAttributeLockedValueResolver, '__relay_model_instance', true),
+                          "path": "lockedValue"
                         }
                       ],
                       "type": "ComposeAttribute",
@@ -1312,6 +1346,15 @@ return {
                           "name": "locked",
                           "resolverModule": resolverDataInjector(StatsAttribute____relay_model_instance_graphql, statsAttributeLockedResolver, '__relay_model_instance', true),
                           "path": "locked"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v7/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "lockedValue",
+                          "resolverModule": resolverDataInjector(StatsAttribute____relay_model_instance_graphql, statsAttributeLockedValueResolver, '__relay_model_instance', true),
+                          "path": "lockedValue"
                         }
                       ],
                       "type": "StatsAttribute",
@@ -1382,6 +1425,15 @@ return {
                           "name": "locked",
                           "resolverModule": resolverDataInjector(RangeAttribute____relay_model_instance_graphql, rangeAttributeLockedResolver, '__relay_model_instance', true),
                           "path": "locked"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v8/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "lockedValue",
+                          "resolverModule": resolverDataInjector(RangeAttribute____relay_model_instance_graphql, rangeAttributeLockedValueResolver, '__relay_model_instance', true),
+                          "path": "lockedValue"
                         }
                       ],
                       "type": "RangeAttribute",
@@ -1452,6 +1504,15 @@ return {
                           "name": "locked",
                           "resolverModule": resolverDataInjector(DateAttribute____relay_model_instance_graphql, dateAttributeLockedResolver, '__relay_model_instance', true),
                           "path": "locked"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v9/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "lockedValue",
+                          "resolverModule": resolverDataInjector(DateAttribute____relay_model_instance_graphql, dateAttributeLockedValueResolver, '__relay_model_instance', true),
+                          "path": "lockedValue"
                         }
                       ],
                       "type": "DateAttribute",
@@ -1549,6 +1610,15 @@ return {
                           "name": "locked",
                           "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeLockedResolver, '__relay_model_instance', true),
                           "path": "locked"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v10/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "lockedValue",
+                          "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeLockedValueResolver, '__relay_model_instance', true),
+                          "path": "lockedValue"
                         }
                       ],
                       "type": "TraitsAttribute",
@@ -2076,6 +2146,14 @@ return {
                   "storageKey": null,
                   "isOutputType": true
                 },
+                {
+                  "name": "lockedValue",
+                  "args": null,
+                  "fragment": (v17/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
                 (v18/*:: as any*/),
                 (v19/*:: as any*/),
                 {
@@ -2200,6 +2278,14 @@ return {
                   "isOutputType": true
                 },
                 {
+                  "name": "lockedValue",
+                  "args": null,
+                  "fragment": (v30/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
                   "kind": "ClientEdgeToClientObject",
                   "backingField": {
                     "name": "options",
@@ -2277,6 +2363,14 @@ return {
                 },
                 {
                   "name": "locked",
+                  "args": null,
+                  "fragment": (v31/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "lockedValue",
                   "args": null,
                   "fragment": (v31/*:: as any*/),
                   "kind": "RelayResolver",
@@ -2376,6 +2470,14 @@ return {
                   "isOutputType": true
                 },
                 {
+                  "name": "lockedValue",
+                  "args": null,
+                  "fragment": (v32/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
                   "name": "rangeMin",
                   "args": null,
                   "fragment": (v32/*:: as any*/),
@@ -2461,6 +2563,14 @@ return {
                 },
                 {
                   "name": "locked",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "lockedValue",
                   "args": null,
                   "fragment": (v33/*:: as any*/),
                   "kind": "RelayResolver",
@@ -2633,6 +2743,14 @@ return {
                   "storageKey": null,
                   "isOutputType": true
                 },
+                {
+                  "name": "lockedValue",
+                  "args": null,
+                  "fragment": (v35/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
                 (v15/*:: as any*/)
               ],
               "type": "DateAttribute",
@@ -2701,6 +2819,14 @@ return {
                 },
                 {
                   "name": "locked",
+                  "args": null,
+                  "fragment": (v36/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "lockedValue",
                   "args": null,
                   "fragment": (v36/*:: as any*/),
                   "kind": "RelayResolver",

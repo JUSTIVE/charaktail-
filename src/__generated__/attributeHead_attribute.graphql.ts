@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<a0bdac44201e86fab2ccb0f11285c536>>
+ * @generated SignedSource<<b6818fa9bf250673832432623206e527>>
  * @lightSyntaxTransform
  */
 
@@ -45,6 +45,12 @@ import { locked as colorAttributeLockedResolverType } from "../graph/kinds/color
 (colorAttributeLockedResolverType satisfies (
   __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { lockedValue as colorAttributeLockedValueResolverType } from "../graph/kinds/colorAttribute";
+// Type assertion validating that `colorAttributeLockedValueResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(colorAttributeLockedValueResolverType satisfies (
+  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<string | null | undefined>);
 import { selected as colorAttributeSelectedResolverType } from "../graph/kinds/colorAttribute";
 // Type assertion validating that `colorAttributeSelectedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -93,6 +99,12 @@ import { locked as composeAttributeLockedResolverType } from "../graph/kinds/com
 (composeAttributeLockedResolverType satisfies (
   __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { lockedValue as composeAttributeLockedValueResolverType } from "../graph/kinds/composeAttribute";
+// Type assertion validating that `composeAttributeLockedValueResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(composeAttributeLockedValueResolverType satisfies (
+  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<string | null | undefined>);
 import { selected as composeAttributeSelectedResolverType } from "../graph/kinds/composeAttribute";
 // Type assertion validating that `composeAttributeSelectedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -135,6 +147,12 @@ import { locked as dateAttributeLockedResolverType } from "../graph/kinds/dateAt
 (dateAttributeLockedResolverType satisfies (
   __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { lockedValue as dateAttributeLockedValueResolverType } from "../graph/kinds/dateAttribute";
+// Type assertion validating that `dateAttributeLockedValueResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(dateAttributeLockedValueResolverType satisfies (
+  __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<string | null | undefined>);
 import { selected as dateAttributeSelectedResolverType } from "../graph/kinds/dateAttribute";
 // Type assertion validating that `dateAttributeSelectedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -189,6 +207,12 @@ import { locked as pickAttributeLockedResolverType } from "../graph/kinds/pickAt
 (pickAttributeLockedResolverType satisfies (
   __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { lockedValue as pickAttributeLockedValueResolverType } from "../graph/kinds/pickAttribute";
+// Type assertion validating that `pickAttributeLockedValueResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(pickAttributeLockedValueResolverType satisfies (
+  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<string | null | undefined>);
 import { multiple as pickAttributeMultipleResolverType } from "../graph/kinds/pickAttribute";
 // Type assertion validating that `pickAttributeMultipleResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -237,6 +261,12 @@ import { locked as rangeAttributeLockedResolverType } from "../graph/kinds/range
 (rangeAttributeLockedResolverType satisfies (
   __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { lockedValue as rangeAttributeLockedValueResolverType } from "../graph/kinds/rangeAttribute";
+// Type assertion validating that `rangeAttributeLockedValueResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(rangeAttributeLockedValueResolverType satisfies (
+  __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<string | null | undefined>);
 import { selected as rangeAttributeSelectedResolverType } from "../graph/kinds/rangeAttribute";
 // Type assertion validating that `rangeAttributeSelectedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -285,6 +315,12 @@ import { locked as statsAttributeLockedResolverType } from "../graph/kinds/stats
 (statsAttributeLockedResolverType satisfies (
   __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { lockedValue as statsAttributeLockedValueResolverType } from "../graph/kinds/statsAttribute";
+// Type assertion validating that `statsAttributeLockedValueResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(statsAttributeLockedValueResolverType satisfies (
+  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<string | null | undefined>);
 import { selected as statsAttributeSelectedResolverType } from "../graph/kinds/statsAttribute";
 // Type assertion validating that `statsAttributeSelectedResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -339,6 +375,12 @@ import { locked as traitsAttributeLockedResolverType } from "../graph/kinds/trai
 (traitsAttributeLockedResolverType satisfies (
   __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { lockedValue as traitsAttributeLockedValueResolverType } from "../graph/kinds/traitsAttribute";
+// Type assertion validating that `traitsAttributeLockedValueResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(traitsAttributeLockedValueResolverType satisfies (
+  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<string | null | undefined>);
 import { multiple as traitsAttributeMultipleResolverType } from "../graph/kinds/traitsAttribute";
 // Type assertion validating that `traitsAttributeMultipleResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -365,6 +407,7 @@ export type attributeHead_attribute$data = {
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
+  readonly lockedValue: string | null | undefined;
   readonly selected: boolean;
   readonly summary: string;
   readonly " $fragmentType": "attributeHead_attribute";
@@ -376,6 +419,7 @@ export type attributeHead_attribute$data = {
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
+  readonly lockedValue: string | null | undefined;
   readonly selected: boolean;
   readonly summary: string;
   readonly " $fragmentType": "attributeHead_attribute";
@@ -386,6 +430,7 @@ export type attributeHead_attribute$data = {
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
+  readonly lockedValue: string | null | undefined;
   readonly selected: boolean;
   readonly summary: string;
   readonly " $fragmentType": "attributeHead_attribute";
@@ -398,6 +443,7 @@ export type attributeHead_attribute$data = {
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
+  readonly lockedValue: string | null | undefined;
   readonly multiple: boolean;
   readonly selected: boolean;
   readonly summary: string;
@@ -409,6 +455,7 @@ export type attributeHead_attribute$data = {
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
+  readonly lockedValue: string | null | undefined;
   readonly selected: boolean;
   readonly summary: string;
   readonly " $fragmentType": "attributeHead_attribute";
@@ -420,6 +467,7 @@ export type attributeHead_attribute$data = {
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
+  readonly lockedValue: string | null | undefined;
   readonly selected: boolean;
   readonly summary: string;
   readonly " $fragmentType": "attributeHead_attribute";
@@ -432,6 +480,7 @@ export type attributeHead_attribute$data = {
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
+  readonly lockedValue: string | null | undefined;
   readonly multiple: boolean;
   readonly selected: boolean;
   readonly summary: string;
@@ -452,6 +501,6 @@ const node: ReaderInlineDataFragment = {
   "name": "attributeHead_attribute"
 };
 
-(node as any).hash = "646a0e7bc65566bccddf5f69fff32453";
+(node as any).hash = "db47f35cf0616e5bc5759cd4528ff6db";
 
 export default node;

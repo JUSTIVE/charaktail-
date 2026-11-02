@@ -81,3 +81,10 @@ export { selected } from '../attributeFields'
  * @live
  */
 export { locked } from '../attributeFields'
+
+/**
+ * The value it is locked at, or null.
+ * @relayField DateAttribute.lockedValue: String
+ * @live
+ */
+export { lockedValue } from '../attributeFields'

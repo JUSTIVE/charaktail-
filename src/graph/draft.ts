@@ -3,6 +3,7 @@ import type { DataID } from 'relay-runtime'
 import { catalog } from '../domain/catalog/index'
 import { countCharacters } from '../domain/count'
 import { editsCell } from '../state/edits'
+import { activeLocks, locksCell } from '../state/locks'
 import { nameCell } from '../state/name'
 import { selectionCell } from '../state/selection'
 
@@ -41,20 +42,16 @@ export function selectionCount(_draft: DraftModel) {
 
 /**
  * How many different characters the next shake picks one from — the
- * selection over the value lists as edited.
+ * selection over the value lists as edited; locked ones count once.
  * @relayField Draft.characterCount: Float!
  * @live
  */
 export function characterCount(_draft: DraftModel) {
   return {
-    read: () => countCharacters(catalog, editsCell.read(), selectionCell.read()),
+    read: () => countCharacters(catalog, editsCell.read(), selectionCell.read(), activeLocks()),
     subscribe: (cb: () => void) => {
-      const a = editsCell.subscribe(cb)
-      const b = selectionCell.subscribe(cb)
-      return () => {
-        a()
-        b()
-      }
+      const off = [editsCell.subscribe(cb), selectionCell.subscribe(cb), locksCell.subscribe(cb)]
+      return () => off.forEach((f) => f())
     },
   }
 }

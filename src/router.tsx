@@ -12,7 +12,17 @@ import { Shell } from './app/Shell'
  *   /result?k=<key>   결과 — 롤 키 하나가 캐릭터 전체를 재현한다 (공유 가능)
  *   /saved            보관함 (?f=<폴더 id> → 그 폴더만)
  */
-const rootRoute = createRootRoute({ component: Shell })
+/*
+ * Locks ride in the address on every screen (`?l=`, packed like a roll key's
+ * locked segment): every route inherits it from the root, and
+ * state/locks.ts keeps the lock store and the address in step.
+ */
+const rootRoute = createRootRoute({
+  component: Shell,
+  validateSearch: (search: Record<string, unknown>): { l?: string | undefined } => ({
+    l: typeof search['l'] === 'string' && search['l'] !== '' ? search['l'] : undefined,
+  }),
+})
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,

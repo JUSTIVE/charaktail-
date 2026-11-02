@@ -108,3 +108,10 @@ export { count } from '../attributeFields'
  * @live
  */
 export { enabledCount } from '../attributeFields'
+
+/**
+ * The value it is locked at, or null.
+ * @relayField TraitsAttribute.lockedValue: String
+ * @live
+ */
+export { lockedValue } from '../attributeFields'

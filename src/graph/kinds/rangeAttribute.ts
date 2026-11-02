@@ -119,3 +119,10 @@ export { dependsOnSpecies } from '../attributeFields'
  * @live
  */
 export { speciesRanges } from '../attributeFields'
+
+/**
+ * The value it is locked at, or null.
+ * @relayField RangeAttribute.lockedValue: String
+ * @live
+ */
+export { lockedValue } from '../attributeFields'

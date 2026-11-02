@@ -23,6 +23,7 @@ const fragment = graphql`
       edited
       selected
       locked
+      lockedValue
     }
     ... on ColorAttribute {
       enabledCount
@@ -33,6 +34,7 @@ const fragment = graphql`
       edited
       selected
       locked
+      lockedValue
     }
     ... on ComposeAttribute {
       enabledCount
@@ -43,6 +45,7 @@ const fragment = graphql`
       edited
       selected
       locked
+      lockedValue
     }
     ... on StatsAttribute {
       enabledCount
@@ -53,6 +56,7 @@ const fragment = graphql`
       edited
       selected
       locked
+      lockedValue
     }
     ... on RangeAttribute {
       key
@@ -62,6 +66,7 @@ const fragment = graphql`
       edited
       selected
       locked
+      lockedValue
     }
     ... on DateAttribute {
       key
@@ -71,6 +76,7 @@ const fragment = graphql`
       edited
       selected
       locked
+      lockedValue
     }
     ... on TraitsAttribute {
       multiple
@@ -83,6 +89,7 @@ const fragment = graphql`
       edited
       selected
       locked
+      lockedValue
     }
   }
 `
@@ -106,6 +113,8 @@ export interface AttributeHead {
    * 외형 특징, where Infinity means 무제한. Null for one-at-a-time kinds.
    */
   draws: number | null
+  /** What it is locked at — 여성, 17세 — or null. */
+  lockedValue: string | null
 }
 
 /** The fields every kind has, or null for a member this build doesn't know. */
@@ -115,5 +124,6 @@ export function attributeHead(ref: attributeHead_attribute$key): AttributeHead |
   const { __typename: kind, key, label, color, summary, edited, selected, locked } = data
   const enabledCount = 'enabledCount' in data ? data.enabledCount : null
   const draws = 'multiple' in data && data.multiple ? (data.count ?? Number.POSITIVE_INFINITY) : null
-  return { kind, key, label, color, summary, edited, selected, locked, enabledCount, draws }
+  const lockedValue = data.lockedValue ?? null
+  return { kind, key, label, color, summary, edited, selected, locked, enabledCount, draws, lockedValue }
 }

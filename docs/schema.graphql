@@ -198,6 +198,10 @@ type ColorAttribute implements AttributeBase & ValueListAttribute {
   How many of its values are switched on.
   """
   enabledCount: Int! @live
+  """
+  The value it is locked at, or null.
+  """
+  lockedValue: String @live
 }
 
 """
@@ -251,6 +255,10 @@ type ComposeAttribute implements AttributeBase & ValueListAttribute {
   How many of its values are switched on.
   """
   enabledCount: Int! @live
+  """
+  The value it is locked at, or null.
+  """
+  lockedValue: String @live
 }
 
 """
@@ -292,6 +300,10 @@ type DateAttribute implements AttributeBase {
   Kept as it is through re-rolls.
   """
   locked: Boolean! @live
+  """
+  The value it is locked at, or null.
+  """
+  lockedValue: String @live
 }
 
 type Draft {
@@ -299,7 +311,7 @@ type Draft {
   name: String! @live
   selectionCount: Int! @live
   """
-  How many different characters the next shake picks one from — the selection over the value lists as edited.
+  How many different characters the next shake picks one from — the selection over the value lists as edited; locked ones count once.
   """
   characterCount: Float! @live
   """
@@ -367,6 +379,10 @@ type PickAttribute implements AttributeBase & ValueListAttribute {
   How many of its values are switched on.
   """
   enabledCount: Int! @live
+  """
+  The value it is locked at, or null.
+  """
+  lockedValue: String @live
 }
 
 """
@@ -429,6 +445,10 @@ type RangeAttribute implements AttributeBase & BoundedAttribute {
   The span as each enabled species would roll it, edits applied.
   """
   speciesRanges: [SpeciesRange!]! @live
+  """
+  The value it is locked at, or null.
+  """
+  lockedValue: String @live
 }
 
 type Roll {
@@ -557,6 +577,10 @@ type StatsAttribute implements AttributeBase & ValueListAttribute & BoundedAttri
   How many of its values are switched on.
   """
   enabledCount: Int! @live
+  """
+  The value it is locked at, or null.
+  """
+  lockedValue: String @live
 }
 
 """
@@ -614,4 +638,8 @@ type TraitsAttribute implements AttributeBase & ValueListAttribute {
   How many of its values are switched on.
   """
   enabledCount: Int! @live
+  """
+  The value it is locked at, or null.
+  """
+  lockedValue: String @live
 }

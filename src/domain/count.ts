@@ -54,7 +54,13 @@ function ways(attribute: Attribute): number {
   }
 }
 
-export function countCharacters(base: Catalog, edits: Edits | undefined, attributeIds: readonly string[]): number {
+/** Locked attributes come out as they are: one way each — a locked 종족 counts only its own 나이·키 (#154). */
+export function countCharacters(
+  base: Catalog,
+  edits: Edits | undefined,
+  attributeIds: readonly string[],
+  locked: Readonly<Record<string, RolledValue>> = {},
+): number {
   if (attributeIds.length === 0) return 0
   const catalog = applyEdits(base, edits)
   const chosen = attributeIds.flatMap((id) => catalog.byId.get(id) ?? [])
@@ -64,10 +70,12 @@ export function countCharacters(base: Catalog, edits: Edits | undefined, attribu
   let total = 1
   for (const attribute of chosen) {
     if (attribute === species || perSpecies.includes(attribute as Range)) continue
-    total *= ways(attribute)
+    total *= locked[attribute.id] ? 1 : ways(attribute)
   }
   if (species && species.kind === 'pick') {
-    total *= species.options.reduce((sum, option) => sum + perSpecies.reduce((n, range) => n * spanSize(range, option.id), 1), 0)
+    const kept = locked['species']?.valueIds[0]
+    const options = kept ? species.options.filter((o) => o.id === kept) : species.options
+    total *= Math.max(1, options.reduce((sum, option) => sum + perSpecies.reduce((n, range) => n * (locked[range.id] ? 1 : spanSize(range, option.id)), 1), 0))
   }
   return total
 }

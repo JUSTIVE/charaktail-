@@ -309,6 +309,11 @@ describe('character count', () => {
     // One species on: its own 키 span, not 키's default.
     const onlyDwarf = { species: { disabled: speciesTable.filter((s) => s.id !== 'dwarf').map((s) => s.id), removed: [], added: [] } }
     expect(countCharacters(catalog, onlyDwarf, ['species', 'height'])).toBe(150 - 110 + 1)
+    // Locked: one way each, and a locked species counts only its own spans.
+    const locked = { gender: { attributeId: 'gender', valueIds: ['여성'], label: '여성', swatches: [] } }
+    expect(countCharacters(catalog, {}, ['gender'], locked)).toBe(1)
+    const dwarf = { species: { attributeId: 'species', valueIds: ['dwarf'], label: '드워프', swatches: [] } }
+    expect(countCharacters(catalog, {}, ['species', 'height'], dwarf)).toBe(150 - 110 + 1)
   })
 })
 
@@ -321,6 +326,24 @@ describe('korean numbers', () => {
     expect(koreanParts(3.2e20)).toEqual([{ value: 3, unit: '해' }, { value: 2000, unit: '경' }])
     expect(koreanParts(1e24)).toBeNull()
     expect(koreanParts(2.7e49)).toBeNull()
+  })
+})
+
+describe('locks', () => {
+  test('a locked 이중인격 stays split through re-rolls and the roll key', () => {
+    let split = null as ReturnType<typeof rollCharacter>[number] | null
+    for (let i = 0; i < 20000 && !split; i++) {
+      const v = rollCharacter(catalog, { seed: `p${i}`, attributeIds: ['personality'] })[0]!
+      if (v.label.includes('⇄')) split = v
+    }
+    expect(split).not.toBeNull()
+    for (let i = 0; i < 20; i++) {
+      const request = { seed: `again${i}`, attributeIds: ['world', 'personality'], nonces: {}, locked: { personality: split! } }
+      const kept = rollCharacter(catalog, decodeRollKey(encodeRollKey(request))!).find((v) => v.attributeId === 'personality')!
+      expect(kept.label).toBe(split!.label)
+      expect(kept.valueIds).toEqual(split!.valueIds)
+      expect(kept.detail).toBe(split!.detail)
+    }
   })
 })
 

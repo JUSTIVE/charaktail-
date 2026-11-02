@@ -44,7 +44,7 @@ src/domain/           순수 도메인 — React·Relay 비의존
   rng.ts              시드 RNG (seed, 속성, nonce) → 독립 스트림
   catalog/*.ts        속성 하나 = 파일 하나
 src/graph/            Relay 리졸버 (Attribute, Roll, RollEntry, SavedEntry, Query)
-src/state/            Cell — 선택·보관함 (localStorage 영속)
+src/state/            Cell — 선택·보관함·편집 (localStorage 영속), 잠금 (주소의 ?l=)
 src/stage/            Stage(three.js) · physics(스프링 접촉·젤리 흔들림) · shader(바디 ↔ 메타볼) · motion · haptics
 src/app/              Shell(시트 리전) · StageCanvas · views
 ```

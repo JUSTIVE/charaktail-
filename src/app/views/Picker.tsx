@@ -8,6 +8,7 @@ import { useLocalQuery } from '../../graph/useLocalQuery'
 
 import { router } from '../../router'
 import { currentName, NAME_MAX, setName } from '../../state/name'
+import { unlock } from '../../state/locks'
 import { nestParent, selectAll, selectionCell, toggleAttribute } from '../../state/selection'
 import { requestMotionAccess } from '../../stage/motion'
 import { patchStage } from '../../stage/store'
@@ -132,19 +133,20 @@ export function Picker() {
               >
                 {/* The dot stays centred where it always is; only the text column beside it
                     makes room when 완전 종속 속성 tags join it underneath. */}
-                <span className="flex items-center gap-2 pr-6">
+                <span className={`flex items-center gap-2 ${attribute.locked ? 'pr-14' : 'pr-6'}`}>
                   <Dot color={attribute.color} size={9} />
                   <span className="flex min-w-0 flex-col">
                     <span className="flex items-center gap-2">
                       <span className="text-[14px] font-semibold">{attribute.label}</span>
-                      {attribute.locked ? <LockIcon locked aria-label="잠김" width={12} height={12} className="-ml-0.5 shrink-0 opacity-70" /> : null}
                       {attribute.enabledCount !== null ? <span className="sr-only">, 값 {attribute.enabledCount}개 켜짐</span> : null}
                     </span>
-                    {nestedIn(attribute.key).length > 0 ? (
+                    {/* A second line: the value it is locked at, and its 완전 종속 속성 tags — each with its own locked value. */}
+                    {attribute.lockedValue || nestedIn(attribute.key).length > 0 ? (
                       <span className="chip-nest">
+                        {attribute.lockedValue ? <span className="chip-locked-value">{attribute.lockedValue}</span> : null}
                         {nestedIn(attribute.key).map((child) => (
                           <span key={child.key} className="chip-nested" style={{ '--nested': child.color } as CSSProperties}>
-                            {child.label}
+                            {child.lockedValue ? `${child.label} ${child.lockedValue}` : child.label}
                           </span>
                         ))}
                       </span>
@@ -170,6 +172,21 @@ export function Picker() {
               >
                 {Number.isFinite(attribute.draws) ? <NumberFlow value={attribute.draws} className="tnum" /> : '∞'}
               </span>
+            ) : null}
+            {/* Locked: a button of its own to let go of the value, beside the kebab. */}
+            {attribute.locked ? (
+              <button
+                type="button"
+                aria-label={`${attribute.label} 잠금 풀기 (${attribute.lockedValue ?? ''})`}
+                className="chip-unlock press"
+                style={{ '--chip': attribute.color } as CSSProperties}
+                onClick={() => {
+                  haptic.select()
+                  unlock(attribute.key)
+                }}
+              >
+                <LockIcon locked width={14} height={14} />
+              </button>
             ) : null}
             {/* A sibling, not a child: buttons cannot nest. */}
             <button

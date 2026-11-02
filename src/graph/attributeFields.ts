@@ -165,6 +165,13 @@ export function count(attribute: AttributeRecord) {
   })
 }
 
+/**
+ * The value it is locked at — what the next shake keeps — or null.
+ */
+export function lockedValue(attribute: AttributeRecord) {
+  return locksCell.live((locks) => locks[attribute.id]?.label ?? null)
+}
+
 /** Only range and stats implement BoundedAttribute; anything else is a wiring bug. */
 function bounded(attribute: AttributeRecord, edits: Edits): Extract<AttributeRecord, { kind: 'range' | 'stats' }> {
   const edited = applyAttributeEdits(attribute, edits[attribute.id])

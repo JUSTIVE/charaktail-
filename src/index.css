@@ -702,8 +702,24 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
 }
 .chip-nest {
   display: flex;
+  /* Fixed, so a value line and a tag line keep the chip at one height. */
+  height: 17px;
+  min-width: 0;
+  align-items: center;
   gap: 4px;
   margin-top: 3px;
+  overflow: hidden;
+}
+/* What a locked chip keeps: its value, small, under its name. */
+.chip-locked-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: color-mix(in oklab, var(--chip) 55%, white);
 }
 .chip-nested {
   flex-shrink: 0;
@@ -744,6 +760,23 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
 .chip-draws:not([data-on]) {
   color: var(--color-muted);
   background: var(--color-line);
+}
+
+/* A locked chip's unlock button, just left of its kebab. */
+.chip-unlock {
+  z-index: 2;
+  position: absolute;
+  top: 7px;
+  right: 34px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  color: color-mix(in oklab, var(--chip) 60%, white);
+}
+@media (hover: hover) and (pointer: fine) {
+  .chip-unlock:hover { background: rgb(255 255 255 / 0.06); }
 }
 
 /* Kebab on a chip: a sibling pinned to the chip's corner. */
