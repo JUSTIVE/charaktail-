@@ -63,12 +63,13 @@ export function StageCanvas() {
 
   const balls = (data.selectedAttributes ?? []).flatMap((ref) => {
     const a = attributeHead(ref)
-    return a ? [{ id: a.key, label: a.label, color: a.color }] : []
+    return a ? [{ id: a.key, label: a.label, color: a.color, count: a.enabledCount }] : []
   })
-  const signature = balls.map((b) => b.id).join('.')
+  // Ids and counts: a count change repaints the labels, an id change the balls.
+  const signature = balls.map((b) => `${b.id}:${b.count ?? ''}`).join('.')
   useEffect(() => {
     stageHandle.current?.setBalls(balls)
-    // signature is the identity of the ball set; the array is rebuilt every render.
+    // signature is the identity of the ball set and its counts; the array is rebuilt every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signature])
 

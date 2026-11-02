@@ -24,6 +24,8 @@ export interface BallSpec {
   id: string
   label: string
   color: string
+  /** How many of its values are on — drawn big and faint behind the label. Null for 키, 생일. */
+  count: number | null
 }
 
 const MIX_SECONDS = 1.8
@@ -189,6 +191,8 @@ export class Stage {
 
   setBalls(specs: readonly BallSpec[]): void {
     const next = new Set(specs.map((s) => s.id))
+    // Same balls, new counts: repaint the atlas in place, no rebuild.
+    const recount = specs.some((s) => this.specs.has(s.id) && this.specs.get(s.id)!.count !== s.count)
     for (const spec of specs) {
       const known = this.specs.has(spec.id)
       this.specs.set(spec.id, spec)
@@ -200,6 +204,10 @@ export class Stage {
     }
     for (const id of this.specs.keys()) {
       if (!next.has(id)) this.world.remove(id)
+    }
+    if (recount && this.atlasSpecs.length) {
+      this.atlasSpecs = this.atlasSpecs.map((s) => this.specs.get(s.id) ?? s)
+      this.redrawLabels()
     }
   }
 
@@ -695,6 +703,17 @@ function drawAtlas(canvas: HTMLCanvasElement, specs: readonly BallSpec[], into?:
       const cy = i * ATLAS_CELL + ATLAS_CELL / 2
       const ink = inkOn(specs[i]!.color)
       const dark = ink !== '#ffffff'
+      // Its count, big and faint behind the label — the picker chip's numeral, in the drop.
+      const count = specs[i]!.count
+      if (count !== null) {
+        ctx.save()
+        ctx.font = labelFont(150)
+        ctx.globalAlpha = 0.16
+        ctx.fillStyle = ink
+        ctx.fillText(String(count), ATLAS_CELL / 2, cy + 6)
+        ctx.restore()
+        ctx.font = labelFont(size)
+      }
       ctx.shadowColor = dark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(18, 17, 19, 0.55)'
       ctx.shadowBlur = dark ? 6 : 10
       ctx.shadowOffsetY = dark ? 1 : 3
