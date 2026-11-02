@@ -116,8 +116,6 @@ const PickAttribute = z.object({
   options: z.array(PickOption).min(1),
   /** How many distinct values to draw — 액세서리 두 개 같은 경우. */
   count: z.number().int().positive().default(1),
-  /** Lets the player change `count` even when it starts at one — 성격. */
-  several: z.boolean().default(false),
   /**
    * Lists values under another attribute's values in the editor — 직업 by
    * 세계관: a value whose condition names that attribute sits under each

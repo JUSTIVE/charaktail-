@@ -71,7 +71,7 @@ export const ADDED_TRAIT_CHANCE = 0.2
 
 /** Kinds that can come out several at once — 외형 특징, or a pick that draws more than one. */
 export function isMultiple(attribute: Attribute): boolean {
-  return attribute.kind === 'traits' || (attribute.kind === 'pick' && (attribute.count > 1 || attribute.several))
+  return attribute.kind === 'traits' || (attribute.kind === 'pick' && attribute.count > 1)
 }
 
 const swatchesOf = (o: AddedOption): string[] => [o.hex, o.hex2].filter((h): h is string => !!h)
@@ -189,7 +189,8 @@ export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits 
       when: o.group && attribute.groupBy ? { [attribute.groupBy]: [o.group] } : undefined,
     })),
   ]
-  const count = attribute.kind === 'pick' ? { count: edits!.count ?? attribute.count } : {}
+  // Only a pick that draws several takes a count — a stale one on 성격 is ignored.
+  const count = attribute.kind === 'pick' && isMultiple(attribute) ? { count: edits!.count ?? attribute.count } : {}
   return options.length > 0 ? { ...attribute, options, ...count } : { ...attribute, ...count }
 }
 

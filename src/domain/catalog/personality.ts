@@ -7,10 +7,8 @@ export default defineAttribute({
   code: 'ps',
   label: '성격',
   color: hue.plum,
-  description: '키워드 하나를 뽑는다 — 몇 개 뽑을지는 바꿀 수 있다',
+  description: '키워드 하나를 뽑는다 — 이중인격이면 인격마다 하나씩',
   kind: 'pick',
-  count: 1,
-  several: true,
   // 천 명에 한 명꼴로 인격이 둘.
   split: { chance: 0.001, label: '이중인격' },
   options: [

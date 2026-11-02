@@ -56,7 +56,8 @@ describe('roll', () => {
       const species = values.get('species')!.valueIds[0]
       if (species === 'alien') expect(world).toBe('spaceOpera')
       if (species === 'android') expect(values.get('age')!.label).toStartWith('제조 후')
-      expect(values.get('personality')!.valueIds.length).toBeOneOf([1, 2])
+      // One personality; two only when 이중인격.
+      expect(values.get('personality')!.valueIds).toHaveLength(values.get('personality')!.label.includes('⇄') ? 2 : 1)
     }
   })
 
@@ -199,6 +200,12 @@ describe('several at once', () => {
     for (let i = 0; i < 100; i++) {
       expect(rollCharacter(catalog, { ...edited, seed: `s${i}` })).toEqual(rollCharacter(catalog, { ...plain, seed: `s${i}` }))
     }
+  })
+
+  test('성격 stays at one even with a count left over from before', () => {
+    const edits = { personality: { disabled: [], removed: [], added: [], count: 3 } }
+    const value = rollCharacter(catalog, { seed: 'one', attributeIds: ['personality'], edits })[0]!
+    expect(value.valueIds).toHaveLength(1)
   })
 
   test('a pick draws as many as the player says', () => {
