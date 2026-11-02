@@ -1,4 +1,5 @@
 import { Edits, isMultiple, listOptions, type AttributeEdits } from '../domain/edits'
+import { speciesSpans } from '../domain/preview'
 import { catalog } from '../domain/catalog/index'
 import { Cell } from './cell'
 import { revive } from './schema'
@@ -104,6 +105,20 @@ export function editOption(attributeId: string, optionId: string, label: string,
   if (problem) return problem
   const attribute = catalog.byId.get(attributeId)!
   const { age, height, chance } = extras
+  // Saved untouched: record nothing, so a shipped value keeps its line under it.
+  const current = listOptions(attribute, editsCell.read()[attributeId]).find((o) => o.id === optionId)
+  const span = attributeId === 'species' ? speciesSpans(catalog, editsCell.read()).get(optionId) : undefined
+  const same = (a: { min: number; max: number } | null | undefined, b: { min: number; max: number } | undefined) => !b || (!!a && a.min === b.min && a.max === b.max)
+  if (
+    current &&
+    current.label === name &&
+    (attribute.kind !== 'color' || !extras.hex || [extras.hex, ...(extras.hex2 ? [extras.hex2] : [])].join() === current.swatches.join()) &&
+    (chance === undefined || chance === current.chance) &&
+    same(current.age ?? span?.age, age) &&
+    same(current.height ?? span?.height, height)
+  ) {
+    return null
+  }
   const colour = attribute.kind === 'color' && extras.hex ? { hex: extras.hex, hex2: extras.hex2 ?? null } : {}
   patch(attributeId, (e) => {
     const own = e.added.find((o) => o.id === optionId)

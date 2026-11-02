@@ -280,6 +280,16 @@ describe('species spans', () => {
     expect(seen).toBeGreaterThan(10)
   })
 
+  test('a changed value drops the fixed line written for it', async () => {
+    const { listOptions } = await import('./edits')
+    const speech = catalog.byId.get('speech')!
+    const shipped = listOptions(speech, undefined).find((o) => o.id === '반말')!
+    expect(shipped.hint).toContain('밥 먹었어')
+    const changed = listOptions(speech, { disabled: [], removed: [], added: [], changed: { 반말: { label: '편한 말' } } }).find((o) => o.id === '반말')!
+    expect(changed.label).toBe('편한 말')
+    expect(changed.hint).toBeNull()
+  })
+
   test('changed names and colours of other kinds come out in rolls', () => {
     const color = catalog.byId.get('eyeColor') as AttributeOf<'color'>
     const first = color.options[0]!.id

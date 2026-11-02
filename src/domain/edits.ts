@@ -120,7 +120,13 @@ export interface ListedOption {
 /** Shipped values with the player's changes laid over them. */
 export function applyChanges(attribute: Attribute, changed: Record<string, OptionChange> | undefined): Attribute {
   if (!changed || Object.keys(changed).length === 0) return attribute
-  const label = <T extends { id: string; label: string }>(o: T): T => (changed[o.id]?.label ? { ...o, label: changed[o.id]!.label! } : o)
+  // A changed value loses the catalogue's fixed line under it (말투's sample
+  // sentence, a colour's note): it was written for the value as shipped.
+  const label = <T extends { id: string; label: string }>(o: T): T => {
+    const c = changed[o.id]
+    if (!c) return o
+    return { ...o, ...(c.label ? { label: c.label } : {}), ...('hint' in o ? { hint: undefined } : {}) }
+  }
   switch (attribute.kind) {
     case 'pick':
       return {
