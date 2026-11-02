@@ -7,6 +7,7 @@ export default defineAttribute({
   label: '특기',
   color: hue.lime,
   kind: 'pick',
+  count: 2,
   options: [
     '요리',
     '절대음감',
