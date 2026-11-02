@@ -108,6 +108,12 @@ const Base = {
   description: z.string().default(''),
   /** Ticked on first launch. */
   defaultSelected: z.boolean().default(false),
+  /**
+   * Makes this a 완전 종속 속성 of that attribute: while that one is
+   * selected, this one is too — it can't be switched off on its own, folds
+   * into that chip, and always comes out with it. 나이, 키 of 종족.
+   */
+  nestsIn: Key.optional(),
 }
 
 const PickAttribute = z.object({

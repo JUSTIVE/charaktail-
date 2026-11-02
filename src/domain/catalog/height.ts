@@ -7,6 +7,7 @@ export default defineAttribute({
   label: '키',
   color: hue.cyan,
   defaultSelected: true,
+  nestsIn: 'species',
   kind: 'range',
   min: 145,
   max: 195,

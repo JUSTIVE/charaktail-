@@ -33,6 +33,7 @@ export default defineAttribute({
   label: '나이',
   color: hue.amber,
   defaultSelected: true,
+  nestsIn: 'species',
   kind: 'range',
   min: 12,
   max: Math.round(human.max * 0.8),

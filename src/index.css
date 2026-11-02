@@ -637,6 +637,29 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   font-size: 16px;
 }
 
+/* 완전 종속 속성 folded into their chip (나이, 키 in 종족): small fixed tags after its label, in their own colours. */
+/* The chip keeps every other chip's height: the tags take its padding, not more room. */
+.chip:has(.chip-nest) {
+  padding-block: 3px;
+}
+.chip-nest {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+  padding-left: 17px;
+}
+.chip-nested {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: color-mix(in oklab, var(--nested) 75%, white);
+  background: color-mix(in oklab, var(--nested) 22%, transparent);
+  border: 1px solid color-mix(in oklab, var(--nested) 45%, transparent);
+}
+
 /* Kebab on a chip: a sibling pinned to the chip's corner. */
 .chip-kebab {
   /* Above the chip's tap layer (HapticTap). */

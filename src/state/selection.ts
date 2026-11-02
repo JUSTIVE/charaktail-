@@ -17,9 +17,10 @@ export const selectionCell = new Cell<readonly string[]>(
   },
 )
 
+/** Catalogue order, and a selected attribute brings its 완전 종속 속성 — 종족 brings 나이 and 키. */
 function normalise(ids: readonly string[]): string[] {
   const wanted = new Set(ids)
-  return catalog.attributes.filter((a) => wanted.has(a.id)).map((a) => a.id)
+  return catalog.attributes.filter((a) => wanted.has(a.id) || (!!a.nestsIn && wanted.has(a.nestsIn))).map((a) => a.id)
 }
 
 /** A value list with nothing switched on — only grouped kinds (직업) may get there. */
@@ -30,6 +31,9 @@ function emptied(id: string): boolean {
 }
 
 export function toggleAttribute(id: string): void {
+  // A 완전 종속 속성 of a selected attribute (나이 of 종족) goes where that one goes.
+  const parent = nestParent(id)
+  if (parent && selectionCell.read().includes(parent)) return
   if (!selectionCell.read().includes(id) && emptied(id)) {
     // Turning an emptied attribute back on brings its values back with it.
     editsCell.set((all) => (all[id] ? { ...all, [id]: { ...all[id], disabled: [] } } : all))
@@ -47,6 +51,11 @@ function dropEmptied(): void {
 }
 editsCell.subscribe(dropEmptied)
 dropEmptied()
+
+/** What this is a 완전 종속 속성 of — 종족 for 나이 — or null. */
+export function nestParent(id: string): string | null {
+  return catalog.byId.get(id)?.nestsIn ?? null
+}
 
 export function setSelection(ids: readonly string[]): void {
   const next = normalise(ids)

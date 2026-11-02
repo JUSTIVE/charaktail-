@@ -7,7 +7,7 @@ import { useLocalQuery } from '../../graph/useLocalQuery'
 
 import { router } from '../../router'
 import { currentName, NAME_MAX, setName } from '../../state/name'
-import { selectAll, selectionCell, toggleAttribute } from '../../state/selection'
+import { nestParent, selectAll, selectionCell, toggleAttribute } from '../../state/selection'
 import { requestMotionAccess } from '../../stage/motion'
 import { patchStage } from '../../stage/store'
 import { attributeHead } from '../attributeHead'
@@ -46,6 +46,13 @@ export function Picker() {
   const count = attributes.filter((a) => a.selected).length
   const auraColors = attributes.filter((a) => a.selected).map((a) => a.color ?? '#7c7a85')
   const allOn = count === attributes.length
+  // 완전 종속 속성 (나이, 키 of 종족) fold into their chip while it is on: no chips of their own, tags inside it.
+  const selectedKeys = new Set(attributes.filter((a) => a.selected).map((a) => a.key))
+  const folded = (key: string) => {
+    const parent = nestParent(key)
+    return !!parent && selectedKeys.has(parent)
+  }
+  const nestedIn = (key: string) => attributes.filter((a) => nestParent(a.key) === key && folded(a.key))
   // The input owns its text while typing (a controlled value fed back from a
   // live field would fight Korean IME composition); the draft cell is written
   // on every change and read back through Relay for everything else.
@@ -102,7 +109,7 @@ export function Picker() {
       </form>
 
       <ul className="ms-seq picker-list grid grid-cols-2 gap-2 sm:grid-cols-3" style={seq(2)}>
-        {attributes.map((attribute) => (
+        {attributes.filter((a) => !folded(a.key)).map((attribute) => (
           <li key={attribute.key} className="ms-item relative">
             <HapticTap
               onTap={() => {
@@ -126,6 +133,16 @@ export function Picker() {
                   {attribute.locked ? <LockIcon locked aria-label="잠김" width={12} height={12} className="-ml-0.5 shrink-0 opacity-70" /> : null}
                   {attribute.enabledCount !== null ? <span className="sr-only">, 값 {attribute.enabledCount}개 켜짐</span> : null}
                 </span>
+                {/* Under the label, not beside it — a second line that belongs to this chip. */}
+                {nestedIn(attribute.key).length > 0 ? (
+                  <span className="chip-nest">
+                    {nestedIn(attribute.key).map((child) => (
+                      <span key={child.key} className="chip-nested" style={{ '--nested': child.color } as CSSProperties}>
+                        {child.label}
+                      </span>
+                    ))}
+                  </span>
+                ) : null}
                 {/* How many of its values are on: big and faint behind the label, cut off by the chip's edge.
                     After the label: the off-chip dimming rule finds the dot as the first child's first child. */}
                 {attribute.enabledCount !== null ? (

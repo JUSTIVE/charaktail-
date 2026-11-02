@@ -88,6 +88,10 @@ export function defineCatalog(inputs: readonly AttributeInput[]): Catalog {
     if (!group || group.kind !== 'pick') throw new Error(`${attribute.id}의 groupBy가 목록형 속성이 아닌 "${attribute.groupBy}"를 가리킵니다`)
   }
 
+  for (const attribute of attributes) {
+    if (attribute.nestsIn && !byId.has(attribute.nestsIn)) throw new Error(`${attribute.id}의 nestsIn이 없는 속성 "${attribute.nestsIn}"를 가리킵니다`)
+  }
+
   const dependencies = new Map<string, Set<string>>()
   for (const attribute of attributes) {
     const targets = conditionTargets(attribute)
