@@ -29,6 +29,11 @@ export const AddedOption = z.object({
     .object({ min: z.number().int().positive(), max: z.number().int().positive() })
     .refine((l) => l.min <= l.max)
     .optional(),
+  /** 종족 only: the span its 키 is rolled in, in cm. Species added before it fall back to 키's own. */
+  height: z
+    .object({ min: z.number().int().positive(), max: z.number().int().positive() })
+    .refine((h) => h.min <= h.max)
+    .optional(),
 })
 export type AddedOption = z.infer<typeof AddedOption>
 
@@ -161,20 +166,36 @@ export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits 
   return options.length > 0 ? { ...attribute, options } : attribute
 }
 
+/** 키 for one of the player's species: its own span, read against that species — 별사람치고 큰. */
+function heightCase(o: AddedOption, { min, max }: { min: number; max: number }) {
+  const third = (max - min) / 3
+  const bands = [
+    { upTo: Math.round(min + third), label: `${o.label}치고 작은` },
+    { upTo: Math.round(max - third), label: '평균' },
+    { upTo: Number.MAX_SAFE_INTEGER, label: `${o.label}치고 큰` },
+  ]
+  return { when: { species: [o.id] }, min, max, bands }
+}
+
 /**
- * The player's own species bring their lifespans to 나이 as extra cases —
- * before 나이's own edits, so the player's bounds still win over them.
+ * The player's own species bring their lifespans to 나이 and their spans to 키
+ * as extra cases — before those attributes' own edits, so the player's
+ * bounds still win over them.
  */
-function withCustomLifespans(attribute: Attribute, edits: Edits): Attribute {
-  if (attribute.id !== 'age' || attribute.kind !== 'range') return attribute
+function withCustomSpecies(attribute: Attribute, edits: Edits): Attribute {
+  if ((attribute.id !== 'age' && attribute.id !== 'height') || attribute.kind !== 'range') return attribute
   const drop = new Set([...(edits['species']?.disabled ?? []), ...(edits['species']?.removed ?? [])])
-  const cases = (edits['species']?.added ?? []).flatMap((o) => (o.lifespan && !drop.has(o.id) ? [ageCase(o.id, o.lifespan)] : []))
+  const cases = (edits['species']?.added ?? []).flatMap((o) => {
+    if (drop.has(o.id)) return []
+    if (attribute.id === 'age') return o.lifespan ? [ageCase(o.id, o.lifespan)] : []
+    return o.height ? [heightCase(o, o.height)] : []
+  })
   return cases.length ? { ...attribute, cases: [...attribute.cases, ...cases] } : attribute
 }
 
 export function applyEdits(catalog: Catalog, edits: Edits | undefined): Catalog {
   if (!edits || !Object.values(edits).some(isEdited)) return catalog
-  const attributes = catalog.attributes.map((a) => applyAttributeEdits(withCustomLifespans(a, edits), edits[a.id]))
+  const attributes = catalog.attributes.map((a) => applyAttributeEdits(withCustomSpecies(a, edits), edits[a.id]))
   const byId = new Map(attributes.map((a) => [a.id, a]))
   return { ...catalog, attributes, byId, rollOrder: catalog.rollOrder.map((a) => byId.get(a.id)!) }
 }
@@ -198,6 +219,8 @@ type Packed = Record<
     p?: Record<string, number> | undefined
     /** Added option id → [min, max] lifespan. */
     l?: Record<string, [number, number]> | undefined
+    /** Added option id → [min, max] 키 in cm. */
+    h?: Record<string, [number, number]> | undefined
   }
 >
 
@@ -224,6 +247,9 @@ export function packEdits(edits: Edits, attributeIds: readonly string[], keyOf: 
       ...(e!.added.some((o) => o.lifespan)
         ? { l: Object.fromEntries(e!.added.flatMap((o) => (o.lifespan ? [[o.id, [o.lifespan.min, o.lifespan.max]]] : []))) }
         : {}),
+      ...(e!.added.some((o) => o.height)
+        ? { h: Object.fromEntries(e!.added.flatMap((o) => (o.height ? [[o.id, [o.height.min, o.height.max]]] : []))) }
+        : {}),
     }
   }
   if (Object.keys(packed).length === 0) return ''
@@ -244,6 +270,7 @@ export function unpackEdits(text: string, idOf: (key: string) => string = (key) 
           removed: p.r ?? [],
           added: (p.a ?? []).map(([oid, label, hex, hex2]) => {
             const life = p.l?.[oid]
+            const height = p.h?.[oid]
             const part = p.p?.[oid]
             const group = p.g?.[oid]
             return {
@@ -254,6 +281,7 @@ export function unpackEdits(text: string, idOf: (key: string) => string = (key) 
               ...(part ? { part } : {}),
               ...(group ? { group } : {}),
               ...(life ? { lifespan: { min: life[0], max: life[1] } } : {}),
+              ...(height ? { height: { min: height[0], max: height[1] } } : {}),
             }
           }),
           ...(p.n !== undefined ? { min: p.n } : {}),

@@ -141,6 +141,27 @@ describe('custom species', () => {
       expect(age).toBeLessThanOrEqual(29)
     }
   })
+
+  test('its 키 span bounds its height, is read against it, and rides in the roll key', () => {
+    const edits = {
+      species: {
+        disabled: speciesTable.map((s) => s.id),
+        removed: [],
+        added: [{ id: 'uX', label: '별사람', lifespan: { min: 20, max: 30 }, height: { min: 300, max: 330 } }],
+      },
+    }
+    const bands = new Set<string>()
+    for (let i = 0; i < 200; i++) {
+      const request = { seed: `h${i}`, attributeIds: ['species', 'height'], nonces: {}, edits }
+      const values = rollCharacter(catalog, decodeRollKey(encodeRollKey(request))!)
+      const height = values.find((v) => v.attributeId === 'height')!
+      const cm = Number(height.label.replace(/[^0-9]/g, ''))
+      expect(cm).toBeGreaterThanOrEqual(300)
+      expect(cm).toBeLessThanOrEqual(330)
+      if (height.detail) bands.add(height.detail)
+    }
+    expect([...bands].some((b) => b.includes('별사람치고'))).toBe(true)
+  })
 })
 
 describe('compose edits', () => {

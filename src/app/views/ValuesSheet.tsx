@@ -476,7 +476,7 @@ function RangeEditor({
 /**
  * Adding a value: the whole panel morphs from the list into this view and
  * back. What it asks for follows the kind — a colour (or two) for colours,
- * the part for a phrase, the expected lifespan for a species.
+ * the part for a phrase, the expected lifespan and 키 for a species.
  */
 export function AddValueSheet({ attributeId, group }: { attributeId: string; group?: string | undefined }) {
   const data = useLocalQuery<AddValueSheetQuery>(
@@ -500,6 +500,8 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
   const [part, setPart] = useState(0)
   const [low, setLow] = useState('70')
   const [high, setHigh] = useState('100')
+  const [short, setShort] = useState('145')
+  const [tall, setTall] = useState('195')
   const [error, setError] = useState<string | null>(null)
 
   const raw = data.attribute
@@ -519,13 +521,14 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
       part: partLabels.length ? part : undefined,
       group,
       lifespan: isSpecies ? { min: Number(low), max: Number(high) } : undefined,
+      height: isSpecies ? { min: Number(short), max: Number(tall) } : undefined,
     })
     setError(problem)
     if (problem) return
     haptic.select()
     toList()
   }
-  const years = (label: string, value: string, set: (v: string) => void) => (
+  const bound = (label: string, value: string, set: (v: string) => void, unit: string) => (
     <label className="name-field min-w-0 flex-1 gap-2 px-3">
       <span className="eyebrow shrink-0">{label}</span>
       <input
@@ -539,7 +542,7 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
         }}
         className="tnum min-w-0 flex-1 bg-transparent text-[16px] font-semibold outline-none"
       />
-      <span className="shrink-0 text-[13px] text-faint">년</span>
+      <span className="shrink-0 text-[13px] text-faint">{unit}</span>
     </label>
   )
 
@@ -620,11 +623,17 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
         <div className="ms-seq" style={seq(2)}>
           <p className="eyebrow mb-1.5">기대 수명</p>
           <div className="flex items-center gap-2">
-            {years('최소', low, setLow)}
+            {bound('최소', low, setLow, '년')}
             <span aria-hidden className="text-faint">–</span>
-            {years('최대', high, setHigh)}
+            {bound('최대', high, setHigh, '년')}
           </div>
-          {error ? null : <p className="mt-2 text-[12px] text-faint">나이는 이 수명 안에서 뽑혀요.</p>}
+          <p className="eyebrow mt-3 mb-1.5">키</p>
+          <div className="flex items-center gap-2">
+            {bound('최소', short, setShort, 'cm')}
+            <span aria-hidden className="text-faint">–</span>
+            {bound('최대', tall, setTall, 'cm')}
+          </div>
+          {error ? null : <p className="mt-2 text-[12px] text-faint">나이는 이 수명 안에서, 키는 이 범위 안에서 뽑혀요.</p>}
         </div>
       ) : null}
       {error ? <p className="text-[12px] text-[#ff977d]">{error}</p> : null}
@@ -633,7 +642,7 @@ export function AddValueSheet({ attributeId, group }: { attributeId: string; gro
         <Button variant="ghost" className="flex-1 py-3" onClick={toList}>
           취소
         </Button>
-        <Button type="submit" variant="primary" className="flex-1 py-3" disabled={name.trim() === '' || (isSpecies && (low === '' || high === ''))}>
+        <Button type="submit" variant="primary" className="flex-1 py-3" disabled={name.trim() === '' || (isSpecies && [low, high, short, tall].includes(''))}>
           추가
         </Button>
       </div>
