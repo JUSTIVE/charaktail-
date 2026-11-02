@@ -87,7 +87,11 @@ export const generators: { [K in AttributeKind]: Generator<K> } = {
   },
 
   traits(attribute, ctx) {
-    const hits = attribute.options.filter((option) => matches(option.when, ctx.rolled) && ctx.rng() < option.chance)
+    const all = attribute.options.filter((option) => matches(option.when, ctx.rolled) && ctx.rng() < option.chance)
+    // Over the cap, a fair few of them stay, in list order. Under it, no extra
+    // draws — rolls from before the cap existed come out the same.
+    const kept = attribute.max !== undefined && all.length > attribute.max ? new Set(weightedSample(ctx.rng, all.map((o) => ({ ...o, weight: 1 })), attribute.max).map((o) => o.id)) : null
+    const hits = kept ? all.filter((o) => kept.has(o.id)) : all
     return {
       attributeId: attribute.id,
       valueIds: hits.map((h) => h.id),

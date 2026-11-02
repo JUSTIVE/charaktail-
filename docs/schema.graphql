@@ -41,7 +41,7 @@ interface AttributeBase {
   locked: Boolean!
 }
 
-"""A kind whose values the player switches, deletes and adds — pick, color, compose, stats."""
+"""A kind whose values the player switches, deletes and adds — pick, color, compose, stats, traits."""
 interface ValueListAttribute {
   id: ID!
   options: [AttributeOption!]!
@@ -325,6 +325,14 @@ type PickAttribute implements AttributeBase & ValueListAttribute {
   The attribute its values are listed under in the editor — 직업 → 세계관.
   """
   groupBy: PickAttribute
+  """
+  Whether it draws several at once — 성격 키워드 두 개.
+  """
+  multiple: Boolean!
+  """
+  How many it draws, after edits.
+  """
+  count: Int @live
 }
 
 """
@@ -503,7 +511,7 @@ type StatsAttribute implements AttributeBase & ValueListAttribute & BoundedAttri
 """
 Features each rolled on their own odds — 외형 특징.
 """
-type TraitsAttribute implements AttributeBase {
+type TraitsAttribute implements AttributeBase & ValueListAttribute {
   id: ID!
   """
   The catalogue id, safe for URLs — Relay's own `__id` is a client DataID.
@@ -539,4 +547,16 @@ type TraitsAttribute implements AttributeBase {
   Kept as it is through re-rolls.
   """
   locked: Boolean! @live
+  """
+  Its values, as the player sees them in the editor.
+  """
+  options: [AttributeOption!]! @live
+  """
+  Whether it can come out several at once.
+  """
+  multiple: Boolean!
+  """
+  The most that come out together, after edits; null while nothing caps it.
+  """
+  count: Int @live
 }

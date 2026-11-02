@@ -94,3 +94,16 @@ export { options } from '../attributeFields'
  * @relayField PickAttribute.groupBy: PickAttribute
  */
 export { groupBy } from '../attributeFields'
+
+/**
+ * Whether it draws several at once — 성격 키워드 두 개.
+ * @relayField PickAttribute.multiple: Boolean!
+ */
+export { multiple } from '../attributeFields'
+
+/**
+ * How many it draws, after edits.
+ * @relayField PickAttribute.count: Int
+ * @live
+ */
+export { count } from '../attributeFields'

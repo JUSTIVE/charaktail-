@@ -44,6 +44,8 @@ export const AttributeEdits = z.object({
   /** Range attributes only: the player's own bounds, over every case. */
   min: z.number().finite().optional(),
   max: z.number().finite().optional(),
+  /** Several-at-once kinds: how many a pick draws, or the most 외형 특징 that come out together. */
+  count: z.number().int().positive().optional(),
 })
 export type AttributeEdits = z.infer<typeof AttributeEdits>
 
@@ -53,13 +55,21 @@ export type Edits = z.infer<typeof Edits>
 export function isEdited(edits: AttributeEdits | undefined): boolean {
   return (
     !!edits &&
-    (edits.disabled.length > 0 || edits.removed.length > 0 || edits.added.length > 0 || edits.min !== undefined || edits.max !== undefined)
+    (edits.disabled.length > 0 || edits.removed.length > 0 || edits.added.length > 0 || edits.min !== undefined || edits.max !== undefined || edits.count !== undefined)
   )
 }
 
 /** Whether this kind has a value list to edit — a range has bounds instead, and the generated kinds have neither. */
 export function isEditable(attribute: Attribute): boolean {
-  return attribute.kind === 'pick' || attribute.kind === 'color' || attribute.kind === 'compose' || attribute.kind === 'stats'
+  return attribute.kind === 'pick' || attribute.kind === 'color' || attribute.kind === 'compose' || attribute.kind === 'stats' || attribute.kind === 'traits'
+}
+
+/** What a 외형 특징 of the player's own comes out at. */
+export const ADDED_TRAIT_CHANCE = 0.2
+
+/** Kinds that can come out several at once — 외형 특징, or a pick that draws more than one. */
+export function isMultiple(attribute: Attribute): boolean {
+  return attribute.kind === 'traits' || (attribute.kind === 'pick' && attribute.count > 1)
 }
 
 const swatchesOf = (o: AddedOption): string[] => [o.hex, o.hex2].filter((h): h is string => !!h)
@@ -94,7 +104,9 @@ export function listOptions(attribute: Attribute, edits: AttributeEdits | undefi
           ? attribute.options.map((o) => ({ ...o, swatches: [], part: 0, groups: groupsOf(o.when) }))
           : attribute.kind === 'stats'
             ? attribute.stats.map((o) => ({ ...o, swatches: [], part: 0, groups: [] }))
-            : []
+            : attribute.kind === 'traits'
+              ? attribute.options.map((o) => ({ ...o, hint: chanceHint(o.chance), swatches: [], part: 0, groups: [] }))
+              : []
   const builtIn = shipped
     .filter((o) => !removed.has(o.id))
     .map((o) => ({ id: o.id, label: o.label, hint: o.hint ?? null, part: o.part, groups: o.groups, enabled: !disabled.has(o.id), custom: false, swatches: o.swatches }))
@@ -102,7 +114,7 @@ export function listOptions(attribute: Attribute, edits: AttributeEdits | undefi
   const own = (edits?.added ?? []).map((o) => ({
     id: o.id,
     label: o.label,
-    hint: o.lifespan ? describeLifespan(o.lifespan) : null,
+    hint: o.lifespan ? describeLifespan(o.lifespan) : attribute.kind === 'traits' ? chanceHint(ADDED_TRAIT_CHANCE) : null,
     part: o.part ?? 0,
     groups: o.group ? [o.group] : [],
     enabled: !disabled.has(o.id),
@@ -110,6 +122,10 @@ export function listOptions(attribute: Attribute, edits: AttributeEdits | undefi
     swatches: swatchesOf(o),
   }))
   return [...builtIn, ...own].sort((a, b) => a.part - b.part)
+}
+
+function chanceHint(chance: number): string {
+  return `나올 확률 ${Math.round(chance * 100)}%`
 }
 
 /** One attribute with its edits applied. Never leaves a list empty. */
@@ -124,9 +140,17 @@ export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits 
     const cases = attribute.cases.map(({ min: _min, max: _max, ...rest }) => rest)
     return { ...attribute, min, max, cases }
   }
-  if (attribute.kind !== 'pick' && attribute.kind !== 'color' && attribute.kind !== 'compose' && attribute.kind !== 'stats') return attribute
+  if (attribute.kind !== 'pick' && attribute.kind !== 'color' && attribute.kind !== 'compose' && attribute.kind !== 'stats' && attribute.kind !== 'traits') return attribute
   const drop = new Set([...edits!.disabled, ...edits!.removed])
   const added = edits!.added.filter((o) => !drop.has(o.id))
+  if (attribute.kind === 'traits') {
+    const options = [
+      ...attribute.options.filter((o) => !drop.has(o.id)),
+      ...added.map((o) => ({ id: o.id, label: o.label, chance: ADDED_TRAIT_CHANCE, when: undefined })),
+    ]
+    const max = edits!.count ?? attribute.max
+    return { ...attribute, options: options.length > 0 ? options : attribute.options, ...(max !== undefined ? { max } : {}) }
+  }
   if (attribute.kind === 'stats') {
     // Which stats to roll, and the span each one rolls in.
     const kept = [...attribute.stats.filter((s) => !drop.has(s.id)), ...added.map((o) => ({ id: o.id, label: o.label }))]
@@ -163,7 +187,8 @@ export function applyAttributeEdits(attribute: Attribute, edits: AttributeEdits 
       when: o.group && attribute.groupBy ? { [attribute.groupBy]: [o.group] } : undefined,
     })),
   ]
-  return options.length > 0 ? { ...attribute, options } : attribute
+  const count = attribute.kind === 'pick' ? { count: edits!.count ?? attribute.count } : {}
+  return options.length > 0 ? { ...attribute, options, ...count } : { ...attribute, ...count }
 }
 
 /** 키 for one of the player's species: its own span, read against that species — 별사람치고 큰. */
@@ -213,6 +238,8 @@ type Packed = Record<
     a?: [string, string, string?, string?][] | undefined
     n?: number | undefined
     x?: number | undefined
+    /** How many come out — a pick's draw, or the 외형 특징 cap. */
+    c?: number | undefined
     /** Added option id → the group it was added under. */
     g?: Record<string, string> | undefined
     /** Added option id → compose part, when not the first. */
@@ -238,6 +265,7 @@ export function packEdits(edits: Edits, attributeIds: readonly string[], keyOf: 
         : {}),
       ...(e!.min !== undefined ? { n: e!.min } : {}),
       ...(e!.max !== undefined ? { x: e!.max } : {}),
+      ...(e!.count !== undefined ? { c: e!.count } : {}),
       ...(e!.added.some((o) => o.group)
         ? { g: Object.fromEntries(e!.added.flatMap((o) => (o.group ? [[o.id, o.group]] : []))) }
         : {}),
@@ -286,6 +314,7 @@ export function unpackEdits(text: string, idOf: (key: string) => string = (key) 
           }),
           ...(p.n !== undefined ? { min: p.n } : {}),
           ...(p.x !== undefined ? { max: p.x } : {}),
+          ...(p.c !== undefined ? { count: p.c } : {}),
         },
       ]),
     )

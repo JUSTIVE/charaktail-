@@ -12,7 +12,7 @@ import { record } from '../attributeFields'
 
 /**
  * Features each rolled on their own odds — 외형 특징.
- * @relayType TraitsAttribute implements AttributeBase
+ * @relayType TraitsAttribute implements AttributeBase & ValueListAttribute
  */
 export function TraitsAttribute(id: DataID): AttributeRecord | null {
   const attribute = record(id)
@@ -81,3 +81,23 @@ export { selected } from '../attributeFields'
  * @live
  */
 export { locked } from '../attributeFields'
+
+/**
+ * Its values, as the player sees them in the editor.
+ * @relayField TraitsAttribute.options: [AttributeOption!]!
+ * @live
+ */
+export { options } from '../attributeFields'
+
+/**
+ * Whether it can come out several at once.
+ * @relayField TraitsAttribute.multiple: Boolean!
+ */
+export { multiple } from '../attributeFields'
+
+/**
+ * The most that come out together, after edits; null while nothing caps it.
+ * @relayField TraitsAttribute.count: Int
+ * @live
+ */
+export { count } from '../attributeFields'

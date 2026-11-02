@@ -1,4 +1,4 @@
-import { Edits, listOptions, type AttributeEdits } from '../domain/edits'
+import { Edits, isMultiple, listOptions, type AttributeEdits } from '../domain/edits'
 import { catalog } from '../domain/catalog/index'
 import { Cell } from './cell'
 import { revive } from './schema'
@@ -75,6 +75,17 @@ export function addOption(
   const id = `u${Date.now().toString(36)}${Math.floor(Math.random() * 36 ** 2).toString(36)}`
   const colours = attribute.kind === 'color' ? { hex: extras.hex ?? '#7c7a85', ...(extras.hex2 ? { hex2: extras.hex2 } : {}) } : {}
   patch(attributeId, (e) => ({ ...e, added: [...e.added, { id, label: name.slice(0, 24), ...colours, ...(lifespan ? { lifespan } : {}), ...(height ? { height } : {}), ...(part ? { part } : {}), ...(group ? { group } : {}) }] }))
+  return null
+}
+
+/** How many come out — a pick's draw, or the most 외형 특징 together. Returns why it was refused, or null. */
+export function setCount(attributeId: string, count: number): string | null {
+  const attribute = catalog.byId.get(attributeId)
+  if (!attribute || !isMultiple(attribute)) return '여러 개가 나오는 속성이 아니에요.'
+  const on = listOptions(attribute, editsCell.read()[attributeId]).filter((o) => o.enabled).length
+  if (!Number.isInteger(count) || count < 1) return '1개 이상이어야 해요.'
+  if (count > on) return `켜져 있는 값이 ${on}개라 그보다 많이는 안 돼요.`
+  patch(attributeId, (e) => ({ ...e, count }))
   return null
 }
 

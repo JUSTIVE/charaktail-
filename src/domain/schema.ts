@@ -180,6 +180,8 @@ const TraitsAttribute = z.object({
   ...Base,
   kind: z.literal('traits'),
   options: z.array(TraitOption).min(1),
+  /** At most this many come out together; unset, as many as hit. */
+  max: z.number().int().positive().optional(),
   /** What to say when nothing hits. */
   none: z.string().default('특이사항 없음'),
 })

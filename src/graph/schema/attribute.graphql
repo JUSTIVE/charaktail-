@@ -25,7 +25,7 @@ interface AttributeBase {
   locked: Boolean!
 }
 
-"""A kind whose values the player switches, deletes and adds — pick, color, compose, stats."""
+"""A kind whose values the player switches, deletes and adds — pick, color, compose, stats, traits."""
 interface ValueListAttribute {
   id: ID!
   options: [AttributeOption!]!

@@ -164,6 +164,40 @@ describe('custom species', () => {
   })
 })
 
+describe('several at once', () => {
+  test('외형 특징 keep at most the cap, take values of the player\'s own, and the cap rides in the roll key', () => {
+    const edits = { traits: { disabled: [], removed: [], added: [{ id: 'uT', label: '별 문신' }], count: 2 } }
+    const counts = new Set<number>()
+    let own = false
+    for (let i = 0; i < 400; i++) {
+      const request = { seed: `x${i}`, attributeIds: ['species', 'traits'], nonces: {}, edits }
+      const traits = rollCharacter(catalog, decodeRollKey(encodeRollKey(request))!).find((v) => v.attributeId === 'traits')!
+      expect(traits.valueIds.length).toBeLessThanOrEqual(2)
+      counts.add(traits.valueIds.length)
+      own ||= traits.valueIds.includes('uT')
+    }
+    expect([...counts].sort()).toEqual([0, 1, 2])
+    expect(own).toBe(true)
+  })
+
+  test('without a cap, 외형 특징 roll exactly as before', () => {
+    const plain = { seed: 'same', attributeIds: ['species', 'traits'] }
+    const edited = { ...plain, edits: { traits: { disabled: [], removed: [], added: [], count: 99 } } }
+    for (let i = 0; i < 100; i++) {
+      expect(rollCharacter(catalog, { ...edited, seed: `s${i}` })).toEqual(rollCharacter(catalog, { ...plain, seed: `s${i}` }))
+    }
+  })
+
+  test('a pick draws as many as the player says', () => {
+    const edits = { accessory: { disabled: [], removed: [], added: [], count: 4 } }
+    for (let i = 0; i < 50; i++) {
+      const request = { seed: `a${i}`, attributeIds: ['accessory'], nonces: {}, edits }
+      const value = rollCharacter(catalog, decodeRollKey(encodeRollKey(request))!)[0]!
+      expect(new Set(value.valueIds).size).toBe(4)
+    }
+  })
+})
+
 describe('compose edits', () => {
   test('a value added to the second part lands there and survives the roll key', () => {
     const epithet = catalog.byId.get('epithet') as AttributeOf<'compose'>

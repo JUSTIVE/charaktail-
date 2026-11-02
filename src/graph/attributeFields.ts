@@ -1,7 +1,7 @@
 import type { DataID } from 'relay-runtime'
 
 import { catalog } from '../domain/catalog/index'
-import { applyAttributeEdits, isEdited, listOptions, type Edits } from '../domain/edits'
+import { applyAttributeEdits, isEdited, isMultiple, listOptions, type Edits } from '../domain/edits'
 import type { Attribute as AttributeRecord } from '../domain/schema'
 import { dependsOnSpecies as speciesDependent, rangesBySpecies } from '../domain/preview'
 import { editsCell } from '../state/edits'
@@ -60,7 +60,9 @@ function summaryOf(attribute: AttributeRecord): string {
     case 'stats':
       return `${attribute.stats.map((s) => s.label).join('·')} · ${attribute.min}–${attribute.max}`
     case 'traits':
-      return `${attribute.options.length}가지 특징 중 해당하는 것`
+      return attribute.max !== undefined && attribute.max < attribute.options.length
+        ? `${attribute.options.length}가지 특징 중 최대 ${attribute.max}개`
+        : `${attribute.options.length}가지 특징 중 해당하는 것`
     case 'compose':
       return `${attribute.parts.map((part) => part.length).join('×')}가지 조합`
   }
@@ -119,6 +121,24 @@ export function selected(attribute: AttributeRecord) {
  */
 export function locked(attribute: AttributeRecord) {
   return locksCell.live((locks) => attribute.id in locks)
+}
+
+/**
+ * Whether it can come out several at once — 외형 특징, 성격 키워드 두 개.
+ */
+export function multiple(attribute: AttributeRecord): boolean {
+  return isMultiple(attribute)
+}
+
+/**
+ * How many come out, after edits: exactly this many for a pick, at most this
+ * many for 외형 특징 — null there while nothing caps it.
+ */
+export function count(attribute: AttributeRecord) {
+  return editsCell.live((edits) => {
+    const edited = applyAttributeEdits(attribute, edits[attribute.id])
+    return edited.kind === 'pick' ? edited.count : edited.kind === 'traits' ? (edited.max ?? null) : null
+  })
 }
 
 /** Only range and stats implement BoundedAttribute; anything else is a wiring bug. */

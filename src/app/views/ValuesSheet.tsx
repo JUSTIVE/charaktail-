@@ -3,7 +3,7 @@ import { graphql } from 'relay-runtime'
 
 import { useLocalQuery } from '../../graph/useLocalQuery'
 
-import { addOption, removeOption, resetAttribute, setOptionsEnabled, setRange, toggleOption } from '../../state/edits'
+import { addOption, removeOption, resetAttribute, setCount, setOptionsEnabled, setRange, toggleOption } from '../../state/edits'
 import { router } from '../../router'
 import { haptic } from '../../stage/haptics'
 import { BackIcon, PlusIcon, TrashIcon } from '../icons'
@@ -25,7 +25,6 @@ const back = () => void router.navigate({ to: '/', search: {} })
 /** What a generated kind does, in a line — they have no value list to edit. */
 const GENERATED_NOTE: Record<string, string> = {
   DateAttribute: '1년 365일 중 하루를 뽑고, 그날의 별자리를 함께 알려줘요.',
-  TraitsAttribute: '특징마다 나올 확률이 따로 있어서, 하나도 없거나 여러 개가 함께 나올 수 있어요.',
 }
 
 export function ValuesSheet({ attributeId, group }: { attributeId: string; group?: string | undefined }) {
@@ -36,6 +35,8 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
           __typename
           ...attributeHead_attribute
           ... on PickAttribute {
+            multiple
+            count
             options {
             key
             label
@@ -96,6 +97,20 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
             swatches
             }
           }
+          ... on TraitsAttribute {
+            multiple
+            count
+            options {
+            key
+            label
+            hint
+            groups
+            part
+            enabled
+            custom
+            swatches
+            }
+          }
           ... on RangeAttribute {
             rangeMin
             rangeMax
@@ -131,6 +146,7 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
   const editable = 'options' in raw
   const range = kind === 'RangeAttribute' ? raw : null
   const bounds = 'rangeMin' in raw ? { min: raw.rangeMin ?? 0, max: raw.rangeMax ?? 0 } : null
+  const several = 'multiple' in raw && raw.multiple ? { count: raw.count ?? null, capped: kind === 'TraitsAttribute' } : null
   const attribute = {
     ...head,
     options: 'options' in raw ? (raw.options ?? []) : [],
@@ -313,6 +329,15 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
           })}
         </ul>
       )}
+      {several && !atGroups ? (
+        <CountEditor
+          attributeId={attributeId}
+          count={several.count}
+          capped={several.capped}
+          enabled={options.filter((o) => o.enabled).length}
+          color={attribute.color ?? '#888'}
+        />
+      ) : null}
       {kind === 'StatsAttribute' && bounds ? (
         // 능력치: which stats (the list above) and the span each rolls in.
         <RangeEditor
@@ -405,6 +430,44 @@ function SpeciesPreview({ label, color, ranges }: { label: string; color: string
           ))}
         </div>
       ) : null}
+    </div>
+  )
+}
+
+/**
+ * How many come out at once. A pick draws exactly this many; 외형 특징 rolls
+ * each feature on its own odds and keeps at most this many — unset, all
+ * that hit.
+ */
+function CountEditor({ attributeId, count, capped, enabled, color }: { attributeId: string; count: number | null; capped: boolean; enabled: number; color: string }) {
+  const [error, setError] = useState<string | null>(null)
+  const current = Math.min(count ?? enabled, enabled)
+  const step = (by: number) => {
+    haptic.select()
+    setError(setCount(attributeId, current + by))
+  }
+  const label = capped ? (count === null || current >= enabled ? '제한 없음' : `최대 ${current}개`) : `${current}개씩`
+  return (
+    <div className="ms-seq space-y-2" style={seq(2)}>
+      <div className="flex items-center gap-2">
+        <p className="eyebrow flex-1">{capped ? '함께 나오는 개수' : '뽑는 개수'}</p>
+        <Button variant="ghost" aria-label="하나 줄이기" className="aspect-square px-0 py-1.5 text-[16px]" disabled={current <= 1} onClick={() => step(-1)}>
+          −
+        </Button>
+        <p className="tnum min-w-[5.5em] text-center text-[15px] font-semibold" style={{ color }} aria-live="polite">
+          {label}
+        </p>
+        <Button variant="ghost" aria-label="하나 늘리기" className="aspect-square px-0 py-1.5 text-[16px]" disabled={current >= enabled} onClick={() => step(1)}>
+          +
+        </Button>
+      </div>
+      {error ? (
+        <p className="text-[12px] text-[#ff977d]">{error}</p>
+      ) : (
+        <p className="text-[12px] text-faint">
+          {capped ? '특징마다 나올 확률이 따로 있어요. 이보다 많이 걸리면 그중 몇 개만 남겨요.' : `켜진 값 ${enabled}개 중에서 겹치지 않게 뽑아요.`}
+        </p>
+      )}
     </div>
   )
 }

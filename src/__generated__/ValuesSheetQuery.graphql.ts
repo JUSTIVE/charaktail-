@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<1f4da1dacf2bf576f5c56dc863629391>>
+ * @generated SignedSource<<77ca2041b641e5337f009d1a15cefe1a>>
  * @lightSyntaxTransform
  */
 
@@ -75,6 +75,12 @@ import { partLabels as composeAttributePartLabelsResolverType } from "../graph/k
 (composeAttributePartLabelsResolverType satisfies (
   __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => ReadonlyArray<string>);
+import { count as pickAttributeCountResolverType } from "../graph/kinds/pickAttribute";
+// Type assertion validating that `pickAttributeCountResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(pickAttributeCountResolverType satisfies (
+  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<number | null | undefined>);
 import { groupBy as pickAttributeGroupByResolverType } from "../graph/kinds/pickAttribute";
 // Type assertion validating that `pickAttributeGroupByResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -95,6 +101,12 @@ import { label as pickAttributeLabelResolverType } from "../graph/kinds/pickAttr
 (pickAttributeLabelResolverType satisfies (
   __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => string);
+import { multiple as pickAttributeMultipleResolverType } from "../graph/kinds/pickAttribute";
+// Type assertion validating that `pickAttributeMultipleResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(pickAttributeMultipleResolverType satisfies (
+  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
+) => boolean);
 import { options as pickAttributeOptionsResolverType } from "../graph/kinds/pickAttribute";
 // Type assertion validating that `pickAttributeOptionsResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -196,6 +208,24 @@ import { rangeMin as statsAttributeRangeMinResolverType } from "../graph/kinds/s
 (statsAttributeRangeMinResolverType satisfies (
   __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<number>);
+import { count as traitsAttributeCountResolverType } from "../graph/kinds/traitsAttribute";
+// Type assertion validating that `traitsAttributeCountResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(traitsAttributeCountResolverType satisfies (
+  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<number | null | undefined>);
+import { multiple as traitsAttributeMultipleResolverType } from "../graph/kinds/traitsAttribute";
+// Type assertion validating that `traitsAttributeMultipleResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(traitsAttributeMultipleResolverType satisfies (
+  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
+) => boolean);
+import { options as traitsAttributeOptionsResolverType } from "../graph/kinds/traitsAttribute";
+// Type assertion validating that `traitsAttributeOptionsResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(traitsAttributeOptionsResolverType satisfies (
+  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<ReadonlyArray<AttributeOption>>);
 import { AttributeOption } from "../graph/attributeOption";
 import { SpeciesRange } from "../graph/speciesRange";
 export type ValuesSheetQuery$variables = {
@@ -204,6 +234,7 @@ export type ValuesSheetQuery$variables = {
 export type ValuesSheetQuery$data = {
   readonly attribute: {
     readonly __typename: string;
+    readonly count?: number | null | undefined;
     readonly dependsOnSpecies?: boolean;
     readonly groupBy?: {
       readonly key: string;
@@ -216,6 +247,7 @@ export type ValuesSheetQuery$data = {
       }>;
     } | null | undefined;
     readonly hasCases?: boolean;
+    readonly multiple?: boolean;
     readonly options?: ReadonlyArray<{
       readonly custom: boolean;
       readonly enabled: boolean;
@@ -282,11 +314,13 @@ import {selected as dateAttributeSelectedResolver} from '../graph/kinds/dateAttr
 import {summary as dateAttributeSummaryResolver} from '../graph/kinds/dateAttribute';
 import {PickAttribute as pickAttributeRelayModelInstanceResolver} from '../graph/kinds/pickAttribute';
 import {color as pickAttributeColorResolver} from '../graph/kinds/pickAttribute';
+import {count as pickAttributeCountResolver} from '../graph/kinds/pickAttribute';
 import {edited as pickAttributeEditedResolver} from '../graph/kinds/pickAttribute';
 import {groupBy as pickAttributeGroupByResolver} from '../graph/kinds/pickAttribute';
 import {key as pickAttributeKeyResolver} from '../graph/kinds/pickAttribute';
 import {label as pickAttributeLabelResolver} from '../graph/kinds/pickAttribute';
 import {locked as pickAttributeLockedResolver} from '../graph/kinds/pickAttribute';
+import {multiple as pickAttributeMultipleResolver} from '../graph/kinds/pickAttribute';
 import {options as pickAttributeOptionsResolver} from '../graph/kinds/pickAttribute';
 import {selected as pickAttributeSelectedResolver} from '../graph/kinds/pickAttribute';
 import {summary as pickAttributeSummaryResolver} from '../graph/kinds/pickAttribute';
@@ -317,10 +351,13 @@ import {selected as statsAttributeSelectedResolver} from '../graph/kinds/statsAt
 import {summary as statsAttributeSummaryResolver} from '../graph/kinds/statsAttribute';
 import {TraitsAttribute as traitsAttributeRelayModelInstanceResolver} from '../graph/kinds/traitsAttribute';
 import {color as traitsAttributeColorResolver} from '../graph/kinds/traitsAttribute';
+import {count as traitsAttributeCountResolver} from '../graph/kinds/traitsAttribute';
 import {edited as traitsAttributeEditedResolver} from '../graph/kinds/traitsAttribute';
 import {key as traitsAttributeKeyResolver} from '../graph/kinds/traitsAttribute';
 import {label as traitsAttributeLabelResolver} from '../graph/kinds/traitsAttribute';
 import {locked as traitsAttributeLockedResolver} from '../graph/kinds/traitsAttribute';
+import {multiple as traitsAttributeMultipleResolver} from '../graph/kinds/traitsAttribute';
+import {options as traitsAttributeOptionsResolver} from '../graph/kinds/traitsAttribute';
 import {selected as traitsAttributeSelectedResolver} from '../graph/kinds/traitsAttribute';
 import {summary as traitsAttributeSummaryResolver} from '../graph/kinds/traitsAttribute';
 import {attribute as queryAttributeResolver} from '../graph/root';
@@ -1409,6 +1446,24 @@ return {
               "kind": "InlineFragment",
               "selections": [
                 {
+                  "alias": null,
+                  "args": null,
+                  "fragment": (v4/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "name": "multiple",
+                  "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeMultipleResolver, '__relay_model_instance', true),
+                  "path": "attribute.multiple"
+                },
+                {
+                  "alias": null,
+                  "args": null,
+                  "fragment": (v4/*:: as any*/),
+                  "kind": "RelayLiveResolver",
+                  "name": "count",
+                  "resolverModule": resolverDataInjector(PickAttribute____relay_model_instance_graphql, pickAttributeCountResolver, '__relay_model_instance', true),
+                  "path": "attribute.count"
+                },
+                {
                   "kind": "ClientEdgeToClientObject",
                   "concreteType": "AttributeOption",
                   "modelResolvers": null,
@@ -1651,6 +1706,48 @@ return {
                 {
                   "alias": null,
                   "args": null,
+                  "fragment": (v10/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "name": "multiple",
+                  "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeMultipleResolver, '__relay_model_instance', true),
+                  "path": "attribute.multiple"
+                },
+                {
+                  "alias": null,
+                  "args": null,
+                  "fragment": (v10/*:: as any*/),
+                  "kind": "RelayLiveResolver",
+                  "name": "count",
+                  "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeCountResolver, '__relay_model_instance', true),
+                  "path": "attribute.count"
+                },
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "concreteType": "AttributeOption",
+                  "modelResolvers": null,
+                  "serverObjectOperations": null,
+                  "backingField": {
+                    "alias": null,
+                    "args": null,
+                    "fragment": (v10/*:: as any*/),
+                    "kind": "RelayLiveResolver",
+                    "name": "options",
+                    "resolverModule": resolverDataInjector(TraitsAttribute____relay_model_instance_graphql, traitsAttributeOptionsResolver, '__relay_model_instance', true),
+                    "path": "attribute.options",
+                    "normalizationInfo": (v11/*:: as any*/)
+                  },
+                  "linkedField": (v13/*:: as any*/)
+                }
+              ],
+              "type": "TraitsAttribute",
+              "abstractKey": null
+            },
+            {
+              "kind": "InlineFragment",
+              "selections": [
+                {
+                  "alias": null,
+                  "args": null,
                   "fragment": (v8/*:: as any*/),
                   "kind": "RelayLiveResolver",
                   "name": "rangeMin",
@@ -1845,6 +1942,22 @@ return {
                 },
                 {
                   "name": "locked",
+                  "args": null,
+                  "fragment": (v17/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "multiple",
+                  "args": null,
+                  "fragment": (v17/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "count",
                   "args": null,
                   "fragment": (v17/*:: as any*/),
                   "kind": "RelayResolver",
@@ -2446,6 +2559,34 @@ return {
                   "storageKey": null,
                   "isOutputType": true
                 },
+                {
+                  "name": "multiple",
+                  "args": null,
+                  "fragment": (v34/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "count",
+                  "args": null,
+                  "fragment": (v34/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "kind": "ClientEdgeToClientObject",
+                  "backingField": {
+                    "name": "options",
+                    "args": null,
+                    "fragment": (v34/*:: as any*/),
+                    "kind": "RelayResolver",
+                    "storageKey": null,
+                    "isOutputType": true
+                  },
+                  "linkedField": (v27/*:: as any*/)
+                },
                 (v15/*:: as any*/)
               ],
               "type": "TraitsAttribute",
@@ -2479,6 +2620,6 @@ return {
 };
 })();
 
-(node as any).hash = "bf32ae802f9828bc3fc6d5514ae7d1be";
+(node as any).hash = "01c67fde990f4e5119957e0e678ecc0f";
 
 export default node;
