@@ -646,7 +646,6 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   display: flex;
   gap: 4px;
   margin-top: 3px;
-  padding-left: 17px;
 }
 .chip-nested {
   flex-shrink: 0;

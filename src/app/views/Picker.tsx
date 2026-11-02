@@ -127,22 +127,27 @@ export function Picker() {
                 className="chip press-soft"
                 style={{ '--chip': attribute.color } as CSSProperties}
               >
+                {/* The dot stays centred where it always is; only the text column beside it
+                    makes room when 완전 종속 속성 tags join it underneath. */}
                 <span className="flex items-center gap-2 pr-6">
                   <Dot color={attribute.color} size={9} />
-                  <span className="text-[14px] font-semibold">{attribute.label}</span>
-                  {attribute.locked ? <LockIcon locked aria-label="잠김" width={12} height={12} className="-ml-0.5 shrink-0 opacity-70" /> : null}
-                  {attribute.enabledCount !== null ? <span className="sr-only">, 값 {attribute.enabledCount}개 켜짐</span> : null}
-                </span>
-                {/* Under the label, not beside it — a second line that belongs to this chip. */}
-                {nestedIn(attribute.key).length > 0 ? (
-                  <span className="chip-nest">
-                    {nestedIn(attribute.key).map((child) => (
-                      <span key={child.key} className="chip-nested" style={{ '--nested': child.color } as CSSProperties}>
-                        {child.label}
+                  <span className="flex min-w-0 flex-col">
+                    <span className="flex items-center gap-2">
+                      <span className="text-[14px] font-semibold">{attribute.label}</span>
+                      {attribute.locked ? <LockIcon locked aria-label="잠김" width={12} height={12} className="-ml-0.5 shrink-0 opacity-70" /> : null}
+                      {attribute.enabledCount !== null ? <span className="sr-only">, 값 {attribute.enabledCount}개 켜짐</span> : null}
+                    </span>
+                    {nestedIn(attribute.key).length > 0 ? (
+                      <span className="chip-nest">
+                        {nestedIn(attribute.key).map((child) => (
+                          <span key={child.key} className="chip-nested" style={{ '--nested': child.color } as CSSProperties}>
+                            {child.label}
+                          </span>
+                        ))}
                       </span>
-                    ))}
+                    ) : null}
                   </span>
-                ) : null}
+                </span>
                 {/* How many of its values are on: big and faint behind the label, cut off by the chip's edge.
                     After the label: the off-chip dimming rule finds the dot as the first child's first child. */}
                 {attribute.enabledCount !== null ? (
