@@ -9,7 +9,7 @@ import { Shell } from './app/Shell'
  *                     &group=fantasy → 묶음 하나의 값들(세계관별 직업), &add=true → 값 추가 화면)
  *   /shake?a=…&n=이름  흔들기 — 뽑을 속성과 이름이 URL에 실린다
  *   /result?k=<key>   결과 — 롤 키 하나가 캐릭터 전체를 재현한다 (공유 가능)
- *   /saved            보관함
+ *   /saved            보관함 (?f=<폴더 id> → 그 폴더만)
  */
 const rootRoute = createRootRoute({ component: Shell })
 
@@ -42,7 +42,13 @@ const resultRoute = createRoute({
   }),
 })
 
-const savedRoute = createRoute({ getParentRoute: () => rootRoute, path: '/saved' })
+const savedRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/saved',
+  validateSearch: (search: Record<string, unknown>): { f?: string | undefined } => ({
+    f: typeof search['f'] === 'string' && search['f'] !== '' ? search['f'] : undefined,
+  }),
+})
 
 export const router = createRouter({
   routeTree: rootRoute.addChildren([indexRoute, shakeRoute, resultRoute, savedRoute]),

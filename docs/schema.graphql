@@ -93,6 +93,10 @@ type Query {
   selectedAttributes: [Attribute!]! @live
   roll(key: String!): Roll
   saved: [SavedEntry!]! @live
+  """
+  보관함's folders, in the order they were made.
+  """
+  folders: [SavedFolder!]! @live
 }
 
 type App {
@@ -436,6 +440,19 @@ type RollEntry @weak {
 type SavedEntry @weak {
   roll: Roll
   savedAt: String!
+  """
+  The folder it is filed in — its id — or null when it is only under 전체.
+  """
+  folder: String
+}
+
+type SavedFolder @weak {
+  key: String!
+  name: String!
+  """
+  How many saved characters are filed in it.
+  """
+  count: Int! @live
 }
 
 """

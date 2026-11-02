@@ -36,3 +36,6 @@ export const LockIcon = ({ locked, ...p }: SVGProps<SVGSVGElement> & { locked?: 
     <path d={locked ? 'M8 11V8a4 4 0 0 1 8 0v3' : 'M8 11V8a4 4 0 0 1 7.6-1.8'} />
   </svg>
 )
+export const FolderIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h3.6l2 2.2h7.4A2.5 2.5 0 0 1 21 9.7v7.8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z" /></svg>
+)

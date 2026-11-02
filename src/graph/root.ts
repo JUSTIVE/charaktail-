@@ -3,7 +3,7 @@ import type { DataID } from 'relay-runtime'
 import { attributeRef } from './refs'
 import { catalog } from '../domain/catalog/index'
 import { decodeRollKey } from '../domain/roll'
-import { savedCell, type SavedCharacter } from '../state/saved'
+import { foldersCell, savedCell, type SavedCharacter, type SavedFolder as SavedFolderRecord } from '../state/saved'
 import { selectionCell } from '../state/selection'
 
 /*
@@ -81,3 +81,20 @@ export function saved() {
 export type SavedEntry = SavedCharacter
 
 export const SavedEntry = undefined as unknown as SavedEntry
+
+/**
+ * 보관함's folders, in the order they were made.
+ * @relayField Query.folders: [SavedFolder!]!
+ * @live
+ */
+export function folders() {
+  return foldersCell.live((list) => [...list])
+}
+
+/**
+ * @relayType SavedFolder
+ * @weak
+ */
+export type SavedFolder = SavedFolderRecord
+
+export const SavedFolder = undefined as unknown as SavedFolder

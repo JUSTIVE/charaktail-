@@ -25,9 +25,22 @@ export const SavedCharacter = z.object({
   /** A roll key — the catalogue re-derives everything else. */
   key: z.string().min(1),
   savedAt: z.number(),
+  /** The folder it is filed in; unset, it is only under 전체. */
+  folder: z.string().min(1).optional(),
 })
 export type SavedCharacter = z.infer<typeof SavedCharacter>
 export const SavedList = z.array(SavedCharacter)
+
+export const FOLDER_NAME_MAX = 20
+
+/** A folder in 보관함: a name the player gives a few saved characters. */
+export const SavedFolder = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(FOLDER_NAME_MAX),
+  createdAt: z.number(),
+})
+export type SavedFolder = z.infer<typeof SavedFolder>
+export const FolderList = z.array(SavedFolder)
 
 /**
  * The stage's choreography, as the UI sees it.

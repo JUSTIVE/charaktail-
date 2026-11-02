@@ -578,6 +578,65 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   opacity: 0.12;
 }
 
+/* 보관함 folders: one row of pills that scrolls sideways. */
+.folder-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  margin-inline: -4px;
+  padding: 2px 4px;
+}
+.folder-strip::-webkit-scrollbar {
+  display: none;
+}
+.folder-pill {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  background: oklch(1 0 0 / 0.03);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--color-muted);
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.folder-pill[aria-selected='true'] {
+  color: var(--color-night);
+  background: var(--color-ink);
+  border-color: transparent;
+}
+.folder-pill-add {
+  border-style: dashed;
+}
+/* Moving a saved character: an icon over an invisible native select. */
+.folder-move {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  color: var(--color-faint);
+}
+.folder-move[data-filed] {
+  color: var(--color-ink);
+}
+.folder-move select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  font-size: 16px;
+}
+
 /* Kebab on a chip: a sibling pinned to the chip's corner. */
 .chip-kebab {
   /* Above the chip's tap layer (HapticTap). */

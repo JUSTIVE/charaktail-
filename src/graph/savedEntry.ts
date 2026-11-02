@@ -15,3 +15,11 @@ export function savedAt(entry: SavedEntry): string {
     entry.savedAt,
   )
 }
+
+/**
+ * The folder it is filed in — its id — or null when it is only under 전체.
+ * @relayField SavedEntry.folder: String
+ */
+export function folder(entry: SavedEntry): string | null {
+  return entry.folder ?? null
+}
