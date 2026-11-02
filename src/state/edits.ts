@@ -89,6 +89,11 @@ export function setCount(attributeId: string, count: number): string | null {
   return null
 }
 
+/** 외형 특징 with no cap again: every one that hits comes out. */
+export function clearCount(attributeId: string): void {
+  patch(attributeId, ({ count: _, ...rest }) => rest)
+}
+
 /** Returns why the bounds were refused, or null when they were set. */
 export function setRange(attributeId: string, min: number, max: number): string | null {
   const attribute = catalog.byId.get(attributeId)

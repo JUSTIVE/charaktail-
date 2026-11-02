@@ -1,9 +1,10 @@
+import NumberFlow from '@number-flow/react'
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import { graphql } from 'relay-runtime'
 
 import { useLocalQuery } from '../../graph/useLocalQuery'
 
-import { addOption, removeOption, resetAttribute, setCount, setOptionsEnabled, setRange, toggleOption } from '../../state/edits'
+import { addOption, clearCount, removeOption, resetAttribute, setCount, setOptionsEnabled, setRange, toggleOption } from '../../state/edits'
 import { router } from '../../router'
 import { haptic } from '../../stage/haptics'
 import { BackIcon, PlusIcon, TrashIcon } from '../icons'
@@ -436,36 +437,66 @@ function SpeciesPreview({ label, color, ranges }: { label: string; color: string
 
 /**
  * How many come out at once. A pick draws exactly this many; 외형 특징 rolls
- * each feature on its own odds and keeps at most this many — unset, all
- * that hit.
+ * each feature on its own odds and keeps at most this many — or, with
+ * 무제한, every one that hits.
  */
 function CountEditor({ attributeId, count, capped, enabled, color }: { attributeId: string; count: number | null; capped: boolean; enabled: number; color: string }) {
   const [error, setError] = useState<string | null>(null)
+  const unlimited = capped && count === null
   const current = Math.min(count ?? enabled, enabled)
-  const step = (by: number) => {
+  // The cap to come back to when 무제한 is switched off again.
+  const [lastCap, setLastCap] = useState(current)
+  const set = (n: number) => {
     haptic.select()
-    setError(setCount(attributeId, current + by))
+    const problem = setCount(attributeId, n)
+    setError(problem)
+    if (!problem) setLastCap(n)
   }
-  const label = capped ? (count === null || current >= enabled ? '제한 없음' : `최대 ${current}개`) : `${current}개씩`
+  const toggleUnlimited = () => {
+    if (unlimited) return set(Math.min(lastCap, enabled))
+    haptic.select()
+    setError(null)
+    clearCount(attributeId)
+  }
   return (
     <div className="ms-seq space-y-2" style={seq(2)}>
-      <div className="flex items-center gap-2">
-        <p className="eyebrow flex-1">{capped ? '함께 나오는 개수' : '뽑는 개수'}</p>
-        <Button variant="ghost" aria-label="하나 줄이기" className="aspect-square px-0 py-1.5 text-[16px]" disabled={current <= 1} onClick={() => step(-1)}>
+      <p className="eyebrow">{capped ? '함께 나오는 개수' : '뽑는 개수'}</p>
+      <div className="flex items-center gap-1.5">
+        <Button variant="ghost" aria-label="하나 줄이기" className="aspect-square px-0 py-1.5 text-[16px]" disabled={current <= 1} onClick={() => set(current - 1)}>
           −
         </Button>
-        <p className="tnum min-w-[5.5em] text-center text-[15px] font-semibold" style={{ color }} aria-live="polite">
-          {label}
+        <p
+          className="tnum min-w-[4.5em] text-center text-[15px] font-semibold transition-opacity duration-200"
+          style={{ color, opacity: unlimited ? 0.4 : 1 }}
+          aria-label={unlimited ? '무제한' : capped ? `최대 ${current}개` : `${current}개씩`}
+        >
+          {capped ? '최대 ' : null}
+          <NumberFlow value={current} className="tnum" />
+          {capped ? '개' : '개씩'}
         </p>
-        <Button variant="ghost" aria-label="하나 늘리기" className="aspect-square px-0 py-1.5 text-[16px]" disabled={current >= enabled} onClick={() => step(1)}>
+        <Button variant="ghost" aria-label="하나 늘리기" className="aspect-square px-0 py-1.5 text-[16px]" disabled={current >= enabled} onClick={() => set(current + 1)}>
           +
         </Button>
+        {capped ? (
+          <Button
+            aria-pressed={unlimited}
+            onClick={toggleUnlimited}
+            className="ml-auto px-3 py-1.5 text-[13px]"
+            style={unlimited ? { borderColor: color, color, background: `color-mix(in srgb, ${color} 14%, transparent)` } : undefined}
+          >
+            무제한
+          </Button>
+        ) : null}
       </div>
       {error ? (
         <p className="text-[12px] text-[#ff977d]">{error}</p>
       ) : (
         <p className="text-[12px] text-faint">
-          {capped ? '특징마다 나올 확률이 따로 있어요. 이보다 많이 걸리면 그중 몇 개만 남겨요.' : `켜진 값 ${enabled}개 중에서 겹치지 않게 뽑아요.`}
+          {!capped
+            ? `켜진 값 ${enabled}개 중에서 겹치지 않게 뽑아요.`
+            : unlimited
+              ? '특징마다 나올 확률이 따로 있어서, 걸리는 만큼 모두 나와요.'
+              : `특징마다 나올 확률이 따로 있어요. ${current}개보다 많이 걸리면 그중 ${current}개만 남겨요.`}
         </p>
       )}
     </div>
