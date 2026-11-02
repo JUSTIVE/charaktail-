@@ -22,6 +22,7 @@ export default defineAttribute({
     '곱슬머리',
     '웨이브',
     { label: '버즈컷', weight: 0.6 },
+    { label: '대머리', weight: 0.4, hint: '빛이 나는 두피' },
     { label: '눈을 가리는 앞머리', weight: 0.8 },
     { label: '삐친 머리 한 가닥', weight: 0.6, hint: '아무리 정리해도 다시 선다' },
   ],
