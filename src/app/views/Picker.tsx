@@ -231,7 +231,13 @@ export function Picker() {
                     개의 캐릭터 중 하나 뽑기
                   </span>
                 ) : (
-                  <span>흔들어서 셀 수 없이 많은 캐릭터 중 하나 뽑기</span>
+                  <span className="whitespace-nowrap text-[clamp(12.5px,3.55vw,14px)] tracking-[-0.01em] [word-break:keep-all]">
+                    흔들어서{' '}
+                    <span className="cta-count" style={{ '--hl': highlight } as CSSProperties}>
+                      셀 수 없이 많은
+                    </span>{' '}
+                    캐릭터 중 하나 뽑기
+                  </span>
                 )}
               </span>
             </Button>
