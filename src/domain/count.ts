@@ -27,7 +27,7 @@ function spanSize(attribute: Range, speciesId: string | null): number {
   const min = override?.min ?? attribute.min
   const max = override?.max ?? attribute.max
   const step = override?.step ?? attribute.step
-  return Math.max(1, Math.floor((max - min) / step) + 1)
+  return Math.max(1, Math.floor((max - min) / step + 1e-9) + 1)
 }
 
 /** How many ways one attribute can come out, on its own. */

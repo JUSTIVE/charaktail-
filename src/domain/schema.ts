@@ -153,6 +153,8 @@ const RangeAttribute = z.object({
    * blank the attribute's 'cm' and an unset distribution flatten its bell.
    */
   cases: z.array(z.object({ when: Condition, ...CaseSpec.shape })).default([]),
+  /** The player may switch on one decimal place — 172.4cm. */
+  decimalToggle: z.boolean().default(false),
 })
 
 /** A day of the year — 생일. With `zodiac`, the detail names its star sign. */

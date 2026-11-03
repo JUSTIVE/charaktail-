@@ -191,6 +191,16 @@ export function rangeMax(attribute: AttributeRecord) {
   return editsCell.live((edits) => bounded(attribute, edits).max)
 }
 
+/** Whether the player may switch on one decimal place. */
+export function decimalToggle(attribute: AttributeRecord): boolean {
+  return attribute.kind === 'range' && attribute.decimalToggle
+}
+
+/** Whether it is rolled to one decimal place now. */
+export function decimal(attribute: AttributeRecord) {
+  return editsCell.live((edits) => attribute.kind === 'range' && attribute.decimalToggle && !!edits[attribute.id]?.decimal)
+}
+
 export function unit(attribute: AttributeRecord): string {
   if (attribute.kind !== 'range') throw new Error(`${attribute.id} is not a range`)
   return attribute.unit

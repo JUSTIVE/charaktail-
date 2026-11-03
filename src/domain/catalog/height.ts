@@ -13,6 +13,7 @@ export default defineAttribute({
   max: 195,
   unit: 'cm',
   distribution: 'normal',
+  decimalToggle: true,
   bands: [
     { upTo: 158, label: '작은 편' },
     { upTo: 178, label: '평균' },

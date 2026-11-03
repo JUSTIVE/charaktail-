@@ -102,6 +102,19 @@ export { rangeMax } from '../attributeFields'
 export { unit } from '../attributeFields'
 
 /**
+ * Whether the player may switch on one decimal place — 키.
+ * @relayField RangeAttribute.decimalToggle: Boolean!
+ */
+export { decimalToggle } from '../attributeFields'
+
+/**
+ * Rolled to one decimal place now.
+ * @relayField RangeAttribute.decimal: Boolean!
+ * @live
+ */
+export { decimal } from '../attributeFields'
+
+/**
  * Whether species (or another attribute) change the span by default.
  * @relayField RangeAttribute.hasCases: Boolean!
  */

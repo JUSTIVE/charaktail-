@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { defineCatalog } from './catalog'
 import { catalog } from './catalog/index'
+import { countCharacters } from './count'
 import { decodeRollKey, encodeRollKey, rollCharacter } from './roll'
 import { type AttributeOf, defineAttribute } from './schema'
 import { speciesTable } from './catalog/species'
@@ -467,5 +468,29 @@ describe('generated kinds', () => {
     const [v] = rollCharacter(catalog, { seed: 'e1', attributeIds: ['epithet'] })
     expect(v!.label.split(' ').length).toBeGreaterThanOrEqual(2)
     expect(v!.valueIds).toHaveLength(2)
+  })
+})
+
+describe('decimal 키', () => {
+  const edits = { height: { disabled: [], removed: [], added: [], decimal: true } }
+
+  test('rolls to one decimal place within every species span, and rides in the roll key', () => {
+    const decimals = new Set<string>()
+    for (let i = 0; i < 300; i++) {
+      const request = { seed: `h${i}`, attributeIds: ['world', 'species', 'height'], edits }
+      const values = rollCharacter(catalog, decodeRollKey(encodeRollKey(request))!)
+      const height = values.find((v) => v.attributeId === 'height')!
+      expect(height.label).toMatch(/^\d+\.\dcm$/)
+      decimals.add(height.label.slice(-3, -2))
+    }
+    expect(decimals.size).toBeGreaterThan(5)
+  })
+
+  test('whole numbers without it; ten times the ways with it', () => {
+    const [v] = rollCharacter(catalog, { seed: 'h', attributeIds: ['height'] })
+    expect(v!.label).toMatch(/^\d+cm$/)
+    // 145–195: 51 whole numbers, 501 tenths.
+    expect(countCharacters(catalog, {}, ['height'])).toBe(51)
+    expect(countCharacters(catalog, edits, ['height'])).toBe(501)
   })
 })

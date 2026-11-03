@@ -438,6 +438,14 @@ type RangeAttribute implements AttributeBase & BoundedAttribute {
   rangeMax: Float! @live
   unit: String!
   """
+  Whether the player may switch on one decimal place — 키.
+  """
+  decimalToggle: Boolean!
+  """
+  Rolled to one decimal place now.
+  """
+  decimal: Boolean! @live
+  """
   Whether species (or another attribute) change the span by default.
   """
   hasCases: Boolean!

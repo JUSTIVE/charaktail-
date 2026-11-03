@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<c87f0d93e0434a1547e0aad4c2c4acfe>>
+ * @generated SignedSource<<44728dd0637d70f3878dd78ea47e6386>>
  * @lightSyntaxTransform
  */
 
@@ -124,6 +124,18 @@ import { attribute as queryAttributeResolverType } from "../graph/root";
   readonly __typename: "ColorAttribute" | "ComposeAttribute" | "DateAttribute" | "PickAttribute" | "RangeAttribute" | "StatsAttribute" | "TraitsAttribute";
   readonly id: DataID;
 } | null | undefined);
+import { decimal as rangeAttributeDecimalResolverType } from "../graph/kinds/rangeAttribute";
+// Type assertion validating that `rangeAttributeDecimalResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(rangeAttributeDecimalResolverType satisfies (
+  __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<boolean>);
+import { decimalToggle as rangeAttributeDecimalToggleResolverType } from "../graph/kinds/rangeAttribute";
+// Type assertion validating that `rangeAttributeDecimalToggleResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(rangeAttributeDecimalToggleResolverType satisfies (
+  __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
+) => boolean);
 import { dependsOnSpecies as rangeAttributeDependsOnSpeciesResolverType } from "../graph/kinds/rangeAttribute";
 // Type assertion validating that `rangeAttributeDependsOnSpeciesResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -235,6 +247,8 @@ export type ValuesSheetQuery$data = {
   readonly attribute: {
     readonly __typename: string;
     readonly count?: number | null | undefined;
+    readonly decimal?: boolean;
+    readonly decimalToggle?: boolean;
     readonly dependsOnSpecies?: boolean;
     readonly groupBy?: {
       readonly key: string;
@@ -334,6 +348,8 @@ import {selected as pickAttributeSelectedResolver} from '../graph/kinds/pickAttr
 import {summary as pickAttributeSummaryResolver} from '../graph/kinds/pickAttribute';
 import {RangeAttribute as rangeAttributeRelayModelInstanceResolver} from '../graph/kinds/rangeAttribute';
 import {color as rangeAttributeColorResolver} from '../graph/kinds/rangeAttribute';
+import {decimal as rangeAttributeDecimalResolver} from '../graph/kinds/rangeAttribute';
+import {decimalToggle as rangeAttributeDecimalToggleResolver} from '../graph/kinds/rangeAttribute';
 import {dependsOnSpecies as rangeAttributeDependsOnSpeciesResolver} from '../graph/kinds/rangeAttribute';
 import {edited as rangeAttributeEditedResolver} from '../graph/kinds/rangeAttribute';
 import {hasCases as rangeAttributeHasCasesResolver} from '../graph/kinds/rangeAttribute';
@@ -1984,6 +2000,24 @@ return {
                   "args": null,
                   "fragment": (v8/*:: as any*/),
                   "kind": "RelayResolver",
+                  "name": "decimalToggle",
+                  "resolverModule": resolverDataInjector(RangeAttribute____relay_model_instance_graphql, rangeAttributeDecimalToggleResolver, '__relay_model_instance', true),
+                  "path": "attribute.decimalToggle"
+                },
+                {
+                  "alias": null,
+                  "args": null,
+                  "fragment": (v8/*:: as any*/),
+                  "kind": "RelayLiveResolver",
+                  "name": "decimal",
+                  "resolverModule": resolverDataInjector(RangeAttribute____relay_model_instance_graphql, rangeAttributeDecimalResolver, '__relay_model_instance', true),
+                  "path": "attribute.decimal"
+                },
+                {
+                  "alias": null,
+                  "args": null,
+                  "fragment": (v8/*:: as any*/),
+                  "kind": "RelayResolver",
                   "name": "dependsOnSpecies",
                   "resolverModule": resolverDataInjector(RangeAttribute____relay_model_instance_graphql, rangeAttributeDependsOnSpeciesResolver, '__relay_model_instance', true),
                   "path": "attribute.dependsOnSpecies"
@@ -2620,6 +2654,22 @@ return {
                   "isOutputType": true
                 },
                 {
+                  "name": "decimalToggle",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
+                  "name": "decimal",
+                  "args": null,
+                  "fragment": (v33/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
+                {
                   "name": "dependsOnSpecies",
                   "args": null,
                   "fragment": (v33/*:: as any*/),
@@ -2898,6 +2948,6 @@ return {
 };
 })();
 
-(node as any).hash = "01c67fde990f4e5119957e0e678ecc0f";
+(node as any).hash = "bcf7453974d41e3dfe1d1740f80b92a9";
 
 export default node;

@@ -139,7 +139,8 @@ export const generators: { [K in AttributeKind]: Generator<K> } = {
     const override = caseFor(attribute.cases, ctx.rolled)
     const spec = { ...attribute, ...stripUndefined(override ?? {}) }
     const t = spec.distribution === 'normal' ? bell(ctx.rng) : ctx.rng()
-    const steps = Math.floor((spec.max - spec.min) / spec.step)
+    // The epsilon keeps 0.1 steps whole: (150 - 110) / 0.1 is 399.99… in floats.
+    const steps = Math.floor((spec.max - spec.min) / spec.step + 1e-9)
     const value = spec.min + Math.min(Math.floor(t * (steps + 1)), steps) * spec.step
     const band = spec.bands?.find((b) => value <= b.upTo)
     const number = Number.isInteger(spec.step) ? String(value) : value.toFixed(1)

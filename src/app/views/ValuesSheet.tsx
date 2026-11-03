@@ -5,7 +5,7 @@ import { graphql } from 'relay-runtime'
 import { ADDED_TRAIT_CHANCE } from '../../domain/edits'
 import { useLocalQuery } from '../../graph/useLocalQuery'
 
-import { addOption, clearCount, editOption, removeOption, resetAttribute, setCount, setOptionsEnabled, setRange, toggleOption } from '../../state/edits'
+import { addOption, clearCount, editOption, removeOption, resetAttribute, setCount, setOptionsEnabled, setDecimal, setRange, toggleOption } from '../../state/edits'
 import { router } from '../../router'
 import { haptic } from '../../stage/haptics'
 import { BackIcon, PlusIcon, TrashIcon } from '../icons'
@@ -118,6 +118,8 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
             rangeMax
             unit
             hasCases
+            decimalToggle
+            decimal
             dependsOnSpecies
             speciesRanges {
               speciesKey
@@ -219,6 +221,8 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
             min={range.rangeMin ?? 0}
             max={range.rangeMax ?? 0}
             unit={range.unit ?? ''}
+            color={attribute.color ?? '#888'}
+            decimal={range.decimalToggle ? (range.decimal ?? false) : null}
             note={range.hasCases ? '종족 없이 뽑을 때의 범위예요. 종족마다의 범위는 종족 목록에서 그 종족을 눌러 바꿔요.' : null}
           />
           {/* Only while this range is locked: its value stays put through
@@ -365,6 +369,8 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
           min={bounds.min}
           max={bounds.max}
           unit=""
+          color={attribute.color ?? '#888'}
+          decimal={null}
           note="능력치마다 이 범위 안에서 뽑아요. 대부분은 중간쯤, 가끔 뛰어난 게 나와요."
         />
       ) : null}
@@ -570,12 +576,17 @@ function RangeEditor({
   min,
   max,
   unit,
+  color,
+  decimal,
   note,
 }: {
   attributeId: string
   min: number
   max: number
   unit: string
+  color: string
+  /** null: this range has no decimal switch. */
+  decimal: boolean | null
   note: string | null
 }) {
   const [low, setLow] = useState(String(min))
@@ -588,6 +599,10 @@ function RangeEditor({
     setHigh(String(max))
   }, [min, max])
   const apply = () => setError(setRange(attributeId, Number(low), Number(high)))
+  const toggleDecimal = () => {
+    haptic.select()
+    setDecimal(attributeId, !decimal)
+  }
 
   const field = (label: string, value: string, set: (v: string) => void) => (
     <label className="name-field min-w-0 flex-1 gap-2 px-3">
@@ -620,6 +635,27 @@ function RangeEditor({
         {field('최대', high, setHigh)}
       </div>
       {error ? <p className="text-[12px] text-[#ff977d]">{error}</p> : note ? <p className="text-[12px] text-faint">{note}</p> : null}
+      {decimal !== null ? (
+        <div className="values-row">
+          <span className="min-w-0 flex-1">
+            <span className="block text-[14px] font-medium">소수점 한 자리</span>
+            <span className="tnum block text-[11.5px] text-faint">{decimal ? `172.4${unit}처럼 뽑아요` : `172${unit}처럼 정수로 뽑아요`}</span>
+          </span>
+          <HapticTap className="haptic-inline" onTap={toggleDecimal}>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={decimal}
+              aria-label={`소수점 한 자리 ${decimal ? '끄기' : '켜기'}`}
+              onClick={toggleDecimal}
+              className="switch"
+              style={{ '--switch-on': color } as CSSProperties}
+            >
+              <span />
+            </button>
+          </HapticTap>
+        </div>
+      ) : null}
     </div>
   )
 }

@@ -65,6 +65,8 @@ export const AttributeEdits = z.object({
   /** Range attributes only: the player's own bounds, over every case. */
   min: z.number().finite().optional(),
   max: z.number().finite().optional(),
+  /** Range attributes with `decimalToggle`: rolled to one decimal place. */
+  decimal: z.boolean().optional(),
   /** Several-at-once kinds: how many a pick draws, or the most 외형 특징 that come out together. */
   count: z.number().int().positive().optional(),
   /** Shipped value id → the player's change to it. */
@@ -78,7 +80,7 @@ export type Edits = z.infer<typeof Edits>
 export function isEdited(edits: AttributeEdits | undefined): boolean {
   return (
     !!edits &&
-    (edits.disabled.length > 0 || edits.removed.length > 0 || edits.added.length > 0 || edits.min !== undefined || edits.max !== undefined || edits.count !== undefined || Object.keys(edits.changed ?? {}).length > 0)
+    (edits.disabled.length > 0 || edits.removed.length > 0 || edits.added.length > 0 || edits.min !== undefined || edits.max !== undefined || edits.count !== undefined || edits.decimal !== undefined || Object.keys(edits.changed ?? {}).length > 0)
   )
 }
 
@@ -225,12 +227,14 @@ export function applyAttributeEdits(base: Attribute, edits: AttributeEdits | und
   if (!isEdited(edits)) return base
   const attribute = applyChanges(base, edits!.changed)
   if (attribute.kind === 'range') {
+    // One decimal place reaches every case too: a species keeps its span, not its step.
+    const stepped = edits!.decimal && attribute.decimalToggle ? { ...attribute, step: 0.1 } : attribute
     const min = edits!.min ?? attribute.min
     const max = edits!.max ?? attribute.max
-    if ((edits!.min === undefined && edits!.max === undefined) || min > max) return attribute
+    if ((edits!.min === undefined && edits!.max === undefined) || min > max) return stepped
     // The player's bounds are for when no species decides: a rolled species
     // keeps its own span (#142) — change that on the species itself.
-    return { ...attribute, min, max }
+    return { ...stepped, min, max }
   }
   if (attribute.kind !== 'pick' && attribute.kind !== 'color' && attribute.kind !== 'compose' && attribute.kind !== 'stats' && attribute.kind !== 'traits') return attribute
   const drop = new Set([...edits!.disabled, ...edits!.removed])
@@ -351,6 +355,8 @@ type Packed = Record<
     x?: number | undefined
     /** How many come out — a pick's draw, or the 외형 특징 cap. */
     c?: number | undefined
+    /** 1: a range rolled to one decimal place. */
+    t?: 1 | undefined
     /** Added option id → the group it was added under. */
     g?: Record<string, string> | undefined
     /** Added option id → compose part, when not the first. */
@@ -383,6 +389,7 @@ export function packEdits(edits: Edits, attributeIds: readonly string[], keyOf: 
       ...(e!.min !== undefined ? { n: e!.min } : {}),
       ...(e!.max !== undefined ? { x: e!.max } : {}),
       ...(e!.count !== undefined ? { c: e!.count } : {}),
+      ...(e!.decimal ? { t: 1 as const } : {}),
       ...(Object.keys(e!.changed ?? {}).length ? { o: e!.changed } : {}),
       ...(e!.added.some((o) => o.group)
         ? { g: Object.fromEntries(e!.added.flatMap((o) => (o.group ? [[o.id, o.group]] : []))) }
@@ -443,6 +450,7 @@ export function unpackEdits(text: string, idOf: (key: string) => string = (key) 
           ...(p.n !== undefined ? { min: p.n } : {}),
           ...(p.x !== undefined ? { max: p.x } : {}),
           ...(p.c !== undefined ? { count: p.c } : {}),
+          ...(p.t ? { decimal: true } : {}),
           ...(p.o ? { changed: p.o } : {}),
         },
       ]),

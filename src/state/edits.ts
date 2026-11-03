@@ -157,6 +157,14 @@ export function clearCount(attributeId: string): void {
 }
 
 /** Returns why the bounds were refused, or null when they were set. */
+/** One decimal place on, for a range that allows it (키). */
+export function setDecimal(attributeId: string, on: boolean): void {
+  patch(attributeId, (e) => {
+    const { decimal: _, ...rest } = e
+    return on ? { ...rest, decimal: true } : rest
+  })
+}
+
 export function setRange(attributeId: string, min: number, max: number): string | null {
   const attribute = catalog.byId.get(attributeId)
   if (!attribute || (attribute.kind !== 'range' && attribute.kind !== 'stats')) return '범위 속성이 아니에요.'
