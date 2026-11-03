@@ -561,7 +561,7 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   position: absolute;
   z-index: -1;
   right: 34px;
-  bottom: -0.32em;
+  bottom: -0.62em;
   font-size: 46px;
   font-weight: 800;
   line-height: 1;
@@ -579,6 +579,7 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
 }
 .chip[aria-pressed='true'] .chip-count {
   opacity: 0.26;
+  transform: scale(1.2);
 }
 /* Off chips are dark: the numeral goes grey and recedes — smaller,
    out of focus, fainter — as if it sat further back. */
