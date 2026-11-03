@@ -35,6 +35,8 @@ const SHAKE_FLOOR = 12
 /** m/s² above the floor that fill the charge in one second. */
 const SHAKE_RATE = 20
 const ATLAS_CELL = 256
+/** Ball counts worth compiling ahead — more chips than the catalogue has. */
+const MAX_WARM = 40
 /** A result listens for a re-roll only after this long on screen… */
 const REARM_AFTER = 1.5
 /** …and this long without a hard shake. */
@@ -76,6 +78,11 @@ export class Stage {
   private readonly atlasCanvas = document.createElement('canvas')
   private atlasSpecs: readonly BallSpec[] = []
   private u!: StageUniforms
+  /** Compiled materials by ball count, kept: tapping a chip back finds its shader ready (#189). */
+  private readonly materials = new Map<number, { material: ShaderMaterial; u: StageUniforms }>()
+  /** Holds the neighbouring counts' materials while they compile in the background. */
+  private readonly warmScene = new Scene()
+  private warmTimer = 0
   private world = new World()
   private specs = new Map<string, BallSpec>()
   private signature = ''
@@ -141,6 +148,9 @@ export class Stage {
 
   constructor(private canvas: HTMLCanvasElement) {
     this.renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' })
+    // Checking a shader's status waits for its compile to finish, on the main
+    // thread, on every new ball count — ~150ms a chip tap on a slow phone (#189).
+    this.renderer.debug.checkShaderErrors = import.meta.env.DEV
     this.mesh = new Mesh(new PlaneGeometry(2, 2), this.material(0))
     this.scene.add(this.mesh)
 
@@ -266,7 +276,8 @@ export class Stage {
     for (const dispose of this.disposers) dispose()
     this.atlas?.dispose()
     this.shakaTex?.dispose()
-    this.mesh.material.dispose()
+    clearTimeout(this.warmTimer)
+    for (const { material } of this.materials.values()) material.dispose()
     this.mesh.geometry.dispose()
     this.renderer.dispose()
   }
@@ -670,24 +681,50 @@ export class Stage {
     this.checkInk()
     // Ask for exactly these glyphs; draw again once they are in.
     void document.fonts.load(labelFont(64), specs.map((s) => s.label).join('')).then(() => this.redrawLabels())
-    const old = this.mesh.material
     this.mesh.material = this.material(specs.length)
-    old.dispose()
+    this.warm(specs.length)
     const colors = this.u.uColors.value
     specs.forEach((spec, i) => colors[i]!.copy(rgb(spec.color)))
     this.colors = specs.map((spec) => rgb(spec.color))
   }
 
-  /** A material compiled for `count` balls, holding `this.u` by reference. */
+  /** The material for `count` balls, made once and kept; `this.u` becomes its uniforms. */
   private material(count: number): ShaderMaterial {
-    this.u = createUniforms(Math.max(count, 1), this.atlas, this.shakaTex)
-    return new ShaderMaterial({
-      vertexShader,
-      fragmentShader: fragmentShader(count),
-      depthTest: false,
-      depthWrite: false,
-      uniforms: this.u,
-    })
+    const entry = this.materialFor(count)
+    entry.u.uAtlas.value = this.atlas
+    entry.u.uShakaTex.value = this.shakaTex
+    this.u = entry.u
+    return entry.material
+  }
+
+  private materialFor(count: number): { material: ShaderMaterial; u: StageUniforms } {
+    const n = Math.max(count, 1)
+    let entry = this.materials.get(n)
+    if (!entry) {
+      const u = createUniforms(n, this.atlas, this.shakaTex)
+      const material = new ShaderMaterial({ vertexShader, fragmentShader: fragmentShader(n), depthTest: false, depthWrite: false, uniforms: u })
+      entry = { material, u }
+      this.materials.set(n, entry)
+    }
+    return entry
+  }
+
+  /**
+   * One chip more or one fewer is the likeliest next tap: compile those two
+   * counts while nothing is happening, without blocking a frame where the
+   * GPU can compile in parallel (KHR_parallel_shader_compile).
+   */
+  private warm(count: number): void {
+    clearTimeout(this.warmTimer)
+    this.warmTimer = window.setTimeout(() => {
+      const fresh = [count - 1, count + 1].filter((n) => n >= 1 && n <= MAX_WARM && !this.materials.has(n))
+      if (!fresh.length) return
+      for (const n of fresh) this.warmScene.add(new Mesh(this.mesh.geometry, this.materialFor(n).material))
+      void this.renderer
+        .compileAsync(this.warmScene, this.camera)
+        .catch(() => {})
+        .finally(() => this.warmScene.clear())
+    }, 400)
   }
 }
 
