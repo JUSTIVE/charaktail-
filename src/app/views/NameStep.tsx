@@ -58,7 +58,7 @@ export function NameStep() {
       <div className="ms-seq" style={seq(2)}>
         <HapticTap onTap={next} disabled={!ready}>
           <Button type="submit" variant="primary" className="w-full py-3 text-[15px]" disabled={!ready}>
-            다음 — 특성 고르기
+            {ready ? '좋아요, 이 이름으로 할게요' : '이름을 먼저 지어 주세요'}
           </Button>
         </HapticTap>
       </div>
