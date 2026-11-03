@@ -586,7 +586,7 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
 .sheet-head-count {
   position: absolute;
   z-index: -1;
-  left: 120px;
+  right: -4px;
   top: 50%;
   translate: 0 -46%;
   font-size: 84px;
