@@ -37,6 +37,8 @@ const SHAKE_RATE = 20
 const ATLAS_CELL = 256
 /** Ball counts worth compiling ahead — more chips than the catalogue has. */
 const MAX_WARM = 40
+/** Frames longer than this are hitches, left out of the frame-rate average. */
+const HITCH = 0.1
 /** A result listens for a re-roll only after this long on screen… */
 const REARM_AFTER = 1.5
 /** …and this long without a hard shake. */
@@ -370,6 +372,10 @@ export class Stage {
    * would see-saw between two sizes.
    */
   private adapt(real: number): void {
+    // A lone long frame — a shader compiling, a chip tap's layout — is a
+    // hitch, not a slow GPU: averaged in, one 250ms frame alone reads as
+    // "slow" and costs a resolution step and a buffer reallocation (#189).
+    if (real > HITCH) return
     this.frameAvg += (real - this.frameAvg) * 0.08
     if (this.time - this.adaptedAt < 1) return
     const slow = this.frameAvg > 1 / 52
