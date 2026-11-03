@@ -167,6 +167,9 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
     !group || (groupsOfValue?.length ?? 0) === 0 || (groupsOfValue ?? []).includes(group)
   const options = (attribute.options ?? []).filter((o) => inGroup(o.groups))
   const partLabels = attribute.partLabels ?? []
+  // 전체 선택/해제 inside one world leaves the values every world shares alone,
+  // like the world's own switch does.
+  const allScope = atGroups ? (attribute.options ?? []) : group ? options.filter((o) => (o.groups ?? []).includes(group)) : options
   const toGroups = () => void router.navigate({ to: '/', search: { values: attributeId } })
 
   return (
@@ -195,6 +198,15 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
           </Button>
         ) : null}
       </div>
+
+      {editable && !range && allScope.length > 1 ? (
+        <AllSwitch
+          attributeId={attributeId}
+          options={allScope}
+          parts={partLabels.length > 0}
+          keepOne={!groupBy}
+        />
+      ) : null}
 
       {!editable && !range ? (
         // Generated kinds (date, traits) have no list to edit.
@@ -450,6 +462,52 @@ function SpeciesPreview({ label, color, ranges }: { label: string; color: string
  * each feature on its own odds and keeps at most this many — or, with
  * 무제한, every one that hits.
  */
+/** 전체 선택 / 전체 해제 for the values in view. A list that must keep a
+ *  value on keeps the first lit one of each part. */
+function AllSwitch({
+  attributeId,
+  options,
+  parts,
+  keepOne,
+}: {
+  attributeId: string
+  options: ReadonlyArray<{ readonly key?: string | null; readonly enabled?: boolean | null; readonly part?: number | null }>
+  parts: boolean
+  keepOne: boolean
+}) {
+  const on = options.filter((o) => o.enabled).length
+  const kept = new Set<string>()
+  if (keepOne) {
+    for (const part of new Set(options.map((o) => (parts ? (o.part ?? 0) : 0)))) {
+      const inPart = options.filter((o) => (parts ? (o.part ?? 0) : 0) === part)
+      kept.add((inPart.find((o) => o.enabled) ?? inPart[0])?.key ?? '')
+    }
+  }
+  const offable = options.filter((o) => o.enabled && !kept.has(o.key ?? ''))
+  const set = (enabled: boolean) => {
+    haptic.select()
+    if (enabled) {
+      setOptionsEnabled(attributeId, options.map((o) => o.key ?? ''), true)
+    } else {
+      setOptionsEnabled(attributeId, offable.map((o) => o.key ?? ''), false)
+      setOptionsEnabled(attributeId, [...kept], true)
+    }
+  }
+  return (
+    <div className="ms-seq flex items-center gap-1" style={seq(1)}>
+      <span className="tnum flex-1 pl-1 text-[12.5px] text-muted">
+        {on}/{options.length} 켜짐
+      </span>
+      <Button variant="ghost" className="px-2.5 py-1.5 text-[12.5px]" disabled={on === options.length} onClick={() => set(true)}>
+        전체 선택
+      </Button>
+      <Button variant="ghost" className="px-2.5 py-1.5 text-[12.5px]" disabled={offable.length === 0} onClick={() => set(false)}>
+        전체 해제
+      </Button>
+    </div>
+  )
+}
+
 function CountEditor({ attributeId, count, capped, enabled, color }: { attributeId: string; count: number | null; capped: boolean; enabled: number; color: string }) {
   const [error, setError] = useState<string | null>(null)
   const unlimited = capped && count === null
