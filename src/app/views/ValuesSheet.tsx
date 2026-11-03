@@ -172,8 +172,8 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
   // 전체 선택/해제 inside one world leaves the values every world shares alone,
   // like the world's own switch does.
   const allScope = atGroups ? (attribute.options ?? []) : group ? options.filter((o) => (o.groups ?? []).includes(group)) : options
-  // Inside one world, what is on there; the world list itself has no single count.
-  const headCount = atGroups ? null : group ? options.filter((o) => o.enabled).length : attribute.enabledCount
+  // Inside one world, what is on there; on the world list, every 직업 that is on.
+  const headCount = group ? options.filter((o) => o.enabled).length : attribute.enabledCount
   const toGroups = () => void router.navigate({ to: '/pick', search: { values: attributeId } })
 
   return (
