@@ -58,7 +58,15 @@ export function NameStep() {
       <div className="ms-seq" style={seq(2)}>
         <HapticTap onTap={next} disabled={!ready}>
           <Button type="submit" variant="primary" className="w-full py-3 text-[15px]" disabled={!ready}>
-            {ready ? '좋아요, 이 이름으로 할게요' : '이름을 먼저 지어 주세요'}
+            {ready ? (
+              // Calls the character by name; a long name gives way, the question stays.
+              <span className="flex min-w-0 max-w-full whitespace-nowrap">
+                <span className="min-w-0 truncate">{name.trim()}</span>
+                <span className="shrink-0">, 어떤 캐릭터일까?</span>
+              </span>
+            ) : (
+              '이름을 먼저 지어 주세요'
+            )}
           </Button>
         </HapticTap>
       </div>
