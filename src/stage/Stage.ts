@@ -729,6 +729,13 @@ const labelFont = (px: number) => `700 ${px}px "Pretendard Variable", Pretendard
  * take no more than 4096px, and an atlas that fails to upload draws no
  * labels at all (#159). Everything is drawn in ATLAS_CELL units and scaled.
  */
+/**
+ * The atlas is read back after every draw (checkInk), so it lives in CPU
+ * memory: reading a GPU-backed canvas stalls the frame for a readback —
+ * ~200ms a check on a slow phone (#189). It still uploads as a texture.
+ */
+const ATLAS_CONTEXT: CanvasRenderingContext2DSettings = { willReadFrequently: true }
+
 function drawAtlas(canvas: HTMLCanvasElement, specs: readonly BallSpec[], limit: number, into?: CanvasTexture): CanvasTexture {
   const labels = specs.map((s) => s.label)
   const rows = Math.max(labels.length, 1)
@@ -736,7 +743,7 @@ function drawAtlas(canvas: HTMLCanvasElement, specs: readonly BallSpec[], limit:
   // Setting the size also clears the canvas.
   canvas.width = cell
   canvas.height = cell * rows
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d', ATLAS_CONTEXT)
   if (ctx) {
     ctx.setTransform(cell / ATLAS_CELL, 0, 0, cell / ATLAS_CELL, 0, 0)
     ctx.textAlign = 'center'
@@ -815,7 +822,7 @@ function drawShaka(into?: CanvasTexture): CanvasTexture {
   const canvas = (into?.image as HTMLCanvasElement | undefined) ?? document.createElement('canvas')
   canvas.width = SHAKA_W
   canvas.height = SHAKA_H
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d', ATLAS_CONTEXT)
   if (ctx) {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
