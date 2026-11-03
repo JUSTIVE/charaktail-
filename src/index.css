@@ -788,9 +788,21 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   padding: 0 3px;
   border-radius: 4px;
   font-weight: 800;
-  background: var(--hl) no-repeat 0 100% / 100% 48%;
+  /* Twice the word's width, repeated: sliding one width along loops seamlessly. */
+  background: var(--hl) repeat-x 0 100% / 200% 48%;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+  animation: cta-flow 4s linear infinite;
+}
+@keyframes cta-flow {
+  to {
+    background-position-x: -200%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-count {
+    animation: none;
+  }
 }
 
 /* Kebab on a chip: a sibling pinned to the chip's corner. */

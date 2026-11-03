@@ -48,7 +48,9 @@ export function Picker() {
   const count = attributes.filter((a) => a.selected).length
   const parts = koreanParts(data.draft?.characterCount ?? 0)
   const auraColors = attributes.filter((a) => a.selected).map((a) => a.color ?? '#7c7a85')
-  const highlight = `linear-gradient(90deg, ${(auraColors.length > 1 ? auraColors : [...auraColors, ...auraColors, '#ffffff']).map((c) => `color-mix(in oklab, ${c} 55%, transparent)`).join(', ')})`
+  // Ends on the colour it starts with, so the marker can flow sideways and loop without a seam.
+  const stops = auraColors.length > 1 ? auraColors : [...auraColors, '#ffffff']
+  const highlight = `linear-gradient(90deg, ${[...stops, stops[0] ?? '#ffffff'].map((c) => `color-mix(in oklab, ${c} 55%, transparent)`).join(', ')})`
   const allOn = count === attributes.length
   // 완전 종속 속성 (나이, 키 of 종족) fold into their chip while it is on: no chips of their own, tags inside it.
   const selectedKeys = new Set(attributes.filter((a) => a.selected).map((a) => a.key))
@@ -192,34 +194,27 @@ export function Picker() {
           <HapticTap onTap={() => void confirm()} disabled={!ready}>
             <Button variant="primary" className="relative w-full overflow-hidden py-3 text-[15px]" disabled={!ready} onClick={() => void confirm()}>
               <AuraTint colors={auraColors} />
-              <span className="relative flex items-center gap-1.5">
-                <ShakeIcon width={18} height={18} />
+              <span className="relative flex min-w-0 max-w-full items-center gap-1.5">
+                <ShakeIcon width={18} height={18} className="shrink-0" />
                 {/* How many characters this shake picks from, read the Korean way — 2억 5,891만 —
-                    each group rolling digit by digit as chips and values change. */}
-                {parts ? (
-                  <span className="whitespace-nowrap text-[clamp(12.5px,3.55vw,14px)] tracking-[-0.01em] [word-break:keep-all]">
-                    흔들어서{' '}
-                    {/* The number, highlighted: a marker stroke in the selection's own colours. */}
-                    <span className="cta-count" style={{ '--hl': highlight } as CSSProperties}>
-                      {parts.map((part, i) => (
-                        <Fragment key={part.unit}>
-                          {i > 0 ? ' ' : null}
-                          <NumberFlow value={part.value} locales="ko-KR" className="tnum" />
-                          {part.unit}
-                        </Fragment>
-                      ))}
-                    </span>{' '}
-                    개의 캐릭터 중 하나 뽑기
+                    each group rolling digit by digit as chips and values change. The name is
+                    settled by now, so it is that many 〈name〉s; a long name gives way first. */}
+                <span className="flex min-w-0 items-baseline whitespace-nowrap text-[clamp(12.5px,3.55vw,14px)] tracking-[-0.01em] [word-break:keep-all]">
+                  <span className="cta-count shrink-0" style={{ '--hl': highlight } as CSSProperties}>
+                    {parts
+                      ? parts.map((part, i) => (
+                          <Fragment key={part.unit}>
+                            {i > 0 ? ' ' : null}
+                            <NumberFlow value={part.value} locales="ko-KR" className="tnum" />
+                            {part.unit}
+                          </Fragment>
+                        ))
+                      : '셀 수 없이 많은'}
                   </span>
-                ) : (
-                  <span className="whitespace-nowrap text-[clamp(12.5px,3.55vw,14px)] tracking-[-0.01em] [word-break:keep-all]">
-                    흔들어서{' '}
-                    <span className="cta-count" style={{ '--hl': highlight } as CSSProperties}>
-                      셀 수 없이 많은
-                    </span>{' '}
-                    캐릭터 중 하나 뽑기
-                  </span>
-                )}
+                  <span className="shrink-0">{parts ? '\u00a0명의\u00a0' : '\u00a0'}</span>
+                  <span className="min-w-0 truncate font-bold">{name.trim() || '캐릭터'}</span>
+                  <span className="shrink-0">&nbsp;중 한 명 흔들어 뽑기</span>
+                </span>
               </span>
             </Button>
           </HapticTap>
