@@ -13,13 +13,31 @@ import { selectionCell } from './selection'
  */
 export const locksCell = new Cell<Locks>({})
 
-/** Unlocks one attribute — the chip's lock button. */
+/**
+ * Locks let go of on the picker, value and all, so the chip can lock them
+ * again (#188). Gone with the next roll, which brings values of its own.
+ */
+export const releasedCell = new Cell<Locks>({})
+
+/** Unlocks one attribute — the chip's lock button. The value stays at hand to lock again. */
 export function unlock(attributeId: string): void {
-  locksCell.set((all) => {
-    if (!all[attributeId]) return all
-    const { [attributeId]: _, ...rest } = all
-    return rest
-  })
+  const value = locksCell.read()[attributeId]
+  if (!value) return
+  locksCell.set(({ [attributeId]: _, ...rest }) => rest)
+  releasedCell.set((all) => ({ ...all, [attributeId]: value }))
+}
+
+/** Locks a let-go value again — the chip's open lock. */
+export function relock(attributeId: string): void {
+  const value = releasedCell.read()[attributeId]
+  if (!value) return
+  releasedCell.set(({ [attributeId]: _, ...rest }) => rest)
+  locksCell.set((all) => ({ ...all, [attributeId]: value }))
+}
+
+/** A new roll is out: what was let go of before belongs to the last one. */
+export function clearReleased(): void {
+  if (Object.keys(releasedCell.read()).length) releasedCell.set({})
 }
 
 /**

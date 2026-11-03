@@ -7,7 +7,7 @@ import { useLocalQuery } from '../graph/useLocalQuery'
 import { freshSeed } from '../domain/rng'
 import { encodeRollKey } from '../domain/roll'
 import { attributeHead } from './attributeHead'
-import { activeLocks, locksParam } from '../state/locks'
+import { activeLocks, clearReleased, locksParam } from '../state/locks'
 import { router } from '../router'
 import { editsCell } from '../state/edits'
 import { currentName } from '../state/name'
@@ -40,6 +40,7 @@ export function StageCanvas() {
     const stage = new Stage(canvasRef.current!)
     stage.onReveal = () => {
       recordTimeline('reveal')
+      clearReleased()
       const key = encodeRollKey({
         seed: freshSeed(),
         attributeIds: selectionCell.read(),

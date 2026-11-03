@@ -5,7 +5,7 @@ import { applyAttributeEdits, isEdited, isMultiple, listOptions, type Edits } fr
 import type { Attribute as AttributeRecord } from '../domain/schema'
 import { dependsOnSpecies as speciesDependent, describeSpan, rangesBySpecies, speciesSpans } from '../domain/preview'
 import { editsCell } from '../state/edits'
-import { locksCell } from '../state/locks'
+import { locksCell, releasedCell } from '../state/locks'
 import { selectionCell } from '../state/selection'
 
 /*
@@ -171,6 +171,10 @@ export function count(attribute: AttributeRecord) {
  */
 export function lockedValue(attribute: AttributeRecord) {
   return locksCell.live((locks) => locks[attribute.id]?.label ?? null)
+}
+
+export function releasedValue(attribute: AttributeRecord) {
+  return releasedCell.live((released) => released[attribute.id]?.label ?? null)
 }
 
 /** Only range and stats implement BoundedAttribute; anything else is a wiring bug. */

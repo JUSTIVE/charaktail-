@@ -808,6 +808,15 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
 @media (hover: hover) and (pointer: fine) {
   .chip-unlock:hover { background: rgb(255 255 255 / 0.06); }
 }
+/* Let go of on the picker: still shown, faint, until locked again. */
+.chip-locked-value[data-released] {
+  color: var(--color-faint);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in oklab, var(--chip) 40%, transparent);
+}
+.chip-unlock[data-released] {
+  color: var(--color-faint);
+}
 
 /* The shake button's number: heavier, over a marker stroke in the selection's colours. */
 .cta-count {

@@ -90,6 +90,13 @@ export { locked } from '../attributeFields'
 export { lockedValue } from '../attributeFields'
 
 /**
+ * The value a lock was let go of on the picker, still there to lock again — null otherwise.
+ * @relayField DateAttribute.releasedValue: String
+ * @live
+ */
+export { releasedValue } from '../attributeFields'
+
+/**
  * The days it draws from — the year's 365.
  * @relayField DateAttribute.enabledCount: Int!
  * @live

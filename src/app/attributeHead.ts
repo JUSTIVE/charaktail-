@@ -24,6 +24,7 @@ const fragment = graphql`
       selected
       locked
       lockedValue
+      releasedValue
     }
     ... on ColorAttribute {
       enabledCount
@@ -35,6 +36,7 @@ const fragment = graphql`
       selected
       locked
       lockedValue
+      releasedValue
     }
     ... on ComposeAttribute {
       enabledCount
@@ -46,6 +48,7 @@ const fragment = graphql`
       selected
       locked
       lockedValue
+      releasedValue
     }
     ... on StatsAttribute {
       enabledCount
@@ -57,6 +60,7 @@ const fragment = graphql`
       selected
       locked
       lockedValue
+      releasedValue
     }
     ... on RangeAttribute {
       key
@@ -67,6 +71,7 @@ const fragment = graphql`
       selected
       locked
       lockedValue
+      releasedValue
     }
     ... on DateAttribute {
       enabledCount
@@ -78,6 +83,7 @@ const fragment = graphql`
       selected
       locked
       lockedValue
+      releasedValue
     }
     ... on TraitsAttribute {
       multiple
@@ -91,6 +97,7 @@ const fragment = graphql`
       selected
       locked
       lockedValue
+      releasedValue
     }
   }
 `
@@ -116,6 +123,8 @@ export interface AttributeHead {
   draws: number | null
   /** What it is locked at — 여성, 17세 — or null. */
   lockedValue: string | null
+  /** Let go of on the picker, still there to lock again. */
+  releasedValue: string | null
 }
 
 /** The fields every kind has, or null for a member this build doesn't know. */
@@ -126,5 +135,6 @@ export function attributeHead(ref: attributeHead_attribute$key): AttributeHead |
   const enabledCount = 'enabledCount' in data ? data.enabledCount : null
   const draws = 'multiple' in data && data.multiple ? (data.count ?? Number.POSITIVE_INFINITY) : null
   const lockedValue = data.lockedValue ?? null
-  return { kind, key, label, color, summary, edited, selected, locked, enabledCount, draws, lockedValue }
+  const releasedValue = data.releasedValue ?? null
+  return { kind, key, label, color, summary, edited, selected, locked, enabledCount, draws, lockedValue, releasedValue }
 }

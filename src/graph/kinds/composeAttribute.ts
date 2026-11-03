@@ -108,3 +108,10 @@ export { enabledCount } from '../attributeFields'
  * @live
  */
 export { lockedValue } from '../attributeFields'
+
+/**
+ * The value a lock was let go of on the picker, still there to lock again — null otherwise.
+ * @relayField ComposeAttribute.releasedValue: String
+ * @live
+ */
+export { releasedValue } from '../attributeFields'
