@@ -561,14 +561,15 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   position: absolute;
   z-index: -1;
   right: 34px;
-  bottom: -0.62em;
+  bottom: -0.52em;
   font-size: 46px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.04em;
   pointer-events: none;
   color: var(--chip);
-  transform-origin: 50% 100%;
+  /* Grows and shrinks about its middle. */
+  transform-origin: 50% 50%;
   /* The size change springs: a slight overshoot past where it settles, both ways. */
   transition: opacity 260ms ease, color 260ms ease, transform 460ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 260ms ease;
 }
@@ -586,7 +587,7 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
 .chip[aria-pressed='false'] .chip-count {
   color: var(--color-faint);
   opacity: 0.09;
-  transform: translateY(-3px) scale(0.78);
+  transform: scale(0.78);
   filter: blur(1.2px);
 }
 
