@@ -578,6 +578,24 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
     transition: opacity 200ms ease, color 200ms ease;
   }
 }
+/* The values sheet's head: the same numeral, behind the title. */
+.sheet-head {
+  position: relative;
+  isolation: isolate;
+}
+.sheet-head-count {
+  position: absolute;
+  z-index: -1;
+  left: 40px;
+  top: 50%;
+  translate: 0 -46%;
+  font-size: 84px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  opacity: 0.16;
+  pointer-events: none;
+}
 .chip[aria-pressed='true'] .chip-count {
   opacity: 0.26;
   transform: scale(1.2);

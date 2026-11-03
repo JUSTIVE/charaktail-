@@ -172,11 +172,19 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
   // 전체 선택/해제 inside one world leaves the values every world shares alone,
   // like the world's own switch does.
   const allScope = atGroups ? (attribute.options ?? []) : group ? options.filter((o) => (o.groups ?? []).includes(group)) : options
+  // Inside one world, what is on there; the world list itself has no single count.
+  const headCount = atGroups ? null : group ? options.filter((o) => o.enabled).length : attribute.enabledCount
   const toGroups = () => void router.navigate({ to: '/pick', search: { values: attributeId } })
 
   return (
     <div data-stage-floor className="space-y-3">
-      <div className="ms-seq flex items-center gap-2" style={seq(0)}>
+      <div className="ms-seq sheet-head flex items-center gap-2" style={seq(0)}>
+        {/* How many are on, big and faint in the attribute's colour behind the title — the chip's numeral, at sheet size. */}
+        {headCount !== null ? (
+          <span aria-hidden className="sheet-head-count" style={{ color: attribute.color ?? undefined }}>
+            <NumberFlow value={headCount} className="tnum" />
+          </span>
+        ) : null}
         <button
           type="button"
           onClick={group ? toGroups : back}
