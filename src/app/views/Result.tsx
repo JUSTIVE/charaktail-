@@ -11,6 +11,7 @@ import { locksParam, toggleLock } from '../../state/locks'
 import { toggleSaved } from '../../state/saved'
 import { haptic } from '../../stage/haptics'
 import { shareCharacter } from '../characterText'
+import { debugOn, savedTimeline } from '../debugTimeline'
 import { LockIcon, ShareIcon, ShakeIcon, ShuffleIcon, StarIcon } from '../icons'
 import { attributeHead } from '../attributeHead'
 import { HapticTap } from '../HapticTap'
@@ -190,6 +191,21 @@ export function Result() {
         })}
       </ul>
 
+      {debugOn ? (
+        // #187: the timeline of the last reveal, to paste into a bug report.
+        <button
+          type="button"
+          className="w-full text-center text-[11.5px] text-faint underline"
+          onClick={() => {
+            const log = savedTimeline()
+            const show = () => void prompt('디버그 기록 — 전체 선택해서 복사해 주세요', log)
+            if (navigator.clipboard) navigator.clipboard.writeText(log).then(() => alert('디버그 기록을 복사했어요'), show)
+            else show()
+          }}
+        >
+          디버그 기록 복사
+        </button>
+      ) : null}
       <div className="ms-seq flex items-center gap-2" style={seq((roll.entries?.length ?? 0) + 1)}>
         <Button onClick={() => void share()}>
           <ShareIcon width={16} height={16} />

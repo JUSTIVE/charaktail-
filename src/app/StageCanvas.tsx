@@ -13,6 +13,7 @@ import { editsCell } from '../state/edits'
 import { currentName } from '../state/name'
 import { selectionCell } from '../state/selection'
 import { Stage } from '../stage/Stage'
+import { recordTimeline } from './debugTimeline'
 import type { StageCanvasQuery } from '../__generated__/StageCanvasQuery.graphql'
 
 /** The one stage; the shake HUD reaches it for the hold-to-shake fallback. */
@@ -38,6 +39,7 @@ export function StageCanvas() {
   useEffect(() => {
     const stage = new Stage(canvasRef.current!)
     stage.onReveal = () => {
+      recordTimeline('reveal')
       const key = encodeRollKey({
         seed: freshSeed(),
         attributeIds: selectionCell.read(),
