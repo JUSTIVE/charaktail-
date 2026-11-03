@@ -133,7 +133,8 @@ export function options(attribute: AttributeRecord) {
  * How many of its values are switched on — the number on the picker chip.
  */
 export function enabledCount(attribute: AttributeRecord) {
-  return editsCell.live((edits) => listOptions(attribute, edits[attribute.id]).filter((o) => o.enabled).length)
+  // A date has no list: it is one of the year's 365 days.
+  return editsCell.live((edits) => (attribute.kind === 'date' ? 365 : listOptions(attribute, edits[attribute.id]).filter((o) => o.enabled).length))
 }
 
 export function selected(attribute: AttributeRecord) {

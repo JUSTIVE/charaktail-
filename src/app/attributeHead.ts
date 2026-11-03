@@ -69,6 +69,7 @@ const fragment = graphql`
       lockedValue
     }
     ... on DateAttribute {
+      enabledCount
       key
       label
       color

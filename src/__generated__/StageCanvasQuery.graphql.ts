@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<fc879131f45d1a1f1d3730f856f1d7c5>>
+ * @generated SignedSource<<e9b403ed6f4cc6d8c5c22dfeb4f815c4>>
  * @lightSyntaxTransform
  */
 
@@ -50,6 +50,7 @@ import {summary as composeAttributeSummaryResolver} from '../graph/kinds/compose
 import {DateAttribute as dateAttributeRelayModelInstanceResolver} from '../graph/kinds/dateAttribute';
 import {color as dateAttributeColorResolver} from '../graph/kinds/dateAttribute';
 import {edited as dateAttributeEditedResolver} from '../graph/kinds/dateAttribute';
+import {enabledCount as dateAttributeEnabledCountResolver} from '../graph/kinds/dateAttribute';
 import {key as dateAttributeKeyResolver} from '../graph/kinds/dateAttribute';
 import {label as dateAttributeLabelResolver} from '../graph/kinds/dateAttribute';
 import {locked as dateAttributeLockedResolver} from '../graph/kinds/dateAttribute';
@@ -896,6 +897,15 @@ return {
                           "alias": null,
                           "args": null,
                           "fragment": (v6/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "enabledCount",
+                          "resolverModule": resolverDataInjector(DateAttribute____relay_model_instance_graphql, dateAttributeEnabledCountResolver, '__relay_model_instance', true),
+                          "path": "enabledCount"
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v6/*:: as any*/),
                           "kind": "RelayResolver",
                           "name": "key",
                           "resolverModule": resolverDataInjector(DateAttribute____relay_model_instance_graphql, dateAttributeKeyResolver, '__relay_model_instance', true),
@@ -1524,6 +1534,14 @@ return {
             {
               "kind": "InlineFragment",
               "selections": [
+                {
+                  "name": "enabledCount",
+                  "args": null,
+                  "fragment": (v15/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
                 {
                   "name": "key",
                   "args": null,

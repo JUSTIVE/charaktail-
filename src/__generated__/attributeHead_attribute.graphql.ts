@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<b6818fa9bf250673832432623206e527>>
+ * @generated SignedSource<<fb3e2b4ecfd0030f46ed817ad8dc3352>>
  * @lightSyntaxTransform
  */
 
@@ -129,6 +129,12 @@ import { edited as dateAttributeEditedResolverType } from "../graph/kinds/dateAt
 (dateAttributeEditedResolverType satisfies (
   __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
 ) => LiveState<boolean>);
+import { enabledCount as dateAttributeEnabledCountResolverType } from "../graph/kinds/dateAttribute";
+// Type assertion validating that `dateAttributeEnabledCountResolverType` resolver is correctly implemented.
+// A type error here indicates that the type signature of the resolver module is incorrect.
+(dateAttributeEnabledCountResolverType satisfies (
+  __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
+) => LiveState<number>);
 import { key as dateAttributeKeyResolverType } from "../graph/kinds/dateAttribute";
 // Type assertion validating that `dateAttributeKeyResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
@@ -427,6 +433,7 @@ export type attributeHead_attribute$data = {
   readonly __typename: "DateAttribute";
   readonly color: string;
   readonly edited: boolean;
+  readonly enabledCount: number;
   readonly key: string;
   readonly label: string;
   readonly locked: boolean;
@@ -501,6 +508,6 @@ const node: ReaderInlineDataFragment = {
   "name": "attributeHead_attribute"
 };
 
-(node as any).hash = "db47f35cf0616e5bc5759cd4528ff6db";
+(node as any).hash = "05a7fc0e10d7aefa5abdf7d7f0d3be3d";
 
 export default node;

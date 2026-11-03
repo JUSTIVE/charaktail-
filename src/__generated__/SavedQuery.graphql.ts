@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<fb81106436f15d80d2142626a8495095>>
+ * @generated SignedSource<<e00cc862664691ea303b5a98c9449992>>
  * @lightSyntaxTransform
  */
 
@@ -155,6 +155,7 @@ import {summary as composeAttributeSummaryResolver} from '../graph/kinds/compose
 import {DateAttribute as dateAttributeRelayModelInstanceResolver} from '../graph/kinds/dateAttribute';
 import {color as dateAttributeColorResolver} from '../graph/kinds/dateAttribute';
 import {edited as dateAttributeEditedResolver} from '../graph/kinds/dateAttribute';
+import {enabledCount as dateAttributeEnabledCountResolver} from '../graph/kinds/dateAttribute';
 import {key as dateAttributeKeyResolver} from '../graph/kinds/dateAttribute';
 import {label as dateAttributeLabelResolver} from '../graph/kinds/dateAttribute';
 import {locked as dateAttributeLockedResolver} from '../graph/kinds/dateAttribute';
@@ -1281,6 +1282,15 @@ return {
                                             "alias": null,
                                             "args": null,
                                             "fragment": (v10/*:: as any*/),
+                                            "kind": "RelayLiveResolver",
+                                            "name": "enabledCount",
+                                            "resolverModule": resolverDataInjector(DateAttribute____relay_model_instance_graphql, dateAttributeEnabledCountResolver, '__relay_model_instance', true),
+                                            "path": "enabledCount"
+                                          },
+                                          {
+                                            "alias": null,
+                                            "args": null,
+                                            "fragment": (v10/*:: as any*/),
                                             "kind": "RelayResolver",
                                             "name": "key",
                                             "resolverModule": resolverDataInjector(DateAttribute____relay_model_instance_graphql, dateAttributeKeyResolver, '__relay_model_instance', true),
@@ -2079,6 +2089,14 @@ return {
                               {
                                 "kind": "InlineFragment",
                                 "selections": [
+                                  {
+                                    "name": "enabledCount",
+                                    "args": null,
+                                    "fragment": (v24/*:: as any*/),
+                                    "kind": "RelayResolver",
+                                    "storageKey": null,
+                                    "isOutputType": true
+                                  },
                                   {
                                     "name": "key",
                                     "args": null,

@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<fb292e6a8fb5a1b42f388d8f501e4e11>>
+ * @generated SignedSource<<c87f0d93e0434a1547e0aad4c2c4acfe>>
  * @lightSyntaxTransform
  */
 
@@ -311,6 +311,7 @@ import {summary as composeAttributeSummaryResolver} from '../graph/kinds/compose
 import {DateAttribute as dateAttributeRelayModelInstanceResolver} from '../graph/kinds/dateAttribute';
 import {color as dateAttributeColorResolver} from '../graph/kinds/dateAttribute';
 import {edited as dateAttributeEditedResolver} from '../graph/kinds/dateAttribute';
+import {enabledCount as dateAttributeEnabledCountResolver} from '../graph/kinds/dateAttribute';
 import {key as dateAttributeKeyResolver} from '../graph/kinds/dateAttribute';
 import {label as dateAttributeLabelResolver} from '../graph/kinds/dateAttribute';
 import {locked as dateAttributeLockedResolver} from '../graph/kinds/dateAttribute';
@@ -1442,6 +1443,15 @@ return {
                     {
                       "kind": "InlineFragment",
                       "selections": [
+                        {
+                          "alias": null,
+                          "args": null,
+                          "fragment": (v9/*:: as any*/),
+                          "kind": "RelayLiveResolver",
+                          "name": "enabledCount",
+                          "resolverModule": resolverDataInjector(DateAttribute____relay_model_instance_graphql, dateAttributeEnabledCountResolver, '__relay_model_instance', true),
+                          "path": "enabledCount"
+                        },
                         {
                           "alias": null,
                           "args": null,
@@ -2687,6 +2697,14 @@ return {
             {
               "kind": "InlineFragment",
               "selections": [
+                {
+                  "name": "enabledCount",
+                  "args": null,
+                  "fragment": (v35/*:: as any*/),
+                  "kind": "RelayResolver",
+                  "storageKey": null,
+                  "isOutputType": true
+                },
                 {
                   "name": "key",
                   "args": null,

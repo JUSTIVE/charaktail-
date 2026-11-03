@@ -304,6 +304,10 @@ type DateAttribute implements AttributeBase {
   The value it is locked at, or null.
   """
   lockedValue: String @live
+  """
+  The days it draws from — the year's 365.
+  """
+  enabledCount: Int! @live
 }
 
 type Draft {

@@ -88,3 +88,10 @@ export { locked } from '../attributeFields'
  * @live
  */
 export { lockedValue } from '../attributeFields'
+
+/**
+ * The days it draws from — the year's 365.
+ * @relayField DateAttribute.enabledCount: Int!
+ * @live
+ */
+export { enabledCount } from '../attributeFields'
