@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<3ec2ce3e83dde435e93be340be604799>>
+ * @generated SignedSource<<504d33034d3f7daba6fbb16bf8f90de1>>
  * @lightSyntaxTransform
  */
 
@@ -9,537 +9,75 @@
 
 import { ReaderInlineDataFragment } from 'relay-runtime';
 import { LiveState, FragmentRefs } from "relay-runtime";
-import { color as colorAttributeColorResolverType } from "../graph/kinds/colorAttribute";
-// Type assertion validating that `colorAttributeColorResolverType` resolver is correctly implemented.
+import { head as colorAttributeHeadResolverType } from "../graph/kinds/colorAttribute";
+// Type assertion validating that `colorAttributeHeadResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
-(colorAttributeColorResolverType satisfies (
+(colorAttributeHeadResolverType satisfies (
   __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { edited as colorAttributeEditedResolverType } from "../graph/kinds/colorAttribute";
-// Type assertion validating that `colorAttributeEditedResolverType` resolver is correctly implemented.
+) => LiveState<unknown | null | undefined>);
+import { head as composeAttributeHeadResolverType } from "../graph/kinds/composeAttribute";
+// Type assertion validating that `composeAttributeHeadResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
-(colorAttributeEditedResolverType satisfies (
-  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { enabledCount as colorAttributeEnabledCountResolverType } from "../graph/kinds/colorAttribute";
-// Type assertion validating that `colorAttributeEnabledCountResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(colorAttributeEnabledCountResolverType satisfies (
-  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<number>);
-import { key as colorAttributeKeyResolverType } from "../graph/kinds/colorAttribute";
-// Type assertion validating that `colorAttributeKeyResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(colorAttributeKeyResolverType satisfies (
-  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { label as colorAttributeLabelResolverType } from "../graph/kinds/colorAttribute";
-// Type assertion validating that `colorAttributeLabelResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(colorAttributeLabelResolverType satisfies (
-  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { locked as colorAttributeLockedResolverType } from "../graph/kinds/colorAttribute";
-// Type assertion validating that `colorAttributeLockedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(colorAttributeLockedResolverType satisfies (
-  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { lockedValue as colorAttributeLockedValueResolverType } from "../graph/kinds/colorAttribute";
-// Type assertion validating that `colorAttributeLockedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(colorAttributeLockedValueResolverType satisfies (
-  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { releasedValue as colorAttributeReleasedValueResolverType } from "../graph/kinds/colorAttribute";
-// Type assertion validating that `colorAttributeReleasedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(colorAttributeReleasedValueResolverType satisfies (
-  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { selected as colorAttributeSelectedResolverType } from "../graph/kinds/colorAttribute";
-// Type assertion validating that `colorAttributeSelectedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(colorAttributeSelectedResolverType satisfies (
-  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { summary as colorAttributeSummaryResolverType } from "../graph/kinds/colorAttribute";
-// Type assertion validating that `colorAttributeSummaryResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(colorAttributeSummaryResolverType satisfies (
-  __relay_model_instance: ColorAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string>);
-import { color as composeAttributeColorResolverType } from "../graph/kinds/composeAttribute";
-// Type assertion validating that `composeAttributeColorResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(composeAttributeColorResolverType satisfies (
+(composeAttributeHeadResolverType satisfies (
   __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { edited as composeAttributeEditedResolverType } from "../graph/kinds/composeAttribute";
-// Type assertion validating that `composeAttributeEditedResolverType` resolver is correctly implemented.
+) => LiveState<unknown | null | undefined>);
+import { head as dateAttributeHeadResolverType } from "../graph/kinds/dateAttribute";
+// Type assertion validating that `dateAttributeHeadResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
-(composeAttributeEditedResolverType satisfies (
-  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { enabledCount as composeAttributeEnabledCountResolverType } from "../graph/kinds/composeAttribute";
-// Type assertion validating that `composeAttributeEnabledCountResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(composeAttributeEnabledCountResolverType satisfies (
-  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<number>);
-import { key as composeAttributeKeyResolverType } from "../graph/kinds/composeAttribute";
-// Type assertion validating that `composeAttributeKeyResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(composeAttributeKeyResolverType satisfies (
-  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { label as composeAttributeLabelResolverType } from "../graph/kinds/composeAttribute";
-// Type assertion validating that `composeAttributeLabelResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(composeAttributeLabelResolverType satisfies (
-  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { locked as composeAttributeLockedResolverType } from "../graph/kinds/composeAttribute";
-// Type assertion validating that `composeAttributeLockedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(composeAttributeLockedResolverType satisfies (
-  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { lockedValue as composeAttributeLockedValueResolverType } from "../graph/kinds/composeAttribute";
-// Type assertion validating that `composeAttributeLockedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(composeAttributeLockedValueResolverType satisfies (
-  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { releasedValue as composeAttributeReleasedValueResolverType } from "../graph/kinds/composeAttribute";
-// Type assertion validating that `composeAttributeReleasedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(composeAttributeReleasedValueResolverType satisfies (
-  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { selected as composeAttributeSelectedResolverType } from "../graph/kinds/composeAttribute";
-// Type assertion validating that `composeAttributeSelectedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(composeAttributeSelectedResolverType satisfies (
-  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { summary as composeAttributeSummaryResolverType } from "../graph/kinds/composeAttribute";
-// Type assertion validating that `composeAttributeSummaryResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(composeAttributeSummaryResolverType satisfies (
-  __relay_model_instance: ComposeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string>);
-import { color as dateAttributeColorResolverType } from "../graph/kinds/dateAttribute";
-// Type assertion validating that `dateAttributeColorResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(dateAttributeColorResolverType satisfies (
+(dateAttributeHeadResolverType satisfies (
   __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { edited as dateAttributeEditedResolverType } from "../graph/kinds/dateAttribute";
-// Type assertion validating that `dateAttributeEditedResolverType` resolver is correctly implemented.
+) => LiveState<unknown | null | undefined>);
+import { head as pickAttributeHeadResolverType } from "../graph/kinds/pickAttribute";
+// Type assertion validating that `pickAttributeHeadResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
-(dateAttributeEditedResolverType satisfies (
-  __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { enabledCount as dateAttributeEnabledCountResolverType } from "../graph/kinds/dateAttribute";
-// Type assertion validating that `dateAttributeEnabledCountResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(dateAttributeEnabledCountResolverType satisfies (
-  __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<number>);
-import { key as dateAttributeKeyResolverType } from "../graph/kinds/dateAttribute";
-// Type assertion validating that `dateAttributeKeyResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(dateAttributeKeyResolverType satisfies (
-  __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { label as dateAttributeLabelResolverType } from "../graph/kinds/dateAttribute";
-// Type assertion validating that `dateAttributeLabelResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(dateAttributeLabelResolverType satisfies (
-  __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { locked as dateAttributeLockedResolverType } from "../graph/kinds/dateAttribute";
-// Type assertion validating that `dateAttributeLockedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(dateAttributeLockedResolverType satisfies (
-  __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { lockedValue as dateAttributeLockedValueResolverType } from "../graph/kinds/dateAttribute";
-// Type assertion validating that `dateAttributeLockedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(dateAttributeLockedValueResolverType satisfies (
-  __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { releasedValue as dateAttributeReleasedValueResolverType } from "../graph/kinds/dateAttribute";
-// Type assertion validating that `dateAttributeReleasedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(dateAttributeReleasedValueResolverType satisfies (
-  __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { selected as dateAttributeSelectedResolverType } from "../graph/kinds/dateAttribute";
-// Type assertion validating that `dateAttributeSelectedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(dateAttributeSelectedResolverType satisfies (
-  __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { summary as dateAttributeSummaryResolverType } from "../graph/kinds/dateAttribute";
-// Type assertion validating that `dateAttributeSummaryResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(dateAttributeSummaryResolverType satisfies (
-  __relay_model_instance: DateAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string>);
-import { color as pickAttributeColorResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeColorResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeColorResolverType satisfies (
+(pickAttributeHeadResolverType satisfies (
   __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { count as pickAttributeCountResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeCountResolverType` resolver is correctly implemented.
+) => LiveState<unknown | null | undefined>);
+import { head as rangeAttributeHeadResolverType } from "../graph/kinds/rangeAttribute";
+// Type assertion validating that `rangeAttributeHeadResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeCountResolverType satisfies (
-  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<number | null | undefined>);
-import { edited as pickAttributeEditedResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeEditedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeEditedResolverType satisfies (
-  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { enabledCount as pickAttributeEnabledCountResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeEnabledCountResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeEnabledCountResolverType satisfies (
-  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<number>);
-import { key as pickAttributeKeyResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeKeyResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeKeyResolverType satisfies (
-  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { label as pickAttributeLabelResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeLabelResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeLabelResolverType satisfies (
-  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { locked as pickAttributeLockedResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeLockedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeLockedResolverType satisfies (
-  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { lockedValue as pickAttributeLockedValueResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeLockedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeLockedValueResolverType satisfies (
-  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { multiple as pickAttributeMultipleResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeMultipleResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeMultipleResolverType satisfies (
-  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => boolean);
-import { releasedValue as pickAttributeReleasedValueResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeReleasedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeReleasedValueResolverType satisfies (
-  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { selected as pickAttributeSelectedResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeSelectedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeSelectedResolverType satisfies (
-  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { summary as pickAttributeSummaryResolverType } from "../graph/kinds/pickAttribute";
-// Type assertion validating that `pickAttributeSummaryResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(pickAttributeSummaryResolverType satisfies (
-  __relay_model_instance: PickAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string>);
-import { color as rangeAttributeColorResolverType } from "../graph/kinds/rangeAttribute";
-// Type assertion validating that `rangeAttributeColorResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(rangeAttributeColorResolverType satisfies (
+(rangeAttributeHeadResolverType satisfies (
   __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { edited as rangeAttributeEditedResolverType } from "../graph/kinds/rangeAttribute";
-// Type assertion validating that `rangeAttributeEditedResolverType` resolver is correctly implemented.
+) => LiveState<unknown | null | undefined>);
+import { head as statsAttributeHeadResolverType } from "../graph/kinds/statsAttribute";
+// Type assertion validating that `statsAttributeHeadResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
-(rangeAttributeEditedResolverType satisfies (
-  __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { key as rangeAttributeKeyResolverType } from "../graph/kinds/rangeAttribute";
-// Type assertion validating that `rangeAttributeKeyResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(rangeAttributeKeyResolverType satisfies (
-  __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { label as rangeAttributeLabelResolverType } from "../graph/kinds/rangeAttribute";
-// Type assertion validating that `rangeAttributeLabelResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(rangeAttributeLabelResolverType satisfies (
-  __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { locked as rangeAttributeLockedResolverType } from "../graph/kinds/rangeAttribute";
-// Type assertion validating that `rangeAttributeLockedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(rangeAttributeLockedResolverType satisfies (
-  __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { lockedValue as rangeAttributeLockedValueResolverType } from "../graph/kinds/rangeAttribute";
-// Type assertion validating that `rangeAttributeLockedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(rangeAttributeLockedValueResolverType satisfies (
-  __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { releasedValue as rangeAttributeReleasedValueResolverType } from "../graph/kinds/rangeAttribute";
-// Type assertion validating that `rangeAttributeReleasedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(rangeAttributeReleasedValueResolverType satisfies (
-  __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { selected as rangeAttributeSelectedResolverType } from "../graph/kinds/rangeAttribute";
-// Type assertion validating that `rangeAttributeSelectedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(rangeAttributeSelectedResolverType satisfies (
-  __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { summary as rangeAttributeSummaryResolverType } from "../graph/kinds/rangeAttribute";
-// Type assertion validating that `rangeAttributeSummaryResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(rangeAttributeSummaryResolverType satisfies (
-  __relay_model_instance: RangeAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string>);
-import { color as statsAttributeColorResolverType } from "../graph/kinds/statsAttribute";
-// Type assertion validating that `statsAttributeColorResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(statsAttributeColorResolverType satisfies (
+(statsAttributeHeadResolverType satisfies (
   __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { edited as statsAttributeEditedResolverType } from "../graph/kinds/statsAttribute";
-// Type assertion validating that `statsAttributeEditedResolverType` resolver is correctly implemented.
+) => LiveState<unknown | null | undefined>);
+import { head as traitsAttributeHeadResolverType } from "../graph/kinds/traitsAttribute";
+// Type assertion validating that `traitsAttributeHeadResolverType` resolver is correctly implemented.
 // A type error here indicates that the type signature of the resolver module is incorrect.
-(statsAttributeEditedResolverType satisfies (
-  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { enabledCount as statsAttributeEnabledCountResolverType } from "../graph/kinds/statsAttribute";
-// Type assertion validating that `statsAttributeEnabledCountResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(statsAttributeEnabledCountResolverType satisfies (
-  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<number>);
-import { key as statsAttributeKeyResolverType } from "../graph/kinds/statsAttribute";
-// Type assertion validating that `statsAttributeKeyResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(statsAttributeKeyResolverType satisfies (
-  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { label as statsAttributeLabelResolverType } from "../graph/kinds/statsAttribute";
-// Type assertion validating that `statsAttributeLabelResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(statsAttributeLabelResolverType satisfies (
-  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { locked as statsAttributeLockedResolverType } from "../graph/kinds/statsAttribute";
-// Type assertion validating that `statsAttributeLockedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(statsAttributeLockedResolverType satisfies (
-  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { lockedValue as statsAttributeLockedValueResolverType } from "../graph/kinds/statsAttribute";
-// Type assertion validating that `statsAttributeLockedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(statsAttributeLockedValueResolverType satisfies (
-  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { releasedValue as statsAttributeReleasedValueResolverType } from "../graph/kinds/statsAttribute";
-// Type assertion validating that `statsAttributeReleasedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(statsAttributeReleasedValueResolverType satisfies (
-  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { selected as statsAttributeSelectedResolverType } from "../graph/kinds/statsAttribute";
-// Type assertion validating that `statsAttributeSelectedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(statsAttributeSelectedResolverType satisfies (
-  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { summary as statsAttributeSummaryResolverType } from "../graph/kinds/statsAttribute";
-// Type assertion validating that `statsAttributeSummaryResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(statsAttributeSummaryResolverType satisfies (
-  __relay_model_instance: StatsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string>);
-import { color as traitsAttributeColorResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeColorResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeColorResolverType satisfies (
+(traitsAttributeHeadResolverType satisfies (
   __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { count as traitsAttributeCountResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeCountResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeCountResolverType satisfies (
-  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<number | null | undefined>);
-import { edited as traitsAttributeEditedResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeEditedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeEditedResolverType satisfies (
-  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { enabledCount as traitsAttributeEnabledCountResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeEnabledCountResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeEnabledCountResolverType satisfies (
-  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<number>);
-import { key as traitsAttributeKeyResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeKeyResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeKeyResolverType satisfies (
-  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { label as traitsAttributeLabelResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeLabelResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeLabelResolverType satisfies (
-  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => string);
-import { locked as traitsAttributeLockedResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeLockedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeLockedResolverType satisfies (
-  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { lockedValue as traitsAttributeLockedValueResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeLockedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeLockedValueResolverType satisfies (
-  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { multiple as traitsAttributeMultipleResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeMultipleResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeMultipleResolverType satisfies (
-  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => boolean);
-import { releasedValue as traitsAttributeReleasedValueResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeReleasedValueResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeReleasedValueResolverType satisfies (
-  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string | null | undefined>);
-import { selected as traitsAttributeSelectedResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeSelectedResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeSelectedResolverType satisfies (
-  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<boolean>);
-import { summary as traitsAttributeSummaryResolverType } from "../graph/kinds/traitsAttribute";
-// Type assertion validating that `traitsAttributeSummaryResolverType` resolver is correctly implemented.
-// A type error here indicates that the type signature of the resolver module is incorrect.
-(traitsAttributeSummaryResolverType satisfies (
-  __relay_model_instance: TraitsAttribute____relay_model_instance$data['__relay_model_instance'],
-) => LiveState<string>);
+) => LiveState<unknown | null | undefined>);
 export type attributeHead_attribute$data = {
   readonly __typename: "ColorAttribute";
-  readonly color: string;
-  readonly edited: boolean;
-  readonly enabledCount: number;
-  readonly key: string;
-  readonly label: string;
-  readonly locked: boolean;
-  readonly lockedValue: string | null | undefined;
-  readonly releasedValue: string | null | undefined;
-  readonly selected: boolean;
-  readonly summary: string;
+  readonly head: ReturnType<ReturnType<typeof colorAttributeHeadResolverType>["read"]> | null | undefined;
   readonly " $fragmentType": "attributeHead_attribute";
 } | {
   readonly __typename: "ComposeAttribute";
-  readonly color: string;
-  readonly edited: boolean;
-  readonly enabledCount: number;
-  readonly key: string;
-  readonly label: string;
-  readonly locked: boolean;
-  readonly lockedValue: string | null | undefined;
-  readonly releasedValue: string | null | undefined;
-  readonly selected: boolean;
-  readonly summary: string;
+  readonly head: ReturnType<ReturnType<typeof composeAttributeHeadResolverType>["read"]> | null | undefined;
   readonly " $fragmentType": "attributeHead_attribute";
 } | {
   readonly __typename: "DateAttribute";
-  readonly color: string;
-  readonly edited: boolean;
-  readonly enabledCount: number;
-  readonly key: string;
-  readonly label: string;
-  readonly locked: boolean;
-  readonly lockedValue: string | null | undefined;
-  readonly releasedValue: string | null | undefined;
-  readonly selected: boolean;
-  readonly summary: string;
+  readonly head: ReturnType<ReturnType<typeof dateAttributeHeadResolverType>["read"]> | null | undefined;
   readonly " $fragmentType": "attributeHead_attribute";
 } | {
   readonly __typename: "PickAttribute";
-  readonly color: string;
-  readonly count: number | null | undefined;
-  readonly edited: boolean;
-  readonly enabledCount: number;
-  readonly key: string;
-  readonly label: string;
-  readonly locked: boolean;
-  readonly lockedValue: string | null | undefined;
-  readonly multiple: boolean;
-  readonly releasedValue: string | null | undefined;
-  readonly selected: boolean;
-  readonly summary: string;
+  readonly head: ReturnType<ReturnType<typeof pickAttributeHeadResolverType>["read"]> | null | undefined;
   readonly " $fragmentType": "attributeHead_attribute";
 } | {
   readonly __typename: "RangeAttribute";
-  readonly color: string;
-  readonly edited: boolean;
-  readonly key: string;
-  readonly label: string;
-  readonly locked: boolean;
-  readonly lockedValue: string | null | undefined;
-  readonly releasedValue: string | null | undefined;
-  readonly selected: boolean;
-  readonly summary: string;
+  readonly head: ReturnType<ReturnType<typeof rangeAttributeHeadResolverType>["read"]> | null | undefined;
   readonly " $fragmentType": "attributeHead_attribute";
 } | {
   readonly __typename: "StatsAttribute";
-  readonly color: string;
-  readonly edited: boolean;
-  readonly enabledCount: number;
-  readonly key: string;
-  readonly label: string;
-  readonly locked: boolean;
-  readonly lockedValue: string | null | undefined;
-  readonly releasedValue: string | null | undefined;
-  readonly selected: boolean;
-  readonly summary: string;
+  readonly head: ReturnType<ReturnType<typeof statsAttributeHeadResolverType>["read"]> | null | undefined;
   readonly " $fragmentType": "attributeHead_attribute";
 } | {
   readonly __typename: "TraitsAttribute";
-  readonly color: string;
-  readonly count: number | null | undefined;
-  readonly edited: boolean;
-  readonly enabledCount: number;
-  readonly key: string;
-  readonly label: string;
-  readonly locked: boolean;
-  readonly lockedValue: string | null | undefined;
-  readonly multiple: boolean;
-  readonly releasedValue: string | null | undefined;
-  readonly selected: boolean;
-  readonly summary: string;
+  readonly head: ReturnType<ReturnType<typeof traitsAttributeHeadResolverType>["read"]> | null | undefined;
   readonly " $fragmentType": "attributeHead_attribute";
 } | {
   // This will never be '%other', but we need some
@@ -557,6 +95,6 @@ const node: ReaderInlineDataFragment = {
   "name": "attributeHead_attribute"
 };
 
-(node as any).hash = "98ec3a2e6b640ffd1caf2d869a1f5134";
+(node as any).hash = "bb2fe5705519cad7033fd15efb351873";
 
 export default node;

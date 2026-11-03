@@ -102,3 +102,10 @@ export { releasedValue } from '../attributeFields'
  * @live
  */
 export { enabledCount } from '../attributeFields'
+
+/**
+ * Everything a chip shows of it, in one live read (#192).
+ * @relayField DateAttribute.head: RelayResolverValue
+ * @live
+ */
+export { head } from '../attributeFields'

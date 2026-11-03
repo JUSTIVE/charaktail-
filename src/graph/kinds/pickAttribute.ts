@@ -128,3 +128,10 @@ export { lockedValue } from '../attributeFields'
  * @live
  */
 export { releasedValue } from '../attributeFields'
+
+/**
+ * Everything a chip shows of it, in one live read (#192).
+ * @relayField PickAttribute.head: RelayResolverValue
+ * @live
+ */
+export { head } from '../attributeFields'

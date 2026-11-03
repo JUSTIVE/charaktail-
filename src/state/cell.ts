@@ -53,3 +53,35 @@ export class Cell<T> {
     subscribe: this.subscribe,
   })
 }
+
+/**
+ * A live value read from several cells at once — Relay subscribes to them all.
+ * Recomputed only when one of them changed, and the previous result is kept
+ * when the new one is shallowly equal, so a change elsewhere re-renders
+ * nothing that reads this.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function liveOf<R extends object>(cells: readonly Cell<any>[], compute: () => R) {
+  let inputs: unknown[] | null = null
+  let result: R | null = null
+  return {
+    read: (): R => {
+      const now = cells.map((cell) => cell.read())
+      if (result && inputs && now.every((v, i) => Object.is(v, inputs![i]))) return result
+      inputs = now
+      const next = compute()
+      if (!result || !shallowEqual(result, next)) result = next
+      return result
+    },
+    subscribe: (listener: Listener): (() => void) => {
+      const offs = cells.map((cell) => cell.subscribe(listener))
+      return () => offs.forEach((off) => off())
+    },
+  }
+}
+
+function shallowEqual(a: object, b: object): boolean {
+  const ka = Object.keys(a)
+  if (ka.length !== Object.keys(b).length) return false
+  return ka.every((k) => Object.is((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]))
+}

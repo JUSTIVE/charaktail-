@@ -13,91 +13,25 @@ const fragment = graphql`
   fragment attributeHead_attribute on Attribute @inline {
     __typename
     ... on PickAttribute {
-      multiple
-      count
-      enabledCount
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-      lockedValue
-      releasedValue
+      head
     }
     ... on ColorAttribute {
-      enabledCount
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-      lockedValue
-      releasedValue
+      head
     }
     ... on ComposeAttribute {
-      enabledCount
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-      lockedValue
-      releasedValue
+      head
     }
     ... on StatsAttribute {
-      enabledCount
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-      lockedValue
-      releasedValue
-    }
-    ... on RangeAttribute {
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-      lockedValue
-      releasedValue
-    }
-    ... on DateAttribute {
-      enabledCount
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-      lockedValue
-      releasedValue
+      head
     }
     ... on TraitsAttribute {
-      multiple
-      count
-      enabledCount
-      key
-      label
-      color
-      summary
-      edited
-      selected
-      locked
-      lockedValue
-      releasedValue
+      head
+    }
+    ... on DateAttribute {
+      head
+    }
+    ... on RangeAttribute {
+      head
     }
   }
 `
@@ -130,11 +64,6 @@ export interface AttributeHead {
 /** The fields every kind has, or null for a member this build doesn't know. */
 export function attributeHead(ref: attributeHead_attribute$key): AttributeHead | null {
   const data = readInlineData(fragment, ref)
-  if (data.__typename === '%other') return null
-  const { __typename: kind, key, label, color, summary, edited, selected, locked } = data
-  const enabledCount = 'enabledCount' in data ? data.enabledCount : null
-  const draws = 'multiple' in data && data.multiple ? (data.count ?? Number.POSITIVE_INFINITY) : null
-  const lockedValue = data.lockedValue ?? null
-  const releasedValue = data.releasedValue ?? null
-  return { kind, key, label, color, summary, edited, selected, locked, enabledCount, draws, lockedValue, releasedValue }
+  if (data.__typename === '%other' || !data.head) return null
+  return { kind: data.__typename, ...data.head }
 }

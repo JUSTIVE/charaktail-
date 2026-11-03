@@ -4,6 +4,7 @@ import { catalog } from '../domain/catalog/index'
 import { applyAttributeEdits, isEdited, isMultiple, listOptions, type Edits } from '../domain/edits'
 import type { Attribute as AttributeRecord } from '../domain/schema'
 import { dependsOnSpecies as speciesDependent, describeSpan, rangesBySpecies, speciesSpans } from '../domain/preview'
+import { liveOf } from '../state/cell'
 import { editsCell } from '../state/edits'
 import { locksCell, releasedCell } from '../state/locks'
 import { selectionCell } from '../state/selection'
@@ -238,4 +239,53 @@ export function speciesRanges(attribute: AttributeRecord) {
  */
 export function hasCases(attribute: AttributeRecord): boolean {
   return attribute.kind === 'range' && attribute.cases.length > 0
+}
+
+/** Everything a chip, a bubble or a card header shows of an attribute, in one read. */
+export interface Head {
+  key: string
+  label: string
+  color: string
+  summary: string
+  edited: boolean
+  selected: boolean
+  locked: boolean
+  /** List kinds: how many values are on — 365 for a date. Null for a range. */
+  enabledCount: number | null
+  /** Several at once: exactly this many (a pick), at most (외형 특징; Infinity = 무제한). Null otherwise. */
+  draws: number | null
+  lockedValue: string | null
+  releasedValue: string | null
+}
+
+/**
+ * The chip's whole head as one live value (#192). Each of these was its own
+ * resolver field before, and every query that showed chips carried all of
+ * them for each of the seven kinds — ~100KB of generated code a query.
+ */
+export function head(attribute: AttributeRecord) {
+  return liveOf([editsCell, selectionCell, locksCell, releasedCell], (): Head => {
+    const edits = editsCell.read()[attribute.id]
+    const edited = applyAttributeEdits(attribute, edits)
+    const lock = locksCell.read()[attribute.id]
+    return {
+      key: attribute.id,
+      label: attribute.label,
+      color: attribute.color,
+      summary: summaryOf(edited),
+      edited: isEdited(edits),
+      selected: selectionCell.read().includes(attribute.id),
+      locked: !!lock,
+      enabledCount: attribute.kind === 'date' ? 365 : attribute.kind === 'range' ? null : listOptions(attribute, edits).filter((o) => o.enabled).length,
+      draws: isMultiple(attribute)
+        ? edited.kind === 'pick'
+          ? edited.count
+          : edited.kind === 'traits'
+            ? (edited.max ?? Number.POSITIVE_INFINITY)
+            : null
+        : null,
+      lockedValue: lock?.label ?? null,
+      releasedValue: releasedCell.read()[attribute.id]?.label ?? null,
+    }
+  })
 }
