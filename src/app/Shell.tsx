@@ -16,6 +16,7 @@ import { ArchiveIcon } from './icons'
 import { UpdateToast } from './UpdateToast'
 import { releaseTextInput } from './releaseTextInput'
 import { StageCanvas, stageHandle } from './StageCanvas'
+import { NameStep } from './views/NameStep'
 import { Picker } from './views/Picker'
 import { Result } from './views/Result'
 import { Saved } from './views/Saved'
@@ -26,7 +27,7 @@ import type { ShellSavedCountQuery } from '../__generated__/ShellSavedCountQuery
 /**
  * The skeleton, after morphing-sheet's incubators: the stage is the floor,
  * one non-modal `panel` region floats over it at the bottom and morphs
- * between the four steps, and a `dialogs` region takes momentary detail.
+ * between the five steps, and a `dialogs` region takes momentary detail.
  * The URL decides the step; the panel and the stage follow it.
  */
 export function Shell() {
@@ -67,20 +68,21 @@ export function Shell() {
   )
 }
 
-type Scene = 'pick' | 'shake' | 'result' | 'saved'
+type Scene = 'name' | 'pick' | 'shake' | 'result' | 'saved'
 
 function readScene(pathname: string): Scene {
   if (pathname.startsWith('/shake')) return 'shake'
   if (pathname.startsWith('/result')) return 'result'
   if (pathname.startsWith('/saved')) return 'saved'
-  return 'pick'
+  if (pathname.startsWith('/pick')) return 'pick'
+  return 'name'
 }
 
 function useScene(): Scene {
   return useRouterState({ select: (s) => readScene(s.location.pathname) })
 }
 
-const STAGE_MODE: Record<Scene, StageMode> = { pick: 'idle', shake: 'armed', result: 'revealed', saved: 'idle' }
+const STAGE_MODE: Record<Scene, StageMode> = { name: 'idle', pick: 'idle', shake: 'armed', result: 'revealed', saved: 'idle' }
 
 /**
  * Each step is one view id, so the panel morphs between steps and never within
@@ -92,6 +94,8 @@ function viewFor(scene: Scene, values?: string, add?: boolean, group?: string, e
     <Suspense fallback={<div className="h-40" data-stage-floor />}>{content}</Suspense>
   )
   switch (scene) {
+    case 'name':
+      return { id: 'name', width: '480px', content: body(<NameStep />) }
     case 'pick':
       if (values && edit) return { id: `edit-${values}-${edit}`, width: '520px', content: body(<AddValueSheet attributeId={values} group={group} edit={edit} />) }
       if (values && add) return { id: `add-${values}-${group ?? ''}`, width: '520px', content: body(<AddValueSheet attributeId={values} group={group} />) }

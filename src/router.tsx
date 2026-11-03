@@ -1,11 +1,12 @@
-import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
+import { createRootRoute, createRoute, createRouter, redirect } from '@tanstack/react-router'
 
 import { Shell } from './app/Shell'
 
 /**
  * URL가 흐름을, Relay가 데이터를, 패널 시트가 표현을 맡는다.
  *
- *   /                 속성 고르기 (?values=world → 그 속성의 값 목록으로 패널이 모프,
+ *   /                 이름 짓기
+ *   /pick             속성 고르기 (?values=world → 그 속성의 값 목록으로 패널이 모프,
  *                     &group=fantasy → 묶음 하나의 값들(세계관별 직업), &add=true → 값 추가 화면,
  *                     &edit=<값 id> → 그 값 편집 화면)
  *   /shake?a=…&n=이름  흔들기 — 뽑을 속성과 이름이 URL에 실린다
@@ -24,17 +25,29 @@ const rootRoute = createRootRoute({
   }),
 })
 
+const pickSearch = (
+  search: Record<string, unknown>,
+): { values?: string | undefined; group?: string | undefined; add?: boolean | undefined; edit?: string | undefined } => ({
+  values: typeof search['values'] === 'string' && search['values'] !== '' ? search['values'] : undefined,
+  group: typeof search['group'] === 'string' && search['group'] !== '' ? search['group'] : undefined,
+  add: search['add'] === true || search['add'] === 'true' ? true : undefined,
+  edit: typeof search['edit'] === 'string' && search['edit'] !== '' ? search['edit'] : undefined,
+})
+
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { values?: string | undefined; group?: string | undefined; add?: boolean | undefined; edit?: string | undefined } => ({
-    values: typeof search['values'] === 'string' && search['values'] !== '' ? search['values'] : undefined,
-    group: typeof search['group'] === 'string' && search['group'] !== '' ? search['group'] : undefined,
-    add: search['add'] === true || search['add'] === 'true' ? true : undefined,
-    edit: typeof search['edit'] === 'string' && search['edit'] !== '' ? search['edit'] : undefined,
-  }),
+  // The value lists used to live here (`/?values=`); old links land on /pick.
+  beforeLoad: ({ location }) => {
+    const search = pickSearch(location.search as Record<string, unknown>)
+    if (search.values) throw redirect({ to: '/pick', search, replace: true })
+  },
+})
+
+const pickRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/pick',
+  validateSearch: pickSearch,
 })
 
 const shakeRoute = createRoute({
@@ -63,7 +76,7 @@ const savedRoute = createRoute({
 })
 
 export const router = createRouter({
-  routeTree: rootRoute.addChildren([indexRoute, shakeRoute, resultRoute, savedRoute]),
+  routeTree: rootRoute.addChildren([indexRoute, pickRoute, shakeRoute, resultRoute, savedRoute]),
 })
 
 declare module '@tanstack/react-router' {

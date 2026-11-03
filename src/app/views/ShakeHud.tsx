@@ -99,7 +99,7 @@ export function ShakeHud() {
       </div>
 
       <div className="ms-seq flex items-center gap-2" style={seq(2)} hidden={busy}>
-        <Link to="/" className="press grid size-11 place-items-center rounded-[14px] text-muted hover:text-ink" aria-label="다시 고르기">
+        <Link to="/pick" className="press grid size-11 place-items-center rounded-[14px] text-muted hover:text-ink" aria-label="다시 고르기">
           <BackIcon />
         </Link>
         {motion === 'prompt' || motion === 'denied' ? (

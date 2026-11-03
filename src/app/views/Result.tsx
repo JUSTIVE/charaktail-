@@ -201,7 +201,7 @@ export function Result() {
           // Back to the picker, still holding this roll's attributes and name
           // (SceneSync restored both from the key), ready to adjust and shake.
           // Locks on: the picker's address carries them (`?l=`).
-          onClick={() => void router.navigate({ to: '/', search: { l: locksParam() } })}
+          onClick={() => void router.navigate({ to: '/pick', search: { l: locksParam() } })}
         >
           <ShakeIcon width={17} height={17} />
           다시 흔들기

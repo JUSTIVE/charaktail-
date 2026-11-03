@@ -22,7 +22,7 @@ import type { ValuesSheetQuery } from '../../__generated__/ValuesSheetQuery.grap
  * back (`/?values=…`), and every row is a live field over the edits cell.
  * Adding is a view of its own (`&add=true`): the whole panel morphs into it.
  */
-const back = () => void router.navigate({ to: '/', search: {} })
+const back = () => void router.navigate({ to: '/pick', search: {} })
 
 /** What a generated kind does, in a line — they have no value list to edit. */
 const GENERATED_NOTE: Record<string, string> = {
@@ -170,7 +170,7 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
   // 전체 선택/해제 inside one world leaves the values every world shares alone,
   // like the world's own switch does.
   const allScope = atGroups ? (attribute.options ?? []) : group ? options.filter((o) => (o.groups ?? []).includes(group)) : options
-  const toGroups = () => void router.navigate({ to: '/', search: { values: attributeId } })
+  const toGroups = () => void router.navigate({ to: '/pick', search: { values: attributeId } })
 
   return (
     <div data-stage-floor className="space-y-3">
@@ -251,7 +251,7 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
                   className="press-soft flex min-w-0 flex-1 items-center gap-2 text-left"
                   onClick={() => {
                     haptic.select()
-                    void router.navigate({ to: '/', search: { values: attributeId, group: g.key ?? undefined } })
+                    void router.navigate({ to: '/pick', search: { values: attributeId, group: g.key ?? undefined } })
                   }}
                 >
                   <span className="min-w-0 flex-1">
@@ -315,7 +315,7 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
                     className="press-soft min-w-0 flex-1 text-left"
                     onClick={() => {
                       haptic.select()
-                      void router.navigate({ to: '/', search: { values: attributeId, group, edit: option.key ?? undefined } })
+                      void router.navigate({ to: '/pick', search: { values: attributeId, group, edit: option.key ?? undefined } })
                     }}
                   >
                     <span className="block truncate text-[14px] font-medium">{option.label}</span>
@@ -381,7 +381,7 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
             className="aspect-square shrink-0 px-0 py-3"
             onClick={() => {
               haptic.select()
-              void router.navigate({ to: '/', search: { values: attributeId, group, add: true } })
+              void router.navigate({ to: '/pick', search: { values: attributeId, group, add: true } })
             }}
           >
             <PlusIcon width={18} height={18} />
@@ -761,7 +761,7 @@ function ValueForm({
 
   const raw = data.attribute
   const attribute = raw ? attributeHead(raw) : null
-  const toList = () => void router.navigate({ to: '/', search: { values: attributeId, group } })
+  const toList = () => void router.navigate({ to: '/pick', search: { values: attributeId, group } })
   if (!raw || !attribute || raw.__typename === '%other') return null
   const color = attribute.color
   const isColor = raw.__typename === 'ColorAttribute'

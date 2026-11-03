@@ -1,5 +1,5 @@
 import NumberFlow from '@number-flow/react'
-import { Fragment, useState, type CSSProperties } from 'react'
+import { Fragment, type CSSProperties } from 'react'
 import { encodeAttributeIds } from '../../domain/codes'
 import { koreanParts } from '../../domain/koreanNumber'
 import { graphql } from 'relay-runtime'
@@ -7,7 +7,7 @@ import { graphql } from 'relay-runtime'
 import { useLocalQuery } from '../../graph/useLocalQuery'
 
 import { router } from '../../router'
-import { currentName, NAME_MAX, setName } from '../../state/name'
+import { currentName } from '../../state/name'
 import { unlock } from '../../state/locks'
 import { nestParent, selectAll, selectionCell, toggleAttribute } from '../../state/selection'
 import { requestMotionAccess } from '../../stage/motion'
@@ -15,14 +15,13 @@ import { patchStage } from '../../stage/store'
 import { attributeHead } from '../attributeHead'
 import { Aura, AuraTint } from '../Aura'
 import { HapticTap } from '../HapticTap'
-import { releaseTextInput } from '../releaseTextInput'
 import { haptic } from '../../stage/haptics'
-import { KebabIcon, LockIcon, ShakeIcon } from '../icons'
+import { BackIcon, KebabIcon, LockIcon, ShakeIcon } from '../icons'
 import { Button, Dot, seq } from '../ui'
 import type { PickerQuery } from '../../__generated__/PickerQuery.graphql'
 
 /**
- * Step one: which attributes go into the roll. Every chip is catalogue data
+ * Step two, after the name: which attributes go into the roll. Every chip is catalogue data
  * read through Relay — a new attribute file shows up here with no UI change.
  */
 export function Picker() {
@@ -58,16 +57,15 @@ export function Picker() {
     return !!parent && selectedKeys.has(parent)
   }
   const nestedIn = (key: string) => attributes.filter((a) => nestParent(a.key) === key && folded(a.key))
-  // The input owns its text while typing (a controlled value fed back from a
-  // live field would fight Korean IME composition); the draft cell is written
-  // on every change and read back through Relay for everything else.
-  const [name, setNameText] = useState(data.draft?.name ?? '')
+  const name = data.draft?.name ?? ''
+  const toName = () => {
+    haptic.select()
+    void router.navigate({ to: '/' })
+  }
   const ready = data.draft?.canShake ?? false
 
   const confirm = async () => {
     if (!ready) return
-    // Before anything else: no focused field, no undo history to offer on shake.
-    releaseTextInput()
     haptic.press()
     // iOS only grants motion from inside the tap that asked for it.
     if (data.stage?.motion === 'prompt') patchStage({ motion: await requestMotionAccess() })
@@ -76,8 +74,14 @@ export function Picker() {
 
   return (
     <div data-stage-floor className="space-y-4">
-      <div className="ms-seq flex items-center justify-between gap-3" style={seq(0)}>
-        <h1 className="display">어떤 캐릭터를 뽑을까요?</h1>
+      <div className="ms-seq flex items-center gap-2" style={seq(0)}>
+        <button type="button" onClick={toName} aria-label="이름으로" className="press -ml-2 grid size-9 shrink-0 place-items-center rounded-full text-muted hover:text-ink">
+          <BackIcon />
+        </button>
+        <div className="min-w-0 flex-1">
+          <h1 className="display truncate">{name.trim() ? `${name.trim()}의 특성` : '어떤 특성을 뽑을까요?'}</h1>
+          <p className="text-[12.5px] text-muted">흔들어서 정할 특성을 골라 주세요</p>
+        </div>
         {/* Negative block margin: the button's tap area must not make the row
             taller than the title, or the title sits low with empty space above. */}
         <Button variant="ghost" className="-my-2 shrink-0 px-2.5 py-1.5 text-[12.5px]" onClick={() => selectAll(!allOn)}>
@@ -85,35 +89,8 @@ export function Picker() {
         </Button>
       </div>
 
-      {/* The name is the one thing the player decides; everything else is rolled. */}
-      <form
-        className="ms-seq"
-        style={seq(1)}
-        onSubmit={(event) => {
-          event.preventDefault()
-          void confirm()
-        }}
-      >
-        <label className="name-field">
-          <span className="eyebrow shrink-0">이름</span>
-          <input
-            value={name}
-            onChange={(event) => {
-              setNameText(event.target.value)
-              setName(event.target.value)
-            }}
-            maxLength={NAME_MAX}
-            placeholder="캐릭터 이름을 지어 주세요"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck={false}
-            enterKeyHint="go"
-            className="min-w-0 flex-1 bg-transparent text-[16px] font-semibold outline-none placeholder:font-normal placeholder:text-faint"
-          />
-        </label>
-      </form>
 
-      <ul className="ms-seq picker-list grid grid-cols-2 gap-2 sm:grid-cols-3" style={seq(2)}>
+      <ul className="ms-seq picker-list grid grid-cols-2 gap-2 sm:grid-cols-3" style={seq(1)}>
         {attributes.filter((a) => !folded(a.key)).map((attribute) => (
           <li key={attribute.key} className="ms-item relative">
             <HapticTap
@@ -196,7 +173,7 @@ export function Picker() {
               className="chip-kebab press"
               onClick={() => {
                 haptic.select()
-                void router.navigate({ to: '/', search: { values: attribute.key ?? undefined } })
+                void router.navigate({ to: '/pick', search: { values: attribute.key ?? undefined } })
               }}
             >
               <KebabIcon width={16} height={16} />
@@ -205,8 +182,12 @@ export function Picker() {
         ))}
       </ul>
 
-      <div className="ms-seq space-y-2" style={seq(3)}>
-        {name.trim() === '' ? <p className="text-center text-[12.5px] text-muted">이름을 지어야 흔들 수 있어요.</p> : null}
+      <div className="ms-seq space-y-2" style={seq(2)}>
+        {name.trim() === '' ? (
+          <button type="button" onClick={toName} className="press-soft block w-full text-center text-[12.5px] text-muted underline-offset-2 hover:underline">
+            이름을 지어야 흔들 수 있어요 — 이름 짓기
+          </button>
+        ) : null}
         <Aura colors={auraColors} dim={!ready}>
           <HapticTap onTap={() => void confirm()} disabled={!ready}>
             <Button variant="primary" className="relative w-full overflow-hidden py-3 text-[15px]" disabled={!ready} onClick={() => void confirm()}>
