@@ -193,7 +193,7 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
           </p>
         </div>
         {attribute.edited ? (
-          <Button variant="ghost" className="px-2.5 py-1.5 text-[12.5px]" onClick={() => resetAttribute(attributeId)}>
+          <Button variant="ghost" className="-mr-1.5 rounded-full px-2 py-1 text-[11.5px] font-medium" onClick={() => resetAttribute(attributeId)}>
             기본값으로
           </Button>
         ) : null}
@@ -494,14 +494,15 @@ function AllSwitch({
     }
   }
   return (
-    <div className="ms-seq flex items-center gap-1" style={seq(1)}>
-      <span className="tnum flex-1 pl-1 text-[12.5px] text-muted">
+    <div className="ms-seq -my-1.5 flex items-center" style={seq(1)}>
+      <span className="tnum flex-1 pl-1 text-[11.5px] text-faint">
         {on}/{options.length} 켜짐
       </span>
-      <Button variant="ghost" className="px-2.5 py-1.5 text-[12.5px]" disabled={on === options.length} onClick={() => set(true)}>
+      <Button variant="ghost" className="rounded-full px-2 py-1 text-[11.5px] font-medium" disabled={on === options.length} onClick={() => set(true)}>
         전체 선택
       </Button>
-      <Button variant="ghost" className="px-2.5 py-1.5 text-[12.5px]" disabled={offable.length === 0} onClick={() => set(false)}>
+      <span aria-hidden className="text-[11px] text-faint">·</span>
+      <Button variant="ghost" className="-mr-1.5 rounded-full px-2 py-1 text-[11.5px] font-medium" disabled={offable.length === 0} onClick={() => set(false)}>
         전체 해제
       </Button>
     </div>
