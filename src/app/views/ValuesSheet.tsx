@@ -188,25 +188,22 @@ export function ValuesSheet({ attributeId, group }: { attributeId: string; group
             <Dot color={attribute.color ?? '#888'} size={10} />
             <span className="truncate">{groupLabel ? `${attribute.label} · ${groupLabel}` : attribute.label}</span>
           </h2>
-          <p className="text-[12.5px] text-muted">
+          <p className="truncate text-[12px] text-muted">
             {atGroups ? `${groupBy?.label ?? ''}별로 골라 보세요` : group ? `이 ${groupBy?.label ?? ''}의 ${attribute.label} ${options.length}가지` : attribute.summary}
           </p>
         </div>
-        {attribute.edited ? (
-          <Button variant="ghost" className="-mr-1.5 rounded-full px-2 py-1 text-[11.5px] font-medium" onClick={() => resetAttribute(attributeId)}>
-            기본값으로
-          </Button>
-        ) : null}
+        {/* One tidy cluster on the right; the subtitle already says how many are on. */}
+        <div className="-mr-1.5 flex shrink-0 flex-col items-end">
+          {editable && !range && allScope.length > 1 ? (
+            <AllSwitch attributeId={attributeId} options={allScope} parts={partLabels.length > 0} keepOne={!groupBy} />
+          ) : null}
+          {attribute.edited ? (
+            <button type="button" className={HEAD_ACTION} onClick={() => resetAttribute(attributeId)}>
+              기본값으로
+            </button>
+          ) : null}
+        </div>
       </div>
-
-      {editable && !range && allScope.length > 1 ? (
-        <AllSwitch
-          attributeId={attributeId}
-          options={allScope}
-          parts={partLabels.length > 0}
-          keepOne={!groupBy}
-        />
-      ) : null}
 
       {!editable && !range ? (
         // Generated kinds (date, traits) have no list to edit.
@@ -462,8 +459,11 @@ function SpeciesPreview({ label, color, ranges }: { label: string; color: string
  * each feature on its own odds and keeps at most this many — or, with
  * 무제한, every one that hits.
  */
-/** 전체 선택 / 전체 해제 for the values in view. A list that must keep a
- *  value on keeps the first lit one of each part. */
+/** The header's small text actions, stacked at its right edge. */
+const HEAD_ACTION = 'press rounded-full px-2 py-[3px] text-[11.5px] font-medium leading-tight text-muted hover:bg-white/5 hover:text-ink'
+
+/** 전체 선택, or 전체 해제 once all are on, for the values in view. A list
+ *  that must keep a value on keeps the first lit one of each part. */
 function AllSwitch({
   attributeId,
   options,
@@ -475,37 +475,25 @@ function AllSwitch({
   parts: boolean
   keepOne: boolean
 }) {
-  const on = options.filter((o) => o.enabled).length
-  const kept = new Set<string>()
-  if (keepOne) {
-    for (const part of new Set(options.map((o) => (parts ? (o.part ?? 0) : 0)))) {
-      const inPart = options.filter((o) => (parts ? (o.part ?? 0) : 0) === part)
-      kept.add((inPart.find((o) => o.enabled) ?? inPart[0])?.key ?? '')
-    }
-  }
-  const offable = options.filter((o) => o.enabled && !kept.has(o.key ?? ''))
-  const set = (enabled: boolean) => {
+  const allOn = options.every((o) => o.enabled)
+  const toggle = () => {
     haptic.select()
-    if (enabled) {
+    if (!allOn) {
       setOptionsEnabled(attributeId, options.map((o) => o.key ?? ''), true)
-    } else {
-      setOptionsEnabled(attributeId, offable.map((o) => o.key ?? ''), false)
-      setOptionsEnabled(attributeId, [...kept], true)
+      return
     }
+    const kept = new Set<string>()
+    if (keepOne) {
+      for (const part of new Set(options.map((o) => (parts ? (o.part ?? 0) : 0)))) {
+        kept.add(options.find((o) => (parts ? (o.part ?? 0) : 0) === part)?.key ?? '')
+      }
+    }
+    setOptionsEnabled(attributeId, options.flatMap((o) => (kept.has(o.key ?? '') ? [] : [o.key ?? ''])), false)
   }
   return (
-    <div className="ms-seq -my-1.5 flex items-center" style={seq(1)}>
-      <span className="tnum flex-1 pl-1 text-[11.5px] text-faint">
-        {on}/{options.length} 켜짐
-      </span>
-      <Button variant="ghost" className="rounded-full px-2 py-1 text-[11.5px] font-medium" disabled={on === options.length} onClick={() => set(true)}>
-        전체 선택
-      </Button>
-      <span aria-hidden className="text-[11px] text-faint">·</span>
-      <Button variant="ghost" className="-mr-1.5 rounded-full px-2 py-1 text-[11.5px] font-medium" disabled={offable.length === 0} onClick={() => set(false)}>
-        전체 해제
-      </Button>
-    </div>
+    <button type="button" className={HEAD_ACTION} onClick={toggle}>
+      {allOn ? '전체 해제' : '전체 선택'}
+    </button>
   )
 }
 
