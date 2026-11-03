@@ -127,6 +127,8 @@ export class Stage {
   /** When each resolution last failed to hold the frame rate — not retried for a while. */
   private failedAt = new Map<number, number>()
   private layoutAt = 0
+  /** The drawing buffer's current size and density, to skip resizes that change nothing. */
+  private appliedSize = ''
   private barBottom = 52
   private floorTop = 0
   /** Whether the canvas holds the current picture — a still frame need not be redrawn. */
@@ -358,8 +360,14 @@ export class Stage {
 
   private applyResolution(): void {
     this.dpr = Math.max(MIN_DPR, this.maxDpr * this.resolution)
-    this.renderer.setPixelRatio(this.dpr)
-    this.renderer.setSize(this.width, this.height, false)
+    // Each write of the canvas size reallocates the drawing buffer, even to
+    // the same size — and setPixelRatio alone already resizes. One call, and
+    // none when nothing changed (the ResizeObserver's first call repeats the
+    // constructor's): startup did ten of these (#189).
+    const applied = `${this.width}x${this.height}@${this.dpr}`
+    if (applied === this.appliedSize) return
+    this.appliedSize = applied
+    this.renderer.setDrawingBufferSize(this.width, this.height, this.dpr)
     // Resizing clears the canvas: the next frame must draw, still or not.
     this.drawnStill = false
   }
