@@ -1,5 +1,5 @@
 import NumberFlow from '@number-flow/react'
-import { Suspense, useEffect, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { graphql } from 'relay-runtime'
 
@@ -18,11 +18,28 @@ import { releaseTextInput } from './releaseTextInput'
 import { StageCanvas, stageHandle } from './StageCanvas'
 import { NameStep } from './views/NameStep'
 import { Picker } from './views/Picker'
-import { Result } from './views/Result'
-import { Saved } from './views/Saved'
-import { AddValueSheet, ValuesSheet } from './views/ValuesSheet'
 import { ShakeHud } from './views/ShakeHud'
 import type { ShellSavedCountQuery } from '../__generated__/ShellSavedCountQuery.graphql'
+
+/*
+ * The first screens (name, picker, shake) ship in the main bundle; the result,
+ * 보관함 and value lists load on their own (#189) — fetched as soon as the
+ * page is idle after its first paint, long before anyone can reach them, so
+ * they never wait on the network when the panel morphs to them.
+ */
+const loadResult = () => import('./views/Result')
+const loadSaved = () => import('./views/Saved')
+const loadValues = () => import('./views/ValuesSheet')
+const Result = lazy(() => loadResult().then((m) => ({ default: m.Result })))
+const Saved = lazy(() => loadSaved().then((m) => ({ default: m.Saved })))
+const ValuesSheet = lazy(() => loadValues().then((m) => ({ default: m.ValuesSheet })))
+const AddValueSheet = lazy(() => loadValues().then((m) => ({ default: m.AddValueSheet })))
+
+function prefetchViews(): void {
+  const go = () => void Promise.all([loadResult(), loadSaved(), loadValues()]).catch(() => {})
+  if ('requestIdleCallback' in window) requestIdleCallback(go, { timeout: 2000 })
+  else setTimeout(go, 1000)
+}
 
 /**
  * The skeleton, after morphing-sheet's incubators: the stage is the floor,
@@ -31,6 +48,7 @@ import type { ShellSavedCountQuery } from '../__generated__/ShellSavedCountQuery
  * The URL decides the step; the panel and the stage follow it.
  */
 export function Shell() {
+  useEffect(prefetchViews, [])
   return (
     <SheetStackProvider id="dialogs" tier="structure" placement="bottom">
       <Suspense fallback={null}>
