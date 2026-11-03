@@ -561,7 +561,7 @@ li:nth-child(4n) > .chip::after { animation-direction: alternate-reverse; }
   position: absolute;
   z-index: -1;
   right: 34px;
-  bottom: -0.52em;
+  bottom: -0.4em;
   font-size: 46px;
   font-weight: 800;
   line-height: 1;
