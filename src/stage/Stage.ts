@@ -79,6 +79,9 @@ export class Stage {
   private world = new World()
   private specs = new Map<string, BallSpec>()
   private signature = ''
+  /** Redraws spent on a label atlas that came out blank, and the next one's timer. */
+  private inkRetries = 0
+  private inkTimer = 0
   private colors: Vector3[] = []
 
   private mode: StageMode = 'idle'
@@ -196,6 +199,7 @@ export class Stage {
     this.atlasCanvas.addEventListener('contextrestored', onShow)
     this.disposers.push(() => this.atlasCanvas.removeEventListener('contextrestored', onShow))
     this.disposers.push(() => document.removeEventListener('visibilitychange', onVisibility))
+    this.disposers.push(() => clearTimeout(this.inkTimer))
     this.start()
   }
 
@@ -630,10 +634,29 @@ export class Stage {
   private redrawLabels(): void {
     if (this.atlas && this.atlasSpecs.length) {
       drawAtlas(this.atlasCanvas, this.atlasSpecs, this.atlasLimit(), this.atlas)
+      this.checkInk()
     }
     if (this.shakaTex) {
       drawShaka(this.shakaTex)
     }
+  }
+
+  /**
+   * A label atlas can come out blank with nothing to say so (#179): Safari
+   * draws no glyphs while their font chunk is still settling, even after
+   * `fonts.load` resolved, and iOS may hand back a purged canvas. Every
+   * draw is checked row by row; a blank row draws the whole atlas again,
+   * backing off from 120ms to ~15s, until every label has ink.
+   */
+  private checkInk(): void {
+    clearTimeout(this.inkTimer)
+    if (atlasInked(this.atlasCanvas, this.atlasSpecs.length)) {
+      this.inkRetries = 0
+      return
+    }
+    if (this.inkRetries >= 8) return
+    const wait = 120 * 2 ** this.inkRetries++
+    this.inkTimer = window.setTimeout(() => this.redrawLabels(), wait)
   }
 
   /** New ball set → new atlas and a material compiled for that count. */
@@ -643,6 +666,8 @@ export class Stage {
     this.atlas?.dispose()
     this.atlas = drawAtlas(this.atlasCanvas, specs, this.atlasLimit())
     this.atlasSpecs = specs
+    this.inkRetries = 0
+    this.checkInk()
     // Ask for exactly these glyphs; draw again once they are in.
     void document.fonts.load(labelFont(64), specs.map((s) => s.label).join('')).then(() => this.redrawLabels())
     const old = this.mesh.material
@@ -760,6 +785,27 @@ function drawAtlas(canvas: HTMLCanvasElement, specs: readonly BallSpec[], limit:
   texture.minFilter = LinearFilter
   texture.magFilter = LinearFilter
   return texture
+}
+
+/** Whether every row of the atlas holds a label's ink — the faint numeral alone doesn't count. */
+function atlasInked(canvas: HTMLCanvasElement, rows: number): boolean {
+  const ctx = canvas.getContext('2d')
+  if (!ctx || rows === 0) return true
+  const cell = canvas.width
+  if (cell === 0) return false
+  for (let i = 0; i < rows; i++) {
+    // The label sits in the middle band of its cell; that strip is enough to look at.
+    const data = ctx.getImageData(0, i * cell + cell * 0.3, cell, cell * 0.4).data
+    let inked = false
+    for (let k = 3; k < data.length; k += 16) {
+      if (data[k]! > 128) {
+        inked = true
+        break
+      }
+    }
+    if (!inked) return false
+  }
+  return true
 }
 
 const SHAKA_FONT = `900 190px "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif`
